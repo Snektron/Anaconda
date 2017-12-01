@@ -3,8 +3,8 @@
 
 #include <iosfwd>
 #include <string>
-
-#include "datatype.h"
+#include <vector>
+#include <map>
 
 /*
  * Node type:
@@ -41,12 +41,10 @@
  */
 
 class BrainfuckWriter;
-class FunctionLookupTable;
+class DataTypeBase;
 
 class StatementNode;
 class ExpressionNode;
-class FunctionArgumentDeclarationNode;
-class FunctionArgumentNode;
 
 class Node
 {
@@ -68,29 +66,12 @@ class FunctionDeclaration : public Node
 {
 	private:
 		std::string name;
-		FunctionArgumentDeclarationNode* args;
+        std::map<std::string, DataTypeBase*> arguments;
 		DataTypeBase* return_type;
 	public:
-		FunctionDeclaration(const std::string&, FunctionArgumentDeclarationNode*, DataTypeBase*);
+		FunctionDeclaration(const std::string&, const std::map<std::string, DataTypeBase*>&, DataTypeBase*);
 		virtual ~FunctionDeclaration();
 		
-		virtual void print(std::ostream&);
-		virtual void generate(BrainfuckWriter&);
-        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
-        virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
-};
-
-class FunctionArgumentDeclarationNode : public Node
-{
-	private:
-		std::string name;
-		DataTypeBase* arg_type;
-		FunctionArgumentDeclarationNode* next;
-	public:
-		FunctionArgumentDeclarationNode(const std::string&, DataTypeBase*);
-		FunctionArgumentDeclarationNode(const std::string&, DataTypeBase*, FunctionArgumentDeclarationNode*);
-		virtual ~FunctionArgumentDeclarationNode();
-
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
         virtual void declareTypes(BrainfuckWriter&, std::ostream&);
@@ -432,27 +413,11 @@ class FunctionCallNode : public ExpressionNode
 {
 	private:
 		std::string function_name;
-		FunctionArgumentNode* arguments;
+		std::vector<ExpressionNode*> arguments;
 	public:
-		FunctionCallNode(const std::string&, FunctionArgumentNode*);
+		FunctionCallNode(const std::string&, const std::vector<ExpressionNode*> arguments&);
 		virtual ~FunctionCallNode();
 		
-		virtual void print(std::ostream&);
-		virtual void generate(BrainfuckWriter&);
-        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
-        virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
-};
-
-class FunctionArgumentNode : public Node
-{
-	private:
-		ExpressionNode* argument;
-		FunctionArgumentNode* next;
-	public:
-		FunctionArgumentNode(ExpressionNode*);
-		FunctionArgumentNode(ExpressionNode*, FunctionArgumentNode*);
-		virtual ~FunctionArgumentNode();
-
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
         virtual void declareTypes(BrainfuckWriter&, std::ostream&);
