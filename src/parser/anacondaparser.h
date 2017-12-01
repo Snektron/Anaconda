@@ -21,6 +21,16 @@ private:
 	StatementListNode* statlist();
 	Node* statement();
 	Node* ifstat();
+
+	ExpressionNode* expr();
+	ExpressionNode* sum();
+	ExpressionNode* product();
+	ExpressionNode* unary();
+	ExpressionNode* atom();
+	ExpressionNode* paren();
+	FunctionCallNode* funccall();
+	FunctionArgumentNode* funcargs();
+	VariableNode* variable();
 };
 
 #endif
