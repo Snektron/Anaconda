@@ -2,7 +2,7 @@ TARGET = Anaconda
 SRC = src
 BUILD = build
 LIBS = 
-FLAGS = -g -O3 -Wall -Wextra -std=c++14 -I$(SRC)
+FLAGS = -g -O3 -Wall -Wextra -std=c++17 -I$(SRC)
 
 CXX ?= g++
 
