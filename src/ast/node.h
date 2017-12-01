@@ -68,8 +68,9 @@ class FunctionDeclaration : public Node
 		std::string name;
         std::map<std::string, DataTypeBase*> arguments;
 		DataTypeBase* return_type;
+        BlockNode* content;
 	public:
-		FunctionDeclaration(const std::string&, const std::map<std::string, DataTypeBase*>&, DataTypeBase*);
+		FunctionDeclaration(const std::string&, const std::map<std::string, DataTypeBase*>&, DataTypeBase*, BlockNode*);
 		virtual ~FunctionDeclaration();
 		
 		virtual void print(std::ostream&);
