@@ -6,7 +6,7 @@
 class Node
 {
 	public:
-		virtual ~Node();
+		virtual ~Node() = default;
 		
 		virtual void print(std::ostream&);
 		virtual void generate(std::ostream&);
