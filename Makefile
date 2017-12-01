@@ -32,7 +32,7 @@ clean:
 	@rm -rf $(BUILD) $(TARGET)
 	
 run: all
-	@$(TARGET)
+	@./$(TARGET) test.an
 	
 force: clean all
 	
