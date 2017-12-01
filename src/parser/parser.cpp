@@ -1,38 +1,67 @@
 #include "parser/parser.h"
-#include <iostream>
 
-Parser::Parser(const char *source):
-	source_(source), current_(0) {}
+Parser::Parser(const std::string& input):
+	input_(input),
+	pos_(0), len_(input.length()) {}
 
-Node* Parser::parse()
+bool Parser::atEnd()
 {
-	Node *result = file();
-	if (!result)
-	{
-		int c = peek();
+	return pos_ == len_;
+}
 
-		if (c == EOF)
-			std::cerr << "Unexpected <EOF>" << std::endl;
-		else
-			std::cerr << "Error near" << c << std::endl;
+char Parser::peek()
+{
+	return pos_ >= len_ ? EOF : input_[pos_];
+}
+
+char Parser::consume()
+{
+	char c = peek();
+	if (pos_ < len_)
+		pos_++;
+	return c;
+}
+
+state_t Parser::save()
+{
+	return pos_;
+}
+
+void Parser::restore(state_t pos)
+{
+	pos_ = pos;
+}
+
+void Parser::beginCapture()
+{
+	capturestack_.push(pos_);
+}
+
+std::string Parser::endCapture()
+{
+	if (!capturestack_.empty())
+	{
+		state_t start = capturestack_.top(), end = pos_;
+		capturestack_.pop();
+		size_t length = end - start;
+		std::string capture(length, '\0');
+
+		state_t state = save();
+		pos_ = start;
+		for (size_t i = 0; i < length; i++)
+			capture[i] = consume();
+		restore(state);
+
+		return capture;
 	}
 
-	return result;
+	return "";
 }
 
-int Parser::peek()
+bool Parser::expect(char c)
 {
-	return source_[current_];
-}
-
-void Parser::consume()
-{
-	current_++;
-}
-
-bool Parser::expect(int c)
-{
-	if (peek() == c) {
+	if (peek() == c)
+	{
 		consume();
 		return true;
 	}
@@ -40,123 +69,53 @@ bool Parser::expect(int c)
 	return false;
 }
 
-bool Parser::expect(const char *text)
+bool Parser::expect(std::string seq)
 {
-	size_t pos = save();
-	for (const char *i = text; *i; i++) {
-		if (peek() != *i) {
-			restore(pos);
+	state_t state = save();
+
+	for (char ch : seq)
+	{
+		if (!expect(ch))
+		{
+			restore(state);
 			return false;
-		} else {
-			consume();
 		}
 	}
 
 	return true;
 }
 
+bool Parser::expectRange(char start, char end)
+{
+	char c = peek();
+	if (start <= c && c <= end)
+	{
+		consume();
+		return true;
+	}
+	return false;
+}
+
 bool Parser::whitespace() {
-	bool found = false;
-
-	while(true) {
-		int c = peek();
-		if (c == ' ' || c == '\t' || c == '\n')
-			return found;
+	if (peek() != ' ' && peek() != '\n' && peek() != '\t')
+		return false;
+	while(peek() == ' ' || peek() == '\n' || peek() == '\t')
 		consume();
-		found = false;
-	}
+	return true;
 }
 
-size_t Parser::save()
-{
-	return current_;
+bool Parser::expectUpper() {
+	return expectRange('A', 'Z');
 }
 
-void Parser::restore(size_t pos)
-{
-	current_ = pos;
+bool Parser::expectLower() {
+	return expectRange('a', 'z');
 }
 
-Node* Parser::file()
-{
-	return nullptr;
+bool Parser::expectLetter() {
+	return expectUpper() || expectLower();
 }
 
-Node* Parser::statement()
-{
-	Node *node = ifstat();
-	if (node)
-		return node;
-
-	return nullptr;
-}
-
-Node* Parser::ifstat()
-{
-	whitespace();
-	if (!(expect("if") && !whitespace()))
-		return nullptr;
-
-	return nullptr;
-}
-
-Node* Parser::funcdecl()
-{
-	whitespace();
-	if (!(expect("func") && !whitespace()))
-		return nullptr;
-
-	if (!whitespace())
-		return nullptr;
-
-
-
-	return nullptr;
-}
-
-Node* Parser::unary()
-{
-	return number();
-}
-
-Node* Parser::number()
-{
-	int c = peek();
-
-	if (!std::isdigit(c))
-		return nullptr;
-
-	int value = c - '0';
-	consume();
-
-	while (true) {
-		c = peek();
-		if (!std::isdigit(c))
-			break;
-		consume();
-		value *= 10;
-		value += c - '0';
-	}
-
-	return nullptr;
-}
-
-std::optional<std::string> Parser::name()
-{
-	int c = peek();
-	if (!(std::isalpha(c) || c == '_'))
-		return nullptr;
-
-	std::string str(1, c);
-	consume();
-
-	while(true) {
-		c = peek();
-		if (!(std::isalnum(c) || c == '_'))
-			break;
-		consume();
-		str.append(1, c);
-	}
-
-	return std::optional<std::string>(str);
+bool Parser::expectNumber() {
+	return expectRange('0', '9');
 }

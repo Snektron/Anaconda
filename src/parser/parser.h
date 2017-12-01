@@ -1,42 +1,43 @@
-#ifndef SRC_PARSER_PARSER_H_
-#define SRC_PARSER_PARSER_H_
+#ifndef SRC_FORMULA_PARSER_H_
+#define SRC_FORMULA_PARSER_H_
 
-#include <istream>
 #include <string>
-#include <cstddef>
-#include <optional>
-#include "ast/node.h"
+#include <stack>
+
+typedef std::size_t state_t;
 
 class Parser {
-	const char *source_;
-	size_t current_;
+protected:
+	std::string input_;
+	state_t pos_, len_;
+
+	std::stack<state_t> capturestack_;
 
 public:
-	Parser(const char *source);
-	Node* parse();
+	Parser(const std::string& input);
 
-private:
-	int peek();
-	void consume();
+protected:
+	bool atEnd();
 
-	bool expect(int c);
-	bool expect(const char *text);
+	char peek();
+	char consume();
+
+	state_t save();
+	void restore(state_t backup);
+
+	void beginCapture();
+	std::string endCapture();
+
+	bool expect(char c);
+	bool expect(std::string seq);
+	bool expectRange(char start, char end);
+
 	bool whitespace();
 
-	size_t save();
-	void restore(size_t pos);
-
-	Node* file();
-
-	Node* statement();
-
-	Node* ifstat();
-	Node* funcdecl();
-
-	Node* unary();
-	Node* number();
-
-	std::optional<std::string> name();
+	bool expectUpper();
+	bool expectLower();
+	bool expectLetter();
+	bool expectNumber();
 };
 
-#endif
+#endif /* SRC_FORMULA_PARSER_H_ */
