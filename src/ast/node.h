@@ -37,6 +37,7 @@
  * Constant Expression
  * Variable Expression
  * Function Call Expression
+ * Cast Expression
  */
 
 class BrainfuckWriter;
@@ -54,6 +55,7 @@ class Node
 		
 		virtual void print(std::ostream&) = 0;
 		virtual void generate(BrainfuckWriter&) = 0;
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&) = 0;
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&) = 0;
 };
 
@@ -74,6 +76,7 @@ class FunctionDeclaration : public Node
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -90,6 +93,7 @@ class FunctionArgumentDeclarationNode : public Node
 
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -104,6 +108,7 @@ class StatementListNode : public StatementNode
 
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -117,6 +122,7 @@ class BlockNode : public StatementNode
 	
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -130,6 +136,7 @@ class ExpressionStatementNode : public StatementNode
 	
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -160,6 +167,7 @@ class WhileNode : public StatementNode
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -174,6 +182,7 @@ class IfNode : public StatementNode
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -189,6 +198,7 @@ class IfElseNode : public StatementNode
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -202,6 +212,7 @@ class AssemblyNode : public StatementNode
         
         virtual void print(std::ostream&);
         virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -222,6 +233,7 @@ class AddNode : public ExpressionNode
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -236,6 +248,7 @@ class SubNode : public ExpressionNode
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -250,6 +263,7 @@ class MulNode : public ExpressionNode
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -264,6 +278,7 @@ class DivNode : public ExpressionNode
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -278,6 +293,7 @@ class ModNode : public ExpressionNode
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -291,6 +307,7 @@ class NegateNode : public ExpressionNode
         
         virtual void print(std::ostream&);
         virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -304,6 +321,7 @@ class ComplementNode : public ExpressionNode
         
         virtual void print(std::ostream&);
         virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -318,6 +336,7 @@ class BitwiseAndNode : public ExpressionNode
         
         virtual void print(std::ostream&);
         virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -332,6 +351,7 @@ class BitwiseOrNode : public ExpressionNode
         
         virtual void print(std::ostream&);
         virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -346,6 +366,7 @@ class BitwiseXorNode : public ExpressionNode
         
         virtual void print(std::ostream&);
         virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -360,6 +381,7 @@ class BitwiseLeftShiftNode : public ExpressionNode
         
         virtual void print(std::ostream&);
         virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -374,6 +396,7 @@ class BitwiseRightShiftNode : public ExpressionNode
         
         virtual void print(std::ostream&);
         virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -387,6 +410,7 @@ class U8ConstantNode : public ExpressionNode
 
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -400,6 +424,7 @@ class VariableNode : public ExpressionNode
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -414,6 +439,7 @@ class FunctionCallNode : public ExpressionNode
 		
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
@@ -429,6 +455,22 @@ class FunctionArgumentNode : public Node
 
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
+        virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
+};
+
+class CastExpression : public ExpressionNode
+{
+    private:
+        ExpressionNode* expression;
+        DataTypeBase* desired_types;
+    public:
+        CastExpression(ExpressionNode*, DataTypeBase*);
+        virtual ~CastExpression();
+
+        virtual void print(std::ostream&);
+        virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
