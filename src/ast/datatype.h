@@ -32,9 +32,10 @@ template <>
 class DataType<DATATYPE_STRUCT> : public DataTypeBase
 {
     public:
+        std::string name;
         std::map<std::string, DataType*> members;
 
-        DataType(const std::map<std::string, DataType*>&);
+        DataType(const std::string&, const std::map<std::string, DataType*>&);
         virtual ~DataType();
 };
 
