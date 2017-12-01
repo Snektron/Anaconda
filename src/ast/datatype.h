@@ -16,8 +16,8 @@ class DataTypeBase
 {
     protected:
         DataTypeBase(DataTypeClass);
-        virtual ~DataTypeBase() = default;
     public:
+        virtual ~DataTypeBase() = default;
         DataTypeClass type;
 };
 
@@ -34,7 +34,7 @@ class DataType<DATATYPE_STRUCT> : public DataTypeBase
 {
     public:
         std::string name;
-        std::map<std::string, DataType*> members;
+        std::map<std::string, DataTypeBase*> members;
 
         DataType(const std::string&, const std::map<std::string, DataTypeBase*>&);
         virtual ~DataType();
@@ -47,7 +47,7 @@ class DataType<DATATYPE_STRUCT_FORWARD> : public DataTypeBase
         std::string name;
     
         DataType(const std::string&);
-        virtual ~DataType();
+        virtual ~DataType() = default;
 };
 
 #include "datatype.inl"
