@@ -23,16 +23,18 @@ class DataTypeBase
         virtual ~DataTypeBase() = default;
         DataTypeClass type;
 
+        virtual DataTypeBase* copy() const = 0;
         virtual void print(std::ostream&) const = 0;
 };
 
-template <DataTypeClass type>
+template <DataTypeClass dtype>
 class DataType : public DataTypeBase
 {
     public:
         DataType();
         virtual ~DataType() = default;
 
+        virtual DataType<dtype>* copy() const;
         virtual void print(std::ostream&) const;
 };
 
@@ -46,6 +48,7 @@ class DataType<DataTypeClass::STRUCT> : public DataTypeBase
         DataType(const std::string&, const std::map<std::string, DataTypeBase*>&);
         virtual ~DataType();
 
+        virtual DataType<DataTypeClass::STRUCT>* copy() const;
         virtual void print(std::ostream&) const;
 };
 
@@ -58,6 +61,7 @@ class DataType<DataTypeClass::STRUCT_FORWARD> : public DataTypeBase
         DataType(const std::string&);
         virtual ~DataType() = default;
 
+        virtual DataType<DataTypeClass::STRUCT_FORWARD>* copy() const;
         virtual void print(std::ostream&) const;
 };
 
