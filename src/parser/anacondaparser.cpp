@@ -36,14 +36,16 @@ DataTypeBase* AnacondaParser::type() {
 	whitespace();
 
 	if (expect("u8"))
-		return new DataType<DATATYPE_U8>();
+		return new DataType<DataTypeClass::U8>();
+	else if (expect("void"))
+		return new DataType<DataTypeClass::VOID>();
 	else
 	{
 		std::string name = id();
 		if (name == "")
 			return nullptr;
 
-		return new DataType<DATATYPE_STRUCT_FORWARD>(name);
+		return new DataType<DataTypeClass::STRUCT_FORWARD>(name);
 	}
 
 	return nullptr;
@@ -82,7 +84,7 @@ FunctionDeclaration* AnacondaParser::funcdecl()
 		return nullptr;
 
 	whitespace();
-	DataTypeBase *rtype(expect("->") ? type() : new DataType<DATATYPE_VOID>);
+	DataTypeBase *rtype(expect("->") ? type() : new DataType<DataTypeClass::VOID>);
 
 	if (!rtype)
 	{
@@ -188,21 +190,27 @@ StatementListNode* AnacondaParser::statlist()
 	return list;
 }
 
-// <statement> = <ifstat> | <whilestat>
+// <statement> = (<WS>? ';')* (<ifstat> | <whilestat>) (<WS>? ';')*
 StatementNode* AnacondaParser::statement()
 {
+	do
+		whitespace();
+	while (expect(';'));
+
 	state_t state = save();
 
 	StatementNode *node = ifstat();
-	if (node)
-		return node;
-	restore(state);
+	if (!node)
+	{
+		restore(state);
+		node = whilestat();
+	}
 
-	node = whilestat();
-	if (node)
-		return node;
+	do
+		whitespace();
+	while (expect(';'));
 
-	return nullptr;
+	return node;
 }
 
 // <ifstat> = <WS>? 'if' <WS> <expr> <block> ('else' (<WS> <ifstat> | <block>))?
@@ -264,7 +272,7 @@ WhileNode* AnacondaParser::whilestat()
 	if (!consequent)
 	{
 		delete condition;
-		return consequent;
+		return nullptr;
 	}
 
 	return new WhileNode(condition, consequent);
