@@ -9,18 +9,19 @@ public:
 	AnacondaParser(const std::string& input);
 	StatementListNode* parse();
 private:
-	std::string name();
+	std::string id();
+	DataTypeBase* type();
 
 	StatementListNode* unit();
 
 	FunctionDeclaration* funcdecl();
-	FunctionArgumentDeclarationNode* funcpar();
+	FunctionParameters* funcpar();
 
-	StatementListNode* block();
+	BlockNode* block();
 
 	StatementListNode* statlist();
-	Node* statement();
-	Node* ifstat();
+	StatementNode* statement();
+	StatementNode* ifstat();
 
 	ExpressionNode* expr();
 	ExpressionNode* sum();
@@ -29,7 +30,7 @@ private:
 	ExpressionNode* atom();
 	ExpressionNode* paren();
 	FunctionCallNode* funccall();
-	FunctionArgumentNode* funcargs();
+	FunctionArguments* funcargs();
 	VariableNode* variable();
 };
 

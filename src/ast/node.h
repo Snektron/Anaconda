@@ -45,6 +45,9 @@ class DataTypeBase;
 
 class StatementNode;
 class ExpressionNode;
+class BlockNode;
+class FunctionParameters;
+class FunctionArguments;
 
 class Node
 {
@@ -66,13 +69,26 @@ class FunctionDeclaration : public Node
 {
 	private:
 		std::string name;
-        std::map<std::string, DataTypeBase*> arguments;
+        FunctionParameters* parameters;
 		DataTypeBase* return_type;
         BlockNode* content;
 	public:
-		FunctionDeclaration(const std::string&, const std::map<std::string, DataTypeBase*>&, DataTypeBase*, BlockNode*);
+		FunctionDeclaration(const std::string&, FunctionParameters*, DataTypeBase*, BlockNode*);
 		virtual ~FunctionDeclaration();
 		
+		virtual void print(std::ostream&);
+		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
+        virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
+};
+
+class FunctionParameters : public Node {
+	private:
+		std::map<std::string, DataTypeBase*> arguments;
+	public:
+		FunctionParameters(const std::map<std::string, DataTypeBase*>&);
+		virtual ~FunctionParameters();
+
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
         virtual void declareTypes(BrainfuckWriter&, std::ostream&);
@@ -414,11 +430,24 @@ class FunctionCallNode : public ExpressionNode
 {
 	private:
 		std::string function_name;
-		std::vector<ExpressionNode*> arguments;
+		FunctionArguments* arguments;
 	public:
-		FunctionCallNode(const std::string&, const std::vector<ExpressionNode*> arguments&);
+		FunctionCallNode(const std::string&, FunctionArguments* arguments);
 		virtual ~FunctionCallNode();
 		
+		virtual void print(std::ostream&);
+		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
+        virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
+};
+
+class FunctionArguments : public ExpressionNode {
+	private:
+		std::vector<ExpressionNode*> arguments;
+	public:
+		FunctionArguments(const std::vector<ExpressionNode*>& arguments);
+		virtual ~FunctionArguments();
+
 		virtual void print(std::ostream&);
 		virtual void generate(BrainfuckWriter&);
         virtual void declareTypes(BrainfuckWriter&, std::ostream&);

@@ -2,8 +2,8 @@
 #define BRAINFUCK_HPP_INCLUDED
 
 #include <iosfwd>
-
 #include "ast/datatype.h"
+#include "ast/node.h"
 
 const size_t GLOBAL_SCOPE = 0;
 

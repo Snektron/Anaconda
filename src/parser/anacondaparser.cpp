@@ -1,4 +1,5 @@
 #include "parser/anacondaparser.h"
+#include "ast/datatype.h"
 
 AnacondaParser::AnacondaParser(const std::string& input):
 	Parser(input) {}
@@ -16,7 +17,7 @@ StatementListNode* AnacondaParser::parse()
 	return node;
 }
 
-std::string AnacondaParser::name()
+std::string AnacondaParser::id()
 {
 	beginCapture();
 	if (!expectLetter())
@@ -25,9 +26,27 @@ std::string AnacondaParser::name()
 		return "";
 	}
 
-	while(expectLetter() || expect('_'));
+	while(expectLetter() || expect('_'))
+		continue;
 
 	return endCapture();
+}
+
+DataTypeBase* AnacondaParser::type() {
+	whitespace();
+
+	if (expect("u8"))
+		return new DataType<DATATYPE_U8>();
+	else
+	{
+		std::string name = id();
+		if (name == "")
+			return nullptr;
+
+		return new DataType<DATATYPE_STRUCT_FORWARD>(name);
+	}
+
+	return nullptr;
 }
 
 // <unit> = <funcdecl>*
@@ -37,7 +56,7 @@ StatementListNode* AnacondaParser::unit()
 
 	while (true)
 	{
-		Node *node = funcdecl();
+		StatementNode *node = (StatementNode*) funcdecl();
 		if (!node)
 			break;
 
@@ -47,67 +66,88 @@ StatementListNode* AnacondaParser::unit()
 	return list;
 }
 
-// <funcdecl> = <WS>? 'func' <WS> <name> <WS>? '(' <funcpar> ')' ('->' <name>)? <block>
+// <funcdecl> = <WS>? 'func' <WS> <id> <WS>? '(' <funcpar> ')' ('->' <id>)? <block>
 FunctionDeclaration* AnacondaParser::funcdecl()
 {
 	whitespace();
 	if (!(expect("func") && whitespace()))
 		return nullptr;
 
-	std::string funcname = name();
-	if (funcname == "")
+	std::string name = id();
+	if (name == "")
 		return nullptr;
+
+	FunctionParameters* parameters = funcpar();
+	if (!parameters)
+		return nullptr;
+
+	whitespace();
+	DataTypeBase *rtype(expect("->") ? type() : new DataType<DATATYPE_VOID>);
+
+	if (!rtype)
+	{
+		delete parameters;
+		return nullptr;
+	}
+
+	BlockNode *list = block();
+
+	if (!list) {
+		delete parameters;
+		delete rtype;
+		return nullptr;
+	}
+
+	return new FunctionDeclaration(name, parameters, rtype, list);
+}
+
+// <funcpar> = (<WS>? <id> <WS>? ',')* <id>?
+FunctionParameters* AnacondaParser::funcpar()
+{
+	std::map<std::string, DataTypeBase*> parameters;
 
 	whitespace();
 	if (!expect('('))
 		return nullptr;
 
-	FunctionArgumentDeclarationNode* args = funcpar();
-
-	whitespace();
-	if (!expect(')'))
-	{
-		delete args;
-		return nullptr;
-	}
-
-	std::string returntype("");
-
-	whitespace();
-	if (expect("->")) {
-		whitespace();
-		returntype = name();
-	}
-
-	StatementListNode *list = block();
-
-	return nullptr; // TODO: return new FunctionDeclaration
-}
-
-// <funcpar> = (<WS>? <name> <WS>? ',')* <name>?
-FunctionArgumentDeclarationNode* AnacondaParser::funcpar()
-{
-	FunctionArgumentDeclarationNode *list = nullptr;
-
 	while (true)
 	{
 		whitespace();
-		std::string parname = name();
-		if (parname == "")
+
+		DataTypeBase *partype(type());
+
+		if (!partype)
 			break;
 
-		list = new FunctionArgumentDeclarationNode(parname, list);
+		if (!whitespace())
+		{
+			delete partype;
+			break;
+		}
+
+		std::string parname = id();
+		if (parname == "")
+		{
+			delete partype;
+			break;
+		}
+
+		parameters[parname] = partype;
 
 		whitespace();
-		if (!expect(','))
+		if (expect(')'))
+			return new FunctionParameters(parameters);
+		else if (!expect(','))
 			break;
 	}
 
-	return list;
+	for (auto i : parameters)
+		delete i.second;
+	return nullptr;
 }
 
 // <block> = '{' <statlist> '}'
-StatementListNode* AnacondaParser::block()
+BlockNode* AnacondaParser::block()
 {
 	whitespace();
 	if (!expect('{'))
@@ -122,7 +162,7 @@ StatementListNode* AnacondaParser::block()
 		return nullptr;
 	}
 
-	return list;
+	return new BlockNode(list);
 }
 
 // <statlist> = <statement>*
@@ -132,7 +172,7 @@ StatementListNode* AnacondaParser::statlist()
 
 	while (true)
 	{
-		Node *node = statement();
+		StatementNode *node = statement();
 		if (!node)
 			break;
 
@@ -143,12 +183,12 @@ StatementListNode* AnacondaParser::statlist()
 }
 
 // <statement> = <ifstat>
-Node* AnacondaParser::statement()
+StatementNode* AnacondaParser::statement()
 {
 	return ifstat();
 }
 
-Node* AnacondaParser::ifstat()
+StatementNode* AnacondaParser::ifstat()
 {
 	whitespace();
 	if (!(expect("if") && !whitespace()))
@@ -178,7 +218,7 @@ ExpressionNode* AnacondaParser::sum()
 		if (op != '+' && op != '-')
 			break;
 
-		Node *rhs = product();
+		ExpressionNode *rhs = product();
 		if (!rhs)
 		{
 			delete lhs;
@@ -214,7 +254,7 @@ ExpressionNode* AnacondaParser::product()
 		if (op != '*' && op != '/' && op != '%')
 			break;
 
-		Node *rhs = unary();
+		ExpressionNode *rhs = unary();
 		if (!rhs)
 		{
 			delete lhs;
@@ -244,9 +284,9 @@ ExpressionNode* AnacondaParser::unary()
 	whitespace();
 	if (expect('-'))
 	{
-		Node *node = unary();
+		ExpressionNode *node = unary();
 		if (!node)
-			(void) 0; // TODO: return new UnaryMinusNode(node);
+			return new NegateNode(node);
 	}
 
 	return atom();
@@ -257,12 +297,12 @@ ExpressionNode* AnacondaParser::atom()
 {
 	state_t state = save();
 
-	Node *node = paren();
+	ExpressionNode *node = paren();
 	if (node)
 		return node;
 	restore(state);
 
-	Node *node = funccall();
+	node = funccall();
 	if (node)
 		return node;
 	restore(state);
@@ -281,7 +321,7 @@ ExpressionNode* AnacondaParser::paren()
 	if (!expect('('))
 		return nullptr;
 
-	Node *node = expr();
+	ExpressionNode *node = expr();
 	if (!node)
 		return nullptr;
 
@@ -295,19 +335,19 @@ ExpressionNode* AnacondaParser::paren()
 	return node;
 }
 
-// <funccall> = <WS>? <name> <WS>? '(' <funcargs> <WS>? ')'
+// <funccall> = <WS>? <id> <WS>? '(' <funcargs> <WS>? ')'
 FunctionCallNode* AnacondaParser::funccall()
 {
 	whitespace();
-	std::string funcname = name();
-	if (funcname == "")
+	std::string name = id();
+	if (name == "")
 		return nullptr;
 
 	whitespace();
 	if (!expect('('))
 		return nullptr;
 
-	FunctionArgumentNode* args = funcargs();
+	FunctionArguments* args = funcargs();
 
 	whitespace();
 	if (!expect(')'))
@@ -316,13 +356,17 @@ FunctionCallNode* AnacondaParser::funccall()
 		return nullptr;
 	}
 
-	return new FunctionCallNode(funcname, args);
+	return new FunctionCallNode(name, args);
 }
 
 // <funcargs> = (<WS>? <expr> <WS>? ',')* <expr>?
-FunctionArgumentNode* AnacondaParser::funcargs()
+FunctionArguments* AnacondaParser::funcargs()
 {
-	FunctionArgumentDeclarationNode *list = nullptr;
+	std::vector<ExpressionNode*> arguments;
+
+	whitespace();
+	if (!expect('('))
+		return nullptr;
 
 	while (true)
 	{
@@ -331,24 +375,27 @@ FunctionArgumentNode* AnacondaParser::funcargs()
 		if (!arg)
 			break;
 
-		list = new FunctionArgumentNode(arg, list);
+		arguments.push_back(arg);
 
 		whitespace();
-		if (!expect(','))
+		if (expect(')'))
+			return new FunctionArguments(arguments);
+		else if (!expect(','))
 			break;
 	}
 
-	return list;
+	for(auto expr : arguments)
+		delete expr;
+	return nullptr;
 }
 
-// <variable> = <name>
+// <variable> = <id>
 VariableNode* AnacondaParser::variable()
 {
 	whitespace();
-	std::string varname = name();
-	if (varname == "")
+	std::string name = id();
+	if (name == "")
 		return nullptr;
 
-	return new VariableNode(varname);
+	return new VariableNode(name);
 }
-
