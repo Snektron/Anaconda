@@ -10,9 +10,10 @@ const size_t GLOBAL_SCOPE = 0;
 class Scope
 {
     private:
-
+        std::vector<std::map<std::string, DataTypeBase*>> declarations;
+        std::vector<std::map<std::string, size_t>> stack_locations;
     public:
-        Scope();
+        Scope() = default;
         Scope(const Scope&) = delete;
         Scope(Scope&&);
         ~Scope() = default;
@@ -21,6 +22,18 @@ class Scope
 
         //Declares a variable in the currently active frame
         void declareVariable(const std::string&, DataTypeBase* datatype);
+        void setVariableLocation(const std::string&, size_t);
+
+        //Variable search
+        DataTypeBase* findVariable(const std::string&);
+        size_t findVariableLocation(const std::string&);
+
+        //Frame control
+        void enterFrame();
+        void exitFrame();
+
+        //Scope fetch
+        std::map<std::string, DataTypeBase*>& getFrameDeclarations();
 };
 
 class FunctionDefinition
