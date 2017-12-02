@@ -1,5 +1,5 @@
 #include "ast/node.h"
-#include "ast/datatype.h"
+#include "types/datatype.h"
 
 #include <iostream>
 

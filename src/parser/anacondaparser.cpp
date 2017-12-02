@@ -1,5 +1,5 @@
 #include "parser/anacondaparser.h"
-#include "ast/datatype.h"
+#include "types/datatype.h"
 
 AnacondaParser::AnacondaParser(const std::string& input):
 	Parser(input) {}
