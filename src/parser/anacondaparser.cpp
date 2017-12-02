@@ -5,9 +5,9 @@ AnacondaParser::AnacondaParser(const std::string& input):
 	Parser(input) {}
 
 // <parse> = <unit> <WS>? <EOF>
-StatementListNode* AnacondaParser::parse()
+GlobalNode* AnacondaParser::parse()
 {
-	StatementListNode *node = unit();
+	GlobalNode *node = unit();
 	whitespace();
 	if (!atEnd())
 	{
@@ -52,20 +52,20 @@ DataTypeBase* AnacondaParser::type() {
 }
 
 // <unit> = <funcdecl>*
-StatementListNode* AnacondaParser::unit()
+GlobalNode* AnacondaParser::unit()
 {
-	StatementListNode *list = nullptr;
+	std::vector<GlobalElementNode*> elements;
 
 	while (true)
 	{
-		StatementNode *node = (StatementNode*) funcdecl();
+		GlobalElementNode *node = (GlobalElementNode*) funcdecl();
 		if (!node)
 			break;
 
-		list = new StatementListNode(list, node);
+		elements.push_back(node);
 	}
 
-	return list;
+	return new GlobalNode(elements);
 }
 
 // <funcdecl> = <WS>? 'func' <WS> <id> <WS>? '(' <funcpar> ')' ('->' <id>)? <block>
@@ -94,7 +94,8 @@ FunctionDeclaration* AnacondaParser::funcdecl()
 
 	BlockNode *list = block();
 
-	if (!list) {
+	if (!list)
+	{
 		delete parameters;
 		delete rtype;
 		return nullptr;
@@ -190,27 +191,17 @@ StatementListNode* AnacondaParser::statlist()
 	return list;
 }
 
-// <statement> = (<WS>? ';')* (<ifstat> | <whilestat>) (<WS>? ';')*
+// <statement> = <ifstat> | <whilestat>
 StatementNode* AnacondaParser::statement()
 {
-	do
-		whitespace();
-	while (expect(';'));
-
 	state_t state = save();
 
 	StatementNode *node = ifstat();
-	if (!node)
-	{
-		restore(state);
-		node = whilestat();
-	}
+	if (node)
+		return node;
 
-	do
-		whitespace();
-	while (expect(';'));
-
-	return node;
+	restore(state);
+	return whilestat();
 }
 
 // <ifstat> = <WS>? 'if' <WS> <expr> <block> ('else' (<WS> <ifstat> | <block>))?
