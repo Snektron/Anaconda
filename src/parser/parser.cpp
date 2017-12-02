@@ -1,12 +1,17 @@
 #include "parser/parser.h"
 
 Parser::Parser(const std::string& input):
-	input_(input),
-	pos_(0), len_(input.length()) {}
+	input_(input), pos_(0),
+	len_(input.length()), line_(0) {}
+
+std::size_t Parser::line()
+{
+	return line_;
+}
 
 bool Parser::atEnd()
 {
-	return pos_ == len_;
+	return pos_ >= len_;
 }
 
 char Parser::peek()
@@ -14,12 +19,14 @@ char Parser::peek()
 	return pos_ >= len_ ? EOF : input_[pos_];
 }
 
-char Parser::consume()
+void Parser::consume()
 {
-	char c = peek();
 	if (pos_ < len_)
+	{
+		if (peek() == '\n')
+			line_++;
 		pos_++;
-	return c;
+	}
 }
 
 state_t Parser::save()

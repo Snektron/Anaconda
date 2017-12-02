@@ -8,12 +8,12 @@ class AnacondaParser : public Parser
 {
 public:
 	AnacondaParser(const std::string& input);
-	StatementListNode* parse();
+	GlobalNode* parse();
 private:
 	std::string id();
 	DataTypeBase* type();
 
-	StatementListNode* unit();
+	GlobalNode* unit();
 
 	FunctionDeclaration* funcdecl();
 	FunctionParameters* funcpar();

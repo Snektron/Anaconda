@@ -9,7 +9,8 @@ typedef std::size_t state_t;
 class Parser {
 protected:
 	std::string input_;
-	state_t pos_, len_;
+	state_t pos_;
+	std::size_t len_, line_;
 
 	std::stack<state_t> capturestack_;
 
@@ -17,10 +18,12 @@ public:
 	Parser(const std::string& input);
 
 protected:
+	std::size_t  line();
+
 	bool atEnd();
 
 	char peek();
-	char consume();
+	void consume();
 
 	state_t save();
 	void restore(state_t backup);
