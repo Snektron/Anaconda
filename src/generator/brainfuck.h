@@ -2,6 +2,9 @@
 #define BRAINFUCK_HPP_INCLUDED
 
 #include <iosfwd>
+#include <map>
+#include <vector>
+
 #include "types/datatype.h"
 #include "ast/node.h"
 
@@ -28,6 +31,10 @@ class Scope
         DataTypeBase* findVariable(const std::string&);
         size_t findVariableLocation(const std::string&);
 
+        //Checks
+        bool hasVariable(const std::string&);
+        bool hasFrameVariable(const std::string&);
+
         //Frame control
         void enterFrame();
         void exitFrame();
@@ -39,16 +46,18 @@ class Scope
 class FunctionDefinition
 {
     private:
-        std::map<std::string, DataTypeBase*> arguments;
+        std::vector<std::pair<std::string, DataTypeBase*>> arguments;
         DataTypeBase* return_type;
         BlockNode* code;
     public:
-        FunctionDefinition(const std::map<std::string, DataTypeBase*>&, DataTypeBase*, BlockNode*);
+        FunctionDefinition(const std::vector<std::pair<std::string, DataTypeBase*>>&, DataTypeBase*, BlockNode*);
         FunctionDefinition(FunctionDefinition&&);
         FunctionDefinition(const FunctionDefinition&) = delete;
         ~FunctionDefinition() = default;
 
         FunctionDefinition& operator=(const FunctionDefinition&) = delete;
+
+        bool parametersEqual(const std::vector<DataTypeBase*>& arguments);
 };
 
 class StructureDefinition
@@ -76,12 +85,19 @@ class BrainfuckWriter
 		BrainfuckWriter(std::ostream&);
 		~BrainfuckWriter() = default;
 
-	    size_t declareFunction(const std::string&, const std::map<std::string, DataTypeBase*>&, DataTypeBase*, BlockNode*);
-        size_t declareStructure(const std::string&, const std::map<std::string, DataTypeBase*>&);
+        //Declarations
+	    size_t declareFunction(const std::string&, const std::vector<std::pair<std::string, DataTypeBase*>>&, DataTypeBase*, BlockNode*);
+        void declareStructure(const std::string&, const std::map<std::string, DataTypeBase*>&);
         void declareVariable(const std::string&, DataTypeBase*);
+
+        //Checks
+        bool isFunctionDeclared(const std::string&, const std::vector<std::pair<std::string, DataTypeBase*>>&);
+        bool isFunctionDeclared(const std::string&, const std::vector<DataTypeBase*>&);
+        bool isStructureDeclared(const std::string&);
 
         //Controlling function-level scope
         void switchScope(size_t);
+        size_t getScope();
 
         //Controlling statement-level frames
         void enterFrame();

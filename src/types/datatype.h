@@ -25,6 +25,7 @@ class DataTypeBase
 
         virtual DataTypeBase* copy() const = 0;
         virtual void print(std::ostream&) const = 0;
+        virtual bool equals(const DataTypeBase&) const = 0;
 };
 
 template <DataTypeClass dtype>
@@ -36,20 +37,7 @@ class DataType : public DataTypeBase
 
         virtual DataType<dtype>* copy() const;
         virtual void print(std::ostream&) const;
-};
-
-template <>
-class DataType<DataTypeClass::STRUCT> : public DataTypeBase
-{
-    public:
-        std::string name;
-        std::map<std::string, DataTypeBase*> members;
-
-        DataType(const std::string&, const std::map<std::string, DataTypeBase*>&);
-        virtual ~DataType();
-
-        virtual DataType<DataTypeClass::STRUCT>* copy() const;
-        virtual void print(std::ostream&) const;
+        virtual bool equals(const DataTypeBase&) const;
 };
 
 template<>
@@ -63,6 +51,7 @@ class DataType<DataTypeClass::STRUCT_FORWARD> : public DataTypeBase
 
         virtual DataType<DataTypeClass::STRUCT_FORWARD>* copy() const;
         virtual void print(std::ostream&) const;
+        virtual bool equals(const DataTypeBase&) const;
 };
 
 std::ostream& operator<<(std::ostream&, const DataTypeBase&);

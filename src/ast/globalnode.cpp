@@ -1,4 +1,5 @@
 #include "ast/node.h"
+#include "generator/brainfuck.h"
 
 #include <iostream>
 
@@ -19,8 +20,24 @@ void GlobalNode::print(std::ostream& os, size_t level) const
         it->print(os, level+1);
 }
 
-void GlobalNode::declareTypes(BrainfuckWriter& writer, std::ostream& err)
+void GlobalNode::declareGlobals(BrainfuckWriter& writer) const
 {
+    size_t old_scope = writer.getScope();
+    writer.switchScope(GLOBAL_SCOPE);
+
     for(auto& it : this->elements)
-        it->declareTypes(writer, err);
+        it->declareGlobals(writer);
+
+    writer.switchScope(old_scope);
+}
+
+void GlobalNode::checkTypes(BrainfuckWriter& writer)
+{
+    size_t old_scope = writer.getScope();
+    writer.switchScope(GLOBAL_SCOPE);
+    
+    for(auto& it : this->elements)
+        it->declareGlobals(writer);
+
+    writer.switchScope(old_scope);
 }

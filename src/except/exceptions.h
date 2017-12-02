@@ -27,4 +27,20 @@ class TypeCheckException : public ASTException
         virtual ~TypeCheckException() = default;
 };
 
+class RedefinitionException : public ASTException
+{
+    public:
+        RedefinitionException(const std::string&);
+        RedefinitionException(const char*);
+        virtual ~RedefinitionException() = default;
+};
+
+class RecursiveTypeException : public TypeCheckException
+{
+    public:
+        RecursiveTypeException(const std::string&);
+        RecursiveTypeException(const char*);
+        virtual ~RecursiveTypeException() = default;
+};
+
 #endif

@@ -1,5 +1,6 @@
 #include "ast/node.h"
 #include "types/datatype.h"
+#include "generator/brainfuck.h"
 
 #include <iostream>
 
@@ -19,4 +20,15 @@ void FunctionDeclaration::print(std::ostream& output, size_t level) const
     this->printIndent(output, level+1);
     output << "return type: " << *this->return_type << std::endl;
     this->parameters->print(output, level+1);
+}
+
+void FunctionDeclaration::declareGlobals(BrainfuckWriter& writer) const
+{
+    writer.declareFunction(this->name, this->parameters->getParameters(), this->return_type, this->content);
+}
+
+void FunctionDeclaration::checkTypes(BrainfuckWriter& writer)
+{
+    this->parameters->checkTypes(writer);
+    this->content->checkTypes(writer);
 }

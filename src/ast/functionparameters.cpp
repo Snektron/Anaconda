@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-FunctionParameters::FunctionParameters(const std::map<std::string, DataTypeBase*>& arguments) : arguments(arguments) {}
+FunctionParameters::FunctionParameters(const std::vector<std::pair<std::string, DataTypeBase*>>& arguments) : arguments(arguments) {}
 
 FunctionParameters::~FunctionParameters()
 {
@@ -27,4 +27,14 @@ void FunctionParameters::print(std::ostream& os, size_t level) const
         os << it.first << ": " << *it.second;
     }
     os << ")" << std::endl;
+}
+
+std::vector<std::pair<std::string, DataTypeBase*>>& FunctionParameters::getParameters()
+{
+    return this->arguments;
+}
+
+void FunctionParameters::checkTypes(BrainfuckWriter& writer)
+{
+    
 }

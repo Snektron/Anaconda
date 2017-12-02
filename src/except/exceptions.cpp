@@ -8,3 +8,9 @@ ASTException::ASTException(const char* msg) : ProgramException(msg) {}
 
 TypeCheckException::TypeCheckException(const std::string& msg) : ASTException(msg) {}
 TypeCheckException::TypeCheckException(const char* msg) : ASTException(msg) {}
+
+RedefinitionException::RedefinitionException(const std::string& msg) : ASTException(msg) {}
+RedefinitionException::RedefinitionException(const char* msg) : ASTException(msg) {}
+
+RecursiveTypeException::RecursiveTypeException(const std::string& msg) : TypeCheckException(msg) {}
+RecursiveTypeException::RecursiveTypeException(const char* msg) : TypeCheckException(msg) {}

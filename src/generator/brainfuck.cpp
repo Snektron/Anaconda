@@ -1,4 +1,5 @@
 #include "generator/brainfuck.h"
+#include "except/exceptions.h"
 
 Scope::Scope(Scope&& old) : declarations(old.declarations), stack_locations(old.stack_locations) {}
 
@@ -36,6 +37,17 @@ size_t Scope::findVariableLocation(const std::string& name)
     return 0;
 }
 
+bool Scope::hasVariable(const std::string& name)
+{
+    return this->findVariable(name) != nullptr;
+}
+
+bool Scope::hasFrameVariable(const std::string& name)
+{
+    std::map<std::string, size_t>& current_scope = this->stack_locations.back();
+    return current_scope.find(name) != current_scope.end();
+}
+
 void Scope::enterFrame()
 {
     this->declarations.emplace_back(std::map<std::string, DataTypeBase*>());
@@ -53,35 +65,91 @@ std::map<std::string, DataTypeBase*>& Scope::getFrameDeclarations()
     return this->declarations.back();
 }
 
-BrainfuckWriter::BrainfuckWriter(std::ostream& os) : output(os), current_scope(GLOBAL_SCOPE)
-{
-    this->scopes.push_back(Scope()); //Create the global scope
-}
-
-FunctionDefinition::FunctionDefinition(const std::map<std::string, DataTypeBase*>& arguments, DataTypeBase* return_type, BlockNode* code) : arguments(arguments), return_type(return_type), code(code) {}
+FunctionDefinition::FunctionDefinition(const std::vector<std::pair<std::string, DataTypeBase*>>& arguments, DataTypeBase* return_type, BlockNode* code) : arguments(arguments), return_type(return_type), code(code) {}
 
 FunctionDefinition::FunctionDefinition(FunctionDefinition&& old) : arguments(std::move(old.arguments)), return_type(old.return_type), code(old.code) {}
+
+bool FunctionDefinition::parametersEqual(const std::vector<DataTypeBase*>& arguments)
+{
+    if(arguments.size() != this->arguments.size())
+        return false;
+    for(size_t i = 0; i < this->arguments.size(); ++i)
+    {
+        if(!this->arguments[i].second->equals(*arguments[i]))
+            return false;
+    }
+    return true;
+}
 
 StructureDefinition::StructureDefinition(const std::map<std::string, DataTypeBase*>& fields) : fields(fields) {}
 
 StructureDefinition::StructureDefinition(StructureDefinition&& old) : fields(std::move(old.fields)) {}
 
-size_t BrainfuckWriter::declareFunction(const std::string& name, const std::map<std::string, DataTypeBase*>& arguments, DataTypeBase* return_value, BlockNode* block_node)
+BrainfuckWriter::BrainfuckWriter(std::ostream& os) : output(os), current_scope(GLOBAL_SCOPE)
 {
+    //Create the global scope, which always has exactly one frame
+    Scope global_scope;
+    global_scope.enterFrame();
+    this->scopes.emplace_back(std::move(global_scope));
+}
+
+size_t BrainfuckWriter::declareFunction(const std::string& name, const std::vector<std::pair<std::string, DataTypeBase*>>& arguments, DataTypeBase* return_value, BlockNode* block_node)
+{
+    if(this->isFunctionDeclared(name, arguments))
+        throw RedefinitionException("Redefinition of function " + name);
     this->functions.emplace(name, FunctionDefinition(arguments, return_value, block_node));
     this->scopes.emplace_back(Scope());
     return this->scopes.size() - 1;
 }
 
+void BrainfuckWriter::declareStructure(const std::string& name, const std::map<std::string, DataTypeBase*>& members)
+{
+    if(this->isStructureDeclared(name))
+        throw RedefinitionException("Redefinition of structure " + name);
+    this->structures.emplace(name, StructureDefinition(members));
+}
+
 void BrainfuckWriter::declareVariable(const std::string& name, DataTypeBase* datatype)
 {
     Scope& current_scope = this->scopes[this->current_scope];
+    if(current_scope.hasFrameVariable(name))
+        throw RedefinitionException("Redefinition of variable " + name);
     current_scope.declareVariable(name, datatype);
+}
+
+bool BrainfuckWriter::isFunctionDeclared(const std::string& name, const std::vector<std::pair<std::string, DataTypeBase*>>& arguments)
+{
+    std::vector<DataTypeBase*> argument_types;
+    for(auto& it : arguments)
+        argument_types.push_back(it.second);
+    return this->isFunctionDeclared(name, arguments);
+}
+
+bool BrainfuckWriter::isFunctionDeclared(const std::string& name, const std::vector<DataTypeBase*>& arguments)
+{
+    auto equal_range = this->functions.equal_range(name);
+    
+    for(auto& it = equal_range.first; it != equal_range.second; ++it)
+    {
+        if(it->second.parametersEqual(arguments))
+            return true;
+    }
+    return false;
+}
+
+bool BrainfuckWriter::isStructureDeclared(const std::string& name)
+{
+    return this->structures.find(name) != this->structures.end();
 }
 
 void BrainfuckWriter::switchScope(size_t new_scope)
 {
     this->current_scope = new_scope;
+}
+
+size_t BrainfuckWriter::getScope()
+{
+    return this->current_scope;
 }
 
 void BrainfuckWriter::enterFrame()

@@ -14,3 +14,9 @@ DataType<dtype>* DataType<dtype>::copy() const
 {
     return new DataType<dtype>();
 }
+
+template <DataTypeClass dtype>
+bool DataType<dtype>::equals(const DataTypeBase& other) const
+{
+    return other.type == dtype;
+}
