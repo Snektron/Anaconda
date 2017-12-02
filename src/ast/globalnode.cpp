@@ -18,3 +18,9 @@ void GlobalNode::print(std::ostream& os, size_t level) const
     for(auto& it : this->elements)
         it->print(os, level+1);
 }
+
+void GlobalNode::declareTypes(BrainfuckWriter& writer, std::ostream& err)
+{
+    for(auto& it : this->elements)
+        it->declareTypes(writer, err);
+}
