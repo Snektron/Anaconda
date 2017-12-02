@@ -101,10 +101,11 @@ FunctionDeclaration* AnacondaParser::funcdecl()
 	return new FunctionDeclaration(name, parameters, rtype, list);
 }
 
-// <funcpar> = (<WS>? <id> <WS>? ',')* <id>?
+// <funcpar> = <WS>? '(' ((<type> <WS>)? <id> (',' (<type> <WS>)? <id>)*) <WS>? ')'
 FunctionParameters* AnacondaParser::funcpar()
 {
 	std::map<std::string, DataTypeBase*> parameters;
+	DataTypeBase *lasttype(nullptr);
 
 	whitespace();
 	if (!expect('('))
@@ -112,24 +113,29 @@ FunctionParameters* AnacondaParser::funcpar()
 
 	while (true)
 	{
+		state_t state = save();
+
 		whitespace();
-
 		DataTypeBase *partype(type());
+		std::string parname;
 
-		if (!partype)
-			break;
-
-		if (!whitespace())
+		if (!partype || !whitespace() || (parname = id()) == "")
 		{
+			restore(state);
 			delete partype;
-			break;
+
+			parname = id();
+			if (!lasttype || parname == "")
+			{
+				delete lasttype;
+				break;
+			}
+
+			//TODO partype = copy(lasttype)
 		}
-
-		std::string parname = id();
-		if (parname == "")
+		else
 		{
-			delete partype;
-			break;
+			//TODO lasttype = copy(partype)
 		}
 
 		parameters[parname] = partype;
@@ -182,19 +188,86 @@ StatementListNode* AnacondaParser::statlist()
 	return list;
 }
 
-// <statement> = <ifstat>
+// <statement> = <ifstat> | <whilestat>
 StatementNode* AnacondaParser::statement()
 {
-	return ifstat();
+	state_t state = save();
+
+	StatementNode *node = ifstat();
+	if (node)
+		return node;
+	restore(state);
+
+	node = whilestat();
+	if (node)
+		return node;
+
+	return nullptr;
 }
 
+// <ifstat> = <WS>? 'if' <WS> <expr> <block> ('else' (<WS> <ifstat> | <block>))?
 StatementNode* AnacondaParser::ifstat()
 {
 	whitespace();
-	if (!(expect("if") && !whitespace()))
+	if (!expect("if") || !whitespace())
 		return nullptr;
 
-	return nullptr;
+	ExpressionNode *condition = expr();
+	if (!condition)
+		return nullptr;
+
+	BlockNode *consequent = block();
+	if (!consequent)
+	{
+		delete condition;
+		return consequent;
+	}
+
+	if (expect("else"))
+	{
+		StatementNode *alternative(nullptr);
+		state_t state = save();
+
+		if (whitespace() && expect("if"))
+		{
+			restore(state);
+			alternative = ifstat();
+		}
+		else
+			alternative = block();
+
+		if (!alternative)
+		{
+			delete condition;
+			delete consequent;
+			return nullptr;
+		}
+
+		return new IfElseNode(condition, consequent, alternative);
+	}
+
+	return new IfNode(condition, consequent);
+}
+
+// <whilestat> = <WS>? 'while' <WS> <expr> <block>
+WhileNode* AnacondaParser::whilestat()
+{
+	whitespace();
+	if (!expect("while") || !whitespace())
+		return nullptr;
+
+	ExpressionNode *condition = expr();
+	if (!condition)
+		return nullptr;
+
+	BlockNode *consequent = block();
+	if (!consequent)
+	{
+		delete condition;
+		return consequent;
+	}
+
+	return new WhileNode(condition, consequent);
 }
 
 // <expr> = <sum>
@@ -275,7 +348,7 @@ ExpressionNode* AnacondaParser::product()
 		}
 	}
 
-	return nullptr;
+	return lhs;
 }
 
 // <unary> = <WS>? ('-' <unary> | <atom>)
@@ -359,7 +432,7 @@ FunctionCallNode* AnacondaParser::funccall()
 	return new FunctionCallNode(name, args);
 }
 
-// <funcargs> = (<WS>? <expr> <WS>? ',')* <expr>?
+// <funcargs> = <WS>? '(' (<expr> (',' <expr>)*) <WS>? ')'
 FunctionArguments* AnacondaParser::funcargs()
 {
 	std::vector<ExpressionNode*> arguments;

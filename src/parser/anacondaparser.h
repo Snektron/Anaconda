@@ -4,7 +4,8 @@
 #include "parser/parser.h"
 #include "ast/node.h"
 
-class AnacondaParser : public Parser {
+class AnacondaParser : public Parser
+{
 public:
 	AnacondaParser(const std::string& input);
 	StatementListNode* parse();
@@ -22,6 +23,7 @@ private:
 	StatementListNode* statlist();
 	StatementNode* statement();
 	StatementNode* ifstat();
+	WhileNode* whilestat();
 
 	ExpressionNode* expr();
 	ExpressionNode* sum();

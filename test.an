@@ -1,3 +1,13 @@
-func main() -> u8 {
+func test(u8 a, b) -> u8 {
+	if a == 0 {
+		return 10
+	} else if b == 0 {
+		return 8
+	}
+	
+	return 15
+}
 
+func main() {
+	test(10, 20)
 }
