@@ -58,7 +58,7 @@ GlobalNode* AnacondaParser::unit()
 
 	while (true)
 	{
-		GlobalElementNode *node = (GlobalElementNode*) funcdecl();
+		GlobalElementNode *node = funcdecl();
 		if (!node)
 			break;
 
@@ -134,12 +134,10 @@ FunctionParameters* AnacondaParser::funcpar()
 				break;
 			}
 
-			//TODO partype = copy(lasttype)
+			partype = lasttype->copy();
 		}
 		else
-		{
-			//TODO lasttype = copy(partype)
-		}
+			lasttype = partype->copy();
 
 		parameters[parname] = partype;
 
@@ -191,7 +189,7 @@ StatementListNode* AnacondaParser::statlist()
 	return list;
 }
 
-// <statement> = <ifstat> | <whilestat>
+// <statement> = <ifstat> | <whilestat> | <declstat>
 StatementNode* AnacondaParser::statement()
 {
 	state_t state = save();
@@ -201,7 +199,16 @@ StatementNode* AnacondaParser::statement()
 		return node;
 
 	restore(state);
-	return whilestat();
+	node = whilestat();
+	if (node)
+		return node;
+
+	restore(state);
+	node = declstat();
+	if (node)
+		return node;
+
+	return nullptr;
 }
 
 // <ifstat> = <WS>? 'if' <WS> <expr> <block> ('else' (<WS> <ifstat> | <block>))?
@@ -267,6 +274,33 @@ WhileNode* AnacondaParser::whilestat()
 	}
 
 	return new WhileNode(condition, consequent);
+}
+
+// <declstat> = <WS>? <type> <WS> <id> <WS>? ('=' <WS>? <expr>)?
+DeclarationNode* AnacondaParser::declstat() {
+	whitespace();
+	DataTypeBase* dtype = type();
+	std::string name;
+
+	if (!dtype || !whitespace() || (name = id()) == "")
+	{
+		delete dtype;
+		return nullptr;
+	}
+
+	whitespace();
+	if (!expect('='))
+		return new DeclarationNode(dtype, name);
+
+	whitespace();
+	ExpressionNode *value = expr();
+	if (!value)
+	{
+		delete dtype;
+		return nullptr;
+	}
+
+	return new DeclarationNode(dtype, name, value);
 }
 
 // <expr> = <sum>
