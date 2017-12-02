@@ -16,7 +16,7 @@
  * Block
  *
  * Expression Statement
- * Assignment Statement
+ * Declaration Statement
  * While Statement
  * If Statement
  * If Else Statement
@@ -84,16 +84,16 @@ class GlobalElementNode : public Node
         virtual ~GlobalElementNode() = default;
 };
 
-class GlobalAssignmentNode : public GlobalElementNode
+class GlobalDeclarationNode : public GlobalElementNode
 {
 	private:
 		DataTypeBase* variable_type;
 		std::string variable_name;
 		ExpressionNode* initializer;
 	public:
-		GlobalAssignmentNode(DataTypeBase*, const std::string&);
-		GlobalAssignmentNode(DataTypeBase*, const std::string&, ExpressionNode*);
-		virtual ~GlobalAssignmentNode();
+		GlobalDeclarationNode(DataTypeBase*, const std::string&);
+		GlobalDeclarationNode(DataTypeBase*, const std::string&, ExpressionNode*);
+		virtual ~GlobalDeclarationNode();
 	
 		virtual void print(std::ostream&, size_t) const;
 		virtual void generate(BrainfuckWriter&);
@@ -181,19 +181,34 @@ class ExpressionStatementNode : public StatementNode
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
 
-class AssignmentNode : public StatementNode
+class DeclarationNode : public StatementNode
 {
 	private:
 		DataTypeBase* variable_type;
 		std::string variable_name;
 		ExpressionNode* initializer;
 	public:
-		AssignmentNode(DataTypeBase*, const std::string&);
-		AssignmentNode(DataTypeBase*, const std::string&, ExpressionNode*);
-		virtual ~AssignmentNode();
+		DeclarationNode(DataTypeBase*, const std::string&);
+		DeclarationNode(DataTypeBase*, const std::string&, ExpressionNode*);
+		virtual ~DeclarationNode();
 	
 		virtual void print(std::ostream&, size_t) const;
 		virtual void generate(BrainfuckWriter&);
+        virtual void declareTypes(BrainfuckWriter&, std::ostream&);
+        virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
+};
+
+class AssignmentNode : public StatementNode
+{
+    private:
+        std::string variable_name;
+        ExpressionNode* expression;
+    public:
+        AssignmentNode(const std::string&, ExpressionNode*);
+        virtual ~AssignmentNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void declareTypes(BrainfuckWriter&, std::ostream&);
         virtual bool checkTypes(BrainfuckWriter&, std::ostream&);
 };
@@ -503,7 +518,7 @@ class CastExpression : public ExpressionNode
 {
     private:
         ExpressionNode* expression;
-        DataTypeBase* desired_types;
+        DataTypeBase* desired_type;
     public:
         CastExpression(ExpressionNode*, DataTypeBase*);
         virtual ~CastExpression();

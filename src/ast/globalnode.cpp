@@ -13,7 +13,7 @@ GlobalNode::~GlobalNode()
 void GlobalNode::print(std::ostream& os, size_t level) const
 {
     this->printIndent(os, level);
-    os << "global namespace";
+    os << "global namespace" << std::endl;
     
     for(auto& it : this->elements)
         it->print(os, level+1);
