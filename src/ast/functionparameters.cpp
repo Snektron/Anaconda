@@ -26,5 +26,5 @@ void FunctionParameters::print(std::ostream& os, size_t level) const
             first = false;
         os << it.first << ": " << *it.second;
     }
-    os << ")";
+    os << ")" << std::endl;
 }
