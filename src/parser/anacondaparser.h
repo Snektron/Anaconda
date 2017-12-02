@@ -24,6 +24,7 @@ private:
 	StatementNode* statement();
 	StatementNode* ifstat();
 	WhileNode* whilestat();
+	DeclarationNode* declstat();
 
 	ExpressionNode* expr();
 	ExpressionNode* sum();

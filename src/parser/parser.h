@@ -23,7 +23,7 @@ protected:
 	bool atEnd();
 
 	char peek();
-	void consume();
+	char consume();
 
 	state_t save();
 	void restore(state_t backup);

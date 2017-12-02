@@ -19,14 +19,17 @@ char Parser::peek()
 	return pos_ >= len_ ? EOF : input_[pos_];
 }
 
-void Parser::consume()
+char Parser::consume()
 {
+	int c = peek();
 	if (pos_ < len_)
 	{
-		if (peek() == '\n')
+		if (c == '\n')
 			line_++;
 		pos_++;
 	}
+
+	return c;
 }
 
 state_t Parser::save()
