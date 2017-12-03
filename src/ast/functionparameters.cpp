@@ -3,14 +3,12 @@
 
 #include <iostream>
 
-FunctionParameters::FunctionParameters(const std::vector<std::pair<std::string, DataTypeBase*>>& arguments) : arguments(arguments) {}
+FunctionParameters::FunctionParameters(const std::vector<Field>& arguments):
+	arguments(arguments) {}
 
 FunctionParameters::~FunctionParameters()
 {
-    for(auto& it : this->arguments)
-    {
-        delete it.second;
-    }
+
 }
 
 void FunctionParameters::print(std::ostream& os, size_t level) const
@@ -24,12 +22,12 @@ void FunctionParameters::print(std::ostream& os, size_t level) const
             os << ", ";
         else
             first = false;
-        os << it.first << ": " << *it.second;
+        os << it.name() << ": " << *it.type();
     }
     os << ")" << std::endl;
 }
 
-std::vector<std::pair<std::string, DataTypeBase*>>& FunctionParameters::getParameters()
+std::vector<Field>& FunctionParameters::getParameters()
 {
     return this->arguments;
 }

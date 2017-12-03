@@ -5,8 +5,8 @@
 #include <string>
 #include <vector>
 #include <map>
-
 #include "types/datatype.h"
+#include "common/field.h"
 
 /*
  * Node type:
@@ -127,26 +127,26 @@ class FunctionDeclaration : public GlobalElementNode
 class FunctionParameters : public Node
 {
 	private:
-		std::vector<std::pair<std::string, DataTypeBase*>> arguments;
+		std::vector<Field> arguments;
 	public:
-		FunctionParameters(const std::vector<std::pair<std::string, DataTypeBase*>>&);
+		FunctionParameters(const std::vector<Field>&);
 		virtual ~FunctionParameters();
 
 		virtual void print(std::ostream&, size_t) const;
 		virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 
-        std::vector<std::pair<std::string, DataTypeBase*>>& getParameters();
+        std::vector<Field>& getParameters();
 };
 
 class StructureDefinitionNode : public GlobalElementNode
 {
     private:
         std::string name;
-        std::map<std::string, DataTypeBase*> members;
+        std::vector<Field> members;
         DataType<DataTypeClass::STRUCT_FORWARD>* type;
     public:
-        StructureDefinitionNode(const std::string&, const std::map<std::string, DataTypeBase*>&);
+        StructureDefinitionNode(const std::string&, const std::vector<Field>&);
         virtual ~StructureDefinitionNode();
         
         virtual void print(std::ostream&, size_t) const;

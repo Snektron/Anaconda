@@ -7,6 +7,7 @@
 
 #include "types/datatype.h"
 #include "ast/node.h"
+#include "common/field.h"
 
 const size_t GLOBAL_SCOPE = 0;
 
@@ -46,11 +47,11 @@ class Scope
 class FunctionDefinition
 {
     private:
-        std::vector<std::pair<std::string, DataTypeBase*>> arguments;
+        std::vector<Field> arguments;
         DataTypeBase* return_type;
         BlockNode* code;
     public:
-        FunctionDefinition(const std::vector<std::pair<std::string, DataTypeBase*>>&, DataTypeBase*, BlockNode*);
+        FunctionDefinition(const std::vector<Field>&, DataTypeBase*, BlockNode*);
         FunctionDefinition(FunctionDefinition&&);
         FunctionDefinition(const FunctionDefinition&) = delete;
         ~FunctionDefinition() = default;
@@ -63,9 +64,9 @@ class FunctionDefinition
 class StructureDefinition
 {
     public:
-        std::map<std::string, DataTypeBase*> fields;
+        std::vector<Field> fields;
     public:
-        StructureDefinition(const std::map<std::string, DataTypeBase*>& fields);
+        StructureDefinition(const std::vector<Field>& fields);
         StructureDefinition(StructureDefinition&&);
         StructureDefinition(const StructureDefinition&) = delete;
         ~StructureDefinition() = default;
@@ -86,12 +87,12 @@ class BrainfuckWriter
 		~BrainfuckWriter() = default;
 
         //Declarations
-	    size_t declareFunction(const std::string&, const std::vector<std::pair<std::string, DataTypeBase*>>&, DataTypeBase*, BlockNode*);
-        void declareStructure(const std::string&, const std::map<std::string, DataTypeBase*>&);
+	    size_t declareFunction(const std::string&, const std::vector<Field>&, DataTypeBase*, BlockNode*);
+        void declareStructure(const std::string&, const std::vector<Field>&);
         void declareVariable(const std::string&, DataTypeBase*);
 
         //Checks
-        bool isFunctionDeclared(const std::string&, const std::vector<std::pair<std::string, DataTypeBase*>>&);
+        bool isFunctionDeclared(const std::string&, const std::vector<Field>&);
         bool isFunctionDeclared(const std::string&, const std::vector<DataTypeBase*>&);
         bool isStructureDeclared(const std::string&);
 

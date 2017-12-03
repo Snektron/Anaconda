@@ -1,5 +1,6 @@
 #include "parser/anacondaparser.h"
 #include "types/datatype.h"
+#include "common/field.h"
 
 AnacondaParser::AnacondaParser(const std::string& input):
 	Parser(input) {}
@@ -7,7 +8,7 @@ AnacondaParser::AnacondaParser(const std::string& input):
 // <parse> = <unit> <WS>? <EOF>
 GlobalNode* AnacondaParser::parse()
 {
-	GlobalNode *node = unit();
+	GlobalNode *node = prog();
 	whitespace();
 	if (!atEnd())
 	{
@@ -37,8 +38,6 @@ DataTypeBase* AnacondaParser::type() {
 
 	if (expect("u8"))
 		return new DataType<DataTypeClass::U8>();
-	else if (expect("void"))
-		return new DataType<DataTypeClass::VOID>();
 	else
 	{
 		std::string name = id();
@@ -51,14 +50,14 @@ DataTypeBase* AnacondaParser::type() {
 	return nullptr;
 }
 
-// <unit> = <funcdecl>*
-GlobalNode* AnacondaParser::unit()
+// <unit> = <globalstat>*
+GlobalNode* AnacondaParser::prog()
 {
 	std::vector<GlobalElementNode*> elements;
 
 	while (true)
 	{
-		GlobalElementNode *node = funcdecl();
+		GlobalElementNode *node = globalstat();
 		if (!node)
 			break;
 
@@ -68,11 +67,79 @@ GlobalNode* AnacondaParser::unit()
 	return new GlobalNode(elements);
 }
 
-// <funcdecl> = <WS>? 'func' <WS> <id> <WS>? '(' <funcpar> ')' ('->' <id>)? <block>
+// <globalstat> = <funcdecl> | <declstat>
+GlobalElementNode* AnacondaParser::globalstat()
+{
+	state_t state = save();
+
+	GlobalElementNode *node = funcdecl();
+	if (node)
+		return node;
+
+	restore(state);
+	return declstat<GlobalDeclarationNode>();
+}
+
+// <structdecl> = <WS>? 'type' <WS> <id> <WS>? '{' (<WS>? <type> <WS> <id> (',' <id>)* ',')+ '}'
+StructureDefinitionNode* AnacondaParser::structdecl()
+{
+	whitespace();
+	if (!expect("type") || !whitespace())
+		return nullptr;
+
+	std::string name = id();
+	if (name == "")
+		return nullptr;
+
+	whitespace();
+	if (!expect('{'))
+		return nullptr;
+
+	std::vector<Field> members;
+	DataTypeBase *lasttype(nullptr);
+
+	while (true)
+	{
+		state_t state = save();
+
+		whitespace();
+		DataTypeBase *memtype(type());
+		std::string memname;
+
+		if (!memtype || !whitespace() || (memname = id()) == "")
+		{
+			restore(state);
+			delete memtype;
+
+			memname = id();
+			if (!lasttype || memname == "")
+			{
+				delete lasttype;
+				break;
+			}
+
+			memtype = lasttype->copy();
+		}
+		else
+			lasttype = memtype->copy();
+
+		members.push_back(Field(memtype, memname));
+
+		whitespace();
+		if (expect('}'))
+			return new StructureDefinitionNode(name, members);
+		else if (!expect(','))
+			break;
+	}
+
+	return nullptr;
+}
+
+// <funcdecl> = <WS>? 'func' <WS> <id> <WS>? <funcpar> ('->' <id>)? <block>
 FunctionDeclaration* AnacondaParser::funcdecl()
 {
 	whitespace();
-	if (!(expect("func") && whitespace()))
+	if (!expect("func") || !whitespace())
 		return nullptr;
 
 	std::string name = id();
@@ -107,7 +174,7 @@ FunctionDeclaration* AnacondaParser::funcdecl()
 // <funcpar> = <WS>? '(' ((<type> <WS>)? <id> (',' (<type> <WS>)? <id>)*) <WS>? ')'
 FunctionParameters* AnacondaParser::funcpar()
 {
-	std::map<std::string, DataTypeBase*> parameters;
+	std::vector<Field> parameters;
 	DataTypeBase *lasttype(nullptr);
 
 	whitespace();
@@ -139,7 +206,7 @@ FunctionParameters* AnacondaParser::funcpar()
 		else
 			lasttype = partype->copy();
 
-		parameters[parname] = partype;
+		parameters.push_back(Field(partype, parname));
 
 		whitespace();
 		if (expect(')'))
@@ -148,8 +215,6 @@ FunctionParameters* AnacondaParser::funcpar()
 			break;
 	}
 
-	for (auto i : parameters)
-		delete i.second;
 	return nullptr;
 }
 
@@ -189,7 +254,7 @@ StatementListNode* AnacondaParser::statlist()
 	return list;
 }
 
-// <statement> = <ifstat> | <whilestat> | <declstat>
+// <statement> = <ifstat> | <whilestat> | <declstat> | <assignstat>
 StatementNode* AnacondaParser::statement()
 {
 	state_t state = save();
@@ -204,11 +269,12 @@ StatementNode* AnacondaParser::statement()
 		return node;
 
 	restore(state);
-	node = declstat();
+	node = declstat<DeclarationNode>();
 	if (node)
 		return node;
 
-	return nullptr;
+	restore(state);
+	return assignstat();
 }
 
 // <ifstat> = <WS>? 'if' <WS> <expr> <block> ('else' (<WS> <ifstat> | <block>))?
@@ -276,8 +342,25 @@ WhileNode* AnacondaParser::whilestat()
 	return new WhileNode(condition, consequent);
 }
 
+// <assignstat> = <WS>? <id> <WS>? '=' <WS>? <expr>
+AssignmentNode* AnacondaParser::assignstat()
+{
+	whitespace();
+	std::string name = id();
+	if (name == "")
+		return nullptr;
+
+	ExpressionNode *assignment = expr();
+	if (!assignment)
+		return nullptr;
+
+	return new AssignmentNode(name, assignment);
+}
+
 // <declstat> = <WS>? <type> <WS> <id> <WS>? ('=' <WS>? <expr>)?
-DeclarationNode* AnacondaParser::declstat() {
+template <typename T>
+T* AnacondaParser::declstat()
+{
 	whitespace();
 	DataTypeBase* dtype = type();
 	std::string name;
@@ -290,7 +373,7 @@ DeclarationNode* AnacondaParser::declstat() {
 
 	whitespace();
 	if (!expect('='))
-		return new DeclarationNode(dtype, name);
+		return new T(dtype, name);
 
 	whitespace();
 	ExpressionNode *value = expr();
@@ -300,7 +383,7 @@ DeclarationNode* AnacondaParser::declstat() {
 		return nullptr;
 	}
 
-	return new DeclarationNode(dtype, name, value);
+	return new T(dtype, name, value);
 }
 
 // <expr> = <sum>
@@ -406,18 +489,14 @@ ExpressionNode* AnacondaParser::atom()
 	ExpressionNode *node = paren();
 	if (node)
 		return node;
-	restore(state);
 
+	restore(state);
 	node = funccall();
 	if (node)
 		return node;
+
 	restore(state);
-
-	node = variable();
-	if (node)
-		return node;
-
-	return nullptr;
+	return variable();
 }
 
 // <paren> = <WS>? '(' <expr> <WS>? ')'

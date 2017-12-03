@@ -13,7 +13,10 @@ private:
 	std::string id();
 	DataTypeBase* type();
 
-	GlobalNode* unit();
+	GlobalNode* prog();
+	GlobalElementNode* globalstat();
+
+	StructureDefinitionNode* structdecl();
 
 	FunctionDeclaration* funcdecl();
 	FunctionParameters* funcpar();
@@ -24,7 +27,9 @@ private:
 	StatementNode* statement();
 	StatementNode* ifstat();
 	WhileNode* whilestat();
-	DeclarationNode* declstat();
+	AssignmentNode* assignstat();
+	template <typename T>
+	T* declstat();
 
 	ExpressionNode* expr();
 	ExpressionNode* sum();

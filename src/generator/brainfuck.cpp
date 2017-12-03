@@ -65,9 +65,11 @@ std::map<std::string, DataTypeBase*>& Scope::getFrameDeclarations()
     return this->declarations.back();
 }
 
-FunctionDefinition::FunctionDefinition(const std::vector<std::pair<std::string, DataTypeBase*>>& arguments, DataTypeBase* return_type, BlockNode* code) : arguments(arguments), return_type(return_type), code(code) {}
+FunctionDefinition::FunctionDefinition(const std::vector<Field>& arguments, DataTypeBase* return_type, BlockNode* code):
+	arguments(arguments), return_type(return_type), code(code) {}
 
-FunctionDefinition::FunctionDefinition(FunctionDefinition&& old) : arguments(std::move(old.arguments)), return_type(old.return_type), code(old.code) {}
+FunctionDefinition::FunctionDefinition(FunctionDefinition&& old):
+	arguments(std::move(old.arguments)), return_type(old.return_type), code(old.code) {}
 
 bool FunctionDefinition::parametersEqual(const std::vector<DataTypeBase*>& arguments)
 {
@@ -75,13 +77,14 @@ bool FunctionDefinition::parametersEqual(const std::vector<DataTypeBase*>& argum
         return false;
     for(size_t i = 0; i < this->arguments.size(); ++i)
     {
-        if(!this->arguments[i].second->equals(*arguments[i]))
+        if(!this->arguments[i].type()->equals(*arguments[i]))
             return false;
     }
     return true;
 }
 
-StructureDefinition::StructureDefinition(const std::map<std::string, DataTypeBase*>& fields) : fields(fields) {}
+StructureDefinition::StructureDefinition(const std::vector<Field>& fields):
+	fields(fields) {}
 
 StructureDefinition::StructureDefinition(StructureDefinition&& old) : fields(std::move(old.fields)) {}
 
@@ -93,7 +96,7 @@ BrainfuckWriter::BrainfuckWriter(std::ostream& os) : output(os), current_scope(G
     this->scopes.emplace_back(std::move(global_scope));
 }
 
-size_t BrainfuckWriter::declareFunction(const std::string& name, const std::vector<std::pair<std::string, DataTypeBase*>>& arguments, DataTypeBase* return_value, BlockNode* block_node)
+size_t BrainfuckWriter::declareFunction(const std::string& name, const std::vector<Field>& arguments, DataTypeBase* return_value, BlockNode* block_node)
 {
     if(this->isFunctionDeclared(name, arguments))
         throw RedefinitionException("Redefinition of function " + name);
@@ -102,7 +105,7 @@ size_t BrainfuckWriter::declareFunction(const std::string& name, const std::vect
     return this->scopes.size() - 1;
 }
 
-void BrainfuckWriter::declareStructure(const std::string& name, const std::map<std::string, DataTypeBase*>& members)
+void BrainfuckWriter::declareStructure(const std::string& name, const std::vector<Field>& members)
 {
     if(this->isStructureDeclared(name))
         throw RedefinitionException("Redefinition of structure " + name);
@@ -117,11 +120,11 @@ void BrainfuckWriter::declareVariable(const std::string& name, DataTypeBase* dat
     current_scope.declareVariable(name, datatype);
 }
 
-bool BrainfuckWriter::isFunctionDeclared(const std::string& name, const std::vector<std::pair<std::string, DataTypeBase*>>& arguments)
+bool BrainfuckWriter::isFunctionDeclared(const std::string& name, const std::vector<Field>& arguments)
 {
-    std::vector<DataTypeBase*> argument_types;
+    std::vector<const DataTypeBase*> argument_types;
     for(auto& it : arguments)
-        argument_types.push_back(it.second);
+        argument_types.push_back(it.type());
     return this->isFunctionDeclared(name, arguments);
 }
 

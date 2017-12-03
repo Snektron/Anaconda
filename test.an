@@ -1,3 +1,9 @@
+type test {
+	u8 a,
+	u8 b,
+	u16 c, d
+}
+
 func test(u8 a, b) -> u8 {
 	if a == 0 {
 		return 10

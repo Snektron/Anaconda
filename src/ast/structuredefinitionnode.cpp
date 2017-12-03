@@ -5,12 +5,12 @@
 
 #include <iostream>
 
-StructureDefinitionNode::StructureDefinitionNode(const std::string& name, const std::map<std::string, DataTypeBase*>& members) : name(name), members(members), type(new DataType<DataTypeClass::STRUCT_FORWARD>(name)) {}
+StructureDefinitionNode::StructureDefinitionNode(const std::string& name, const std::vector<Field>& members):
+	name(name), members(members), type(new DataType<DataTypeClass::STRUCT_FORWARD>(name)) {}
 
 StructureDefinitionNode::~StructureDefinitionNode()
 {
-    for(auto& it : this->members)
-        delete it.second;
+
 }
 
 void StructureDefinitionNode::print(std::ostream& os, size_t level) const
@@ -20,7 +20,7 @@ void StructureDefinitionNode::print(std::ostream& os, size_t level) const
     for(auto& it : this->members)
     {
         this->printIndent(os, level+1);
-        os << it.first << "->" << *it.second << std::endl;
+        os << it.name() << "->" << *it.type() << std::endl;
     }
 }
 
@@ -33,7 +33,7 @@ void StructureDefinitionNode::checkTypes(BrainfuckWriter& writer)
 {
     for(auto& it : this->members)
     {
-        if(it.second->equals(*this->type))
-            throw RecursiveTypeException("Structure " + this->name + " contains itself in member " + it.first);
+        if(it.type()->equals(*this->type))
+            throw RecursiveTypeException("Structure " + this->name + " contains itself in member " + it.name());
     }
 }
