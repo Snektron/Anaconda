@@ -78,7 +78,7 @@ bool FunctionDefinition::parametersEqual(const std::vector<DataTypeBase*>& argum
         return false;
     for(size_t i = 0; i < this->arguments.size(); ++i)
     {
-        if(!this->arguments[i].type()->equals(*arguments[i]))
+        if(!this->arguments[i].getType()->equals(*arguments[i]))
             return false;
     }
     return true;
@@ -127,7 +127,7 @@ bool BrainfuckWriter::isFunctionDeclared(const std::string& name, const std::vec
 {
     std::vector<const DataTypeBase*> argument_types;
     for(auto& it : arguments)
-        argument_types.push_back(it.type());
+        argument_types.push_back(it.getType());
     return this->isFunctionDeclared(name, arguments);
 }
 

@@ -5,17 +5,17 @@
 
 class Field
 {
-private:
-	const DataTypeBase *type_;
-	const std::string name_;
-public:
-	Field(DataTypeBase* type, const std::string& name);
-	~Field();
+	private:
+		const DataTypeBase* type;
+		const std::string name;
+	public:
+		Field(DataTypeBase* type, const std::string& name);
+		~Field();
 
-	const DataTypeBase* type() const;
-	const std::string& name() const;
+		const DataTypeBase* getType() const;
+		const std::string& getName() const;
 
-	Field* copy() const;
+		Field* copy() const;
 };
 
 #endif

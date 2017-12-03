@@ -1,23 +1,23 @@
 #include "common/field.h"
 
 Field::Field(DataTypeBase* type, const std::string& name):
-	type_(type), name_(name) {}
+	type(type), name(name) {}
 
 Field::~Field()
 {
-	delete type_;
+	delete this->type;
 }
 
-const DataTypeBase* Field::type() const
+const DataTypeBase* Field::getType() const
 {
-	return type_;
+	return this->type;
 }
 
-const std::string& Field::name() const
+const std::string& Field::getName() const
 {
-	return name_;
+	return this->name;
 }
 
 Field* Field::copy() const {
-	return new Field(type_->copy(), name_);
+	return new Field(this->type->copy(), this->name);
 }

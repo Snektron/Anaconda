@@ -6,41 +6,41 @@
 
 typedef std::size_t state_t;
 
-class Parser {
-protected:
-	std::string input_;
-	state_t pos_;
-	std::size_t len_, line_;
+class Parser
+{
+	protected:
+		std::string input;
+		state_t pos;
+		std::size_t len, line;
+		std::stack<state_t> capturestack;
 
-	std::stack<state_t> capturestack_;
+	public:
+		Parser(const std::string& input);
 
-public:
-	Parser(const std::string& input);
+	protected:
+		std::size_t getLine();
 
-protected:
-	std::size_t  line();
+		bool isAtEnd();
 
-	bool atEnd();
+		char peek();
+		char consume();
 
-	char peek();
-	char consume();
+		state_t save();
+		void restore(state_t backup);
 
-	state_t save();
-	void restore(state_t backup);
+		void beginCapture();
+		std::string endCapture();
 
-	void beginCapture();
-	std::string endCapture();
+		bool expect(char c);
+		bool expect(std::string seq);
+		bool expectRange(char start, char end);
 
-	bool expect(char c);
-	bool expect(std::string seq);
-	bool expectRange(char start, char end);
+		bool whitespace();
 
-	bool whitespace();
-
-	bool expectUpper();
-	bool expectLower();
-	bool expectLetter();
-	bool expectNumber();
+		bool expectUpper();
+		bool expectLower();
+		bool expectLetter();
+		bool expectNumber();
 };
 
 #endif /* SRC_FORMULA_PARSER_H_ */

@@ -10,7 +10,7 @@ GlobalNode* AnacondaParser::parse()
 {
 	GlobalNode *node = prog();
 	whitespace();
-	if (!atEnd())
+	if (!isAtEnd())
 	{
 		delete node;
 		return nullptr;

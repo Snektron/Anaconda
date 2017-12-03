@@ -22,7 +22,7 @@ void FunctionParameters::print(std::ostream& os, size_t level) const
             os << ", ";
         else
             first = false;
-        os << it.name() << ": " << *it.type();
+        os << it.getName() << ": " << *it.getType();
     }
     os << ")" << std::endl;
 }

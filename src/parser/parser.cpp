@@ -1,32 +1,32 @@
 #include "parser/parser.h"
 
 Parser::Parser(const std::string& input):
-	input_(input), pos_(0),
-	len_(input.length()), line_(0) {}
+	input(input), pos(0),
+	len(input.length()), line(0) {}
 
-std::size_t Parser::line()
+std::size_t Parser::getLine()
 {
-	return line_;
+	return this->line;
 }
 
-bool Parser::atEnd()
+bool Parser::isAtEnd()
 {
-	return pos_ >= len_;
+	return this->pos >= this->len;
 }
 
 char Parser::peek()
 {
-	return pos_ >= len_ ? EOF : input_[pos_];
+	return this->pos >= this->len ? EOF : this->input[this->pos];
 }
 
 char Parser::consume()
 {
 	int c = peek();
-	if (pos_ < len_)
+	if (this->pos < this->len)
 	{
 		if (c == '\n')
-			line_++;
-		pos_++;
+			this->line++;
+		this->pos++;
 	}
 
 	return c;
@@ -34,30 +34,30 @@ char Parser::consume()
 
 state_t Parser::save()
 {
-	return pos_;
+	return this->pos;
 }
 
 void Parser::restore(state_t pos)
 {
-	pos_ = pos;
+	this->pos = pos;
 }
 
 void Parser::beginCapture()
 {
-	capturestack_.push(pos_);
+	this->capturestack.push(this->pos);
 }
 
 std::string Parser::endCapture()
 {
-	if (!capturestack_.empty())
+	if (!this->capturestack.empty())
 	{
-		state_t start = capturestack_.top(), end = pos_;
-		capturestack_.pop();
+		state_t start = this->capturestack.top(), end = this->pos;
+		this->capturestack.pop();
 		size_t length = end - start;
 		std::string capture(length, '\0');
 
 		state_t state = save();
-		pos_ = start;
+		this->pos = start;
 		for (size_t i = 0; i < length; i++)
 			capture[i] = consume();
 		restore(state);

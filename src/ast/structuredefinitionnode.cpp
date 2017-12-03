@@ -17,7 +17,7 @@ void StructureDefinitionNode::print(std::ostream& os, size_t level) const
     for(auto& it : this->members)
     {
         this->printIndent(os, level+1);
-        os << it.name() << "->" << *it.type() << std::endl;
+        os << it.getName() << "->" << *it.getType() << std::endl;
     }
 }
 
@@ -30,7 +30,7 @@ void StructureDefinitionNode::checkTypes(BrainfuckWriter& writer)
 {
     for(auto& it : this->members)
     {
-        if(it.type()->equals(*this->type))
-            throw RecursiveTypeException("Structure " + this->name + " contains itself in member " + it.name());
+        if(it.getType()->equals(*this->type))
+            throw RecursiveTypeException("Structure " + this->name + " contains itself in member " + it.getName());
     }
 }
