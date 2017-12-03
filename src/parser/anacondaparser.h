@@ -6,40 +6,40 @@
 
 class AnacondaParser : public Parser
 {
-	public:
-		AnacondaParser(const std::string& input);
-		GlobalNode* program();
-	private:
-		std::string id();
-		DataTypeBase* type();
+    public:
+        AnacondaParser(const std::string& input);
+        GlobalNode* program();
+    private:
+        std::string id();
+        DataTypeBase* type();
 
-		GlobalNode* prog();
-		GlobalElementNode* globalstat();
+        GlobalNode* prog();
+        GlobalElementNode* globalstat();
 
-		StructureDefinitionNode* structdecl();
+        StructureDefinitionNode* structdecl();
 
-		FunctionDeclaration* funcdecl();
-		FunctionParameters* funcpar();
+        FunctionDeclaration* funcdecl();
+        FunctionParameters* funcpar();
 
-		BlockNode* block();
+        BlockNode* block();
 
-		StatementListNode* statlist();
-		StatementNode* statement();
-		StatementNode* ifstat();
-		WhileNode* whilestat();
-		AssignmentNode* assignstat();
-		template <typename T>
-		T* declstat();
+        StatementListNode* statlist();
+        StatementNode* statement();
+        StatementNode* ifstat();
+        WhileNode* whilestat();
+        AssignmentNode* assignstat();
+        template <typename T>
+        T* declstat();
 
-		ExpressionNode* expr();
-		ExpressionNode* sum();
-		ExpressionNode* product();
-		ExpressionNode* unary();
-		ExpressionNode* atom();
-		ExpressionNode* paren();
-		FunctionCallNode* funccall();
-		FunctionArguments* funcargs();
-		VariableNode* variable();
+        ExpressionNode* expr();
+        ExpressionNode* sum();
+        ExpressionNode* product();
+        ExpressionNode* unary();
+        ExpressionNode* atom();
+        ExpressionNode* paren();
+        FunctionCallNode* funccall();
+        FunctionArguments* funcargs();
+        VariableNode* variable();
 };
 
 #endif

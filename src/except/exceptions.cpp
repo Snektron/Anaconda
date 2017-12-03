@@ -31,7 +31,7 @@ RecursiveTypeException::RecursiveTypeException(const char* msg):
 	TypeCheckException(msg) {}
 
 SyntaxException::SyntaxException(const std::string& msg):
-	TypeCheckException(msg) {}
+    AnacondaException(msg) {}
 
 SyntaxException::SyntaxException(const char* msg):
-	TypeCheckException(msg) {}
+    AnacondaException(msg) {}

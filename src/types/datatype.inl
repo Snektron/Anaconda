@@ -1,7 +1,7 @@
 #include <iostream>
 
 template <DataTypeClass dtype>
-DataType<dtype>::DataType() : DataTypeBase(type) {}
+DataType<dtype>::DataType() : DataTypeBase(dtype) {}
 
 template <DataTypeClass dtype>
 void DataType<dtype>::print(std::ostream& os) const

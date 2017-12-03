@@ -4,8 +4,6 @@ BUILD = build
 LIBS = 
 FLAGS = -g -O3 -Wall -Wextra -std=c++17 -I$(SRC)
 
-CXX ?= g++
-
 rwildcard = $(foreach d, $(wildcard $1*), $(call rwildcard, $d/, $2) $(filter $(subst *, %, $2), $d))
 
 SRCS = $(patsubst $(SRC)/%, %, $(call rwildcard, $(SRC)/, *.cpp))

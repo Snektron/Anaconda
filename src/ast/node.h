@@ -61,11 +61,11 @@ class Node
 {
     protected:
         void printIndent(std::ostream&, size_t) const;
-	public:
-		virtual ~Node() = default;
-		
-		virtual void print(std::ostream&, size_t) const = 0;
-		virtual void generate(BrainfuckWriter&) = 0;
+    public:
+        virtual ~Node() = default;
+        
+        virtual void print(std::ostream&, size_t) const = 0;
+        virtual void generate(BrainfuckWriter&) = 0;
         virtual void declareGlobals(BrainfuckWriter&) const;
         virtual void checkTypes(BrainfuckWriter&) = 0;
 };
@@ -92,48 +92,48 @@ class GlobalElementNode : public Node
 
 class GlobalDeclarationNode : public GlobalElementNode
 {
-	private:
-		DataTypeBase* variable_type;
-		std::string variable_name;
-		ExpressionNode* initializer;
-	public:
-		GlobalDeclarationNode(DataTypeBase*, const std::string&);
-		GlobalDeclarationNode(DataTypeBase*, const std::string&, ExpressionNode*);
-		virtual ~GlobalDeclarationNode();
-	
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        DataTypeBase* variable_type;
+        std::string variable_name;
+        ExpressionNode* initializer;
+    public:
+        GlobalDeclarationNode(DataTypeBase*, const std::string&);
+        GlobalDeclarationNode(DataTypeBase*, const std::string&, ExpressionNode*);
+        virtual ~GlobalDeclarationNode();
+    
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void declareGlobals(BrainfuckWriter&) const;
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class FunctionDeclaration : public GlobalElementNode
 {
-	private:
-		std::string name;
+    private:
+        std::string name;
         FunctionParameters* parameters;
-		DataTypeBase* return_type;
+        DataTypeBase* return_type;
         BlockNode* content;
-	public:
-		FunctionDeclaration(const std::string&, FunctionParameters*, DataTypeBase*, BlockNode*);
-		virtual ~FunctionDeclaration();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    public:
+        FunctionDeclaration(const std::string&, FunctionParameters*, DataTypeBase*, BlockNode*);
+        virtual ~FunctionDeclaration();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void declareGlobals(BrainfuckWriter&) const;
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class FunctionParameters : public Node
 {
-	private:
-		std::vector<Field> arguments;
-	public:
-		FunctionParameters(const std::vector<Field>&);
-		virtual ~FunctionParameters();
+    private:
+        std::vector<Field> arguments;
+    public:
+        FunctionParameters(const std::vector<Field>&);
+        virtual ~FunctionParameters();
 
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 
         std::vector<Field>& getParameters();
@@ -158,62 +158,62 @@ class StructureDefinitionNode : public GlobalElementNode
 class StatementNode : public Node
 {
     public:
-	    virtual ~StatementNode() = default;
+        virtual ~StatementNode() = default;
 };
 
 class StatementListNode : public StatementNode
 {
-	private:
-		StatementNode* first;
-		StatementNode* second;
-	public:
-		StatementListNode(StatementNode*, StatementNode*);
-		virtual ~StatementListNode();
+    private:
+        StatementNode* first;
+        StatementNode* second;
+    public:
+        StatementListNode(StatementNode*, StatementNode*);
+        virtual ~StatementListNode();
 
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class BlockNode : public StatementNode
 {
-	private:
-		StatementNode* content;
-	public:
-		BlockNode(StatementNode*);
-		virtual ~BlockNode();
-	
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        StatementNode* content;
+    public:
+        BlockNode(StatementNode*);
+        virtual ~BlockNode();
+    
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class ExpressionStatementNode : public StatementNode
 {
-	private:
-		ExpressionNode* content;
-	public:
-		ExpressionStatementNode(ExpressionNode*);
-		virtual ~ExpressionStatementNode();
-	
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        ExpressionNode* content;
+    public:
+        ExpressionStatementNode(ExpressionNode*);
+        virtual ~ExpressionStatementNode();
+    
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class DeclarationNode : public StatementNode
 {
-	private:
-		DataTypeBase* variable_type;
-		std::string variable_name;
-		ExpressionNode* initializer;
-	public:
-		DeclarationNode(DataTypeBase*, const std::string&);
-		DeclarationNode(DataTypeBase*, const std::string&, ExpressionNode*);
-		virtual ~DeclarationNode();
-	
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        DataTypeBase* variable_type;
+        std::string variable_name;
+        ExpressionNode* initializer;
+    public:
+        DeclarationNode(DataTypeBase*, const std::string&);
+        DeclarationNode(DataTypeBase*, const std::string&, ExpressionNode*);
+        virtual ~DeclarationNode();
+    
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
@@ -233,44 +233,44 @@ class AssignmentNode : public StatementNode
 
 class WhileNode : public StatementNode
 {
-	private:
-		ExpressionNode* conditional;
-		StatementNode* statement;
-	public:
-		WhileNode(ExpressionNode*, StatementNode*);
-		virtual ~WhileNode();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        ExpressionNode* conditional;
+        StatementNode* statement;
+    public:
+        WhileNode(ExpressionNode*, StatementNode*);
+        virtual ~WhileNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class IfNode : public StatementNode
 {
-	private:
-		ExpressionNode* conditional;
-		StatementNode* statement;
-	public:
-		IfNode(ExpressionNode*, StatementNode*);
-		virtual ~IfNode();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        ExpressionNode* conditional;
+        StatementNode* statement;
+    public:
+        IfNode(ExpressionNode*, StatementNode*);
+        virtual ~IfNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class IfElseNode : public StatementNode
 {
-	private:
-		ExpressionNode* conditional;
-		StatementNode* statement;
-		StatementNode* else_statement;
-	public:
-		IfElseNode(ExpressionNode*, StatementNode*, StatementNode*);
-		virtual ~IfElseNode();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        ExpressionNode* conditional;
+        StatementNode* statement;
+        StatementNode* else_statement;
+    public:
+        IfElseNode(ExpressionNode*, StatementNode*, StatementNode*);
+        virtual ~IfElseNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
@@ -302,79 +302,79 @@ class ReturnNode : public StatementNode
 
 class ExpressionNode : public Node
 {
-	public:
-		virtual ~ExpressionNode() = default;
+    public:
+        virtual ~ExpressionNode() = default;
 
         virtual DataTypeBase* getType() = 0;
 };
 
 class AddNode : public ExpressionNode
 {
-	private:
-		ExpressionNode* lop;
-		ExpressionNode* rop;
-	public:
-		AddNode(ExpressionNode*, ExpressionNode*);
-		virtual ~AddNode();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        ExpressionNode* lop;
+        ExpressionNode* rop;
+    public:
+        AddNode(ExpressionNode*, ExpressionNode*);
+        virtual ~AddNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class SubNode : public ExpressionNode
 {
-	private:
-		ExpressionNode* lop;
-		ExpressionNode* rop;
-	public:
-		SubNode(ExpressionNode*, ExpressionNode*);
-		virtual ~SubNode();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        ExpressionNode* lop;
+        ExpressionNode* rop;
+    public:
+        SubNode(ExpressionNode*, ExpressionNode*);
+        virtual ~SubNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class MulNode : public ExpressionNode
 {
-	private:
-		ExpressionNode* lop;
-		ExpressionNode* rop;
-	public:
-		MulNode(ExpressionNode*, ExpressionNode*);
-		virtual ~MulNode();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        ExpressionNode* lop;
+        ExpressionNode* rop;
+    public:
+        MulNode(ExpressionNode*, ExpressionNode*);
+        virtual ~MulNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class DivNode : public ExpressionNode
 {
-	private:
-		ExpressionNode* lop;
-		ExpressionNode* rop;
-	public:
-		DivNode(ExpressionNode*, ExpressionNode*);
-		virtual ~DivNode();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        ExpressionNode* lop;
+        ExpressionNode* rop;
+    public:
+        DivNode(ExpressionNode*, ExpressionNode*);
+        virtual ~DivNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class ModNode : public ExpressionNode
 {
-	private:
-		ExpressionNode* lop;
-		ExpressionNode* rop;
-	public:
-		ModNode(ExpressionNode*, ExpressionNode*);
-		virtual ~ModNode();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        ExpressionNode* lop;
+        ExpressionNode* rop;
+    public:
+        ModNode(ExpressionNode*, ExpressionNode*);
+        virtual ~ModNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
@@ -477,54 +477,54 @@ class BitwiseRightShiftNode : public ExpressionNode
 
 class U8ConstantNode : public ExpressionNode
 {
-	private:
-		uint8_t value;
-	public:
-		U8ConstantNode(uint8_t);
-		virtual ~U8ConstantNode();
+    private:
+        uint8_t value;
+    public:
+        U8ConstantNode(uint8_t);
+        virtual ~U8ConstantNode();
 
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class VariableNode : public ExpressionNode
 {
-	private:
-		std::string variable;
-	public:
-		VariableNode(const std::string&);
-		virtual ~VariableNode();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        std::string variable;
+    public:
+        VariableNode(const std::string&);
+        virtual ~VariableNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class FunctionCallNode : public ExpressionNode
 {
-	private:
-		std::string function_name;
-		FunctionArguments* arguments;
-	public:
-		FunctionCallNode(const std::string&, FunctionArguments* arguments);
-		virtual ~FunctionCallNode();
-		
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+    private:
+        std::string function_name;
+        FunctionArguments* arguments;
+    public:
+        FunctionCallNode(const std::string&, FunctionArguments* arguments);
+        virtual ~FunctionCallNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
 class FunctionArguments : public Node
 {
-	private:
-		std::vector<ExpressionNode*> arguments;
-	public:
-		FunctionArguments(const std::vector<ExpressionNode*>& arguments);
-		virtual ~FunctionArguments();
+    private:
+        std::vector<ExpressionNode*> arguments;
+    public:
+        FunctionArguments(const std::vector<ExpressionNode*>& arguments);
+        virtual ~FunctionArguments();
 
-		virtual void print(std::ostream&, size_t) const;
-		virtual void generate(BrainfuckWriter&);
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
         virtual void declareGlobals(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
