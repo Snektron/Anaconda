@@ -8,7 +8,7 @@ class AnacondaParser : public Parser
 {
 	public:
 		AnacondaParser(const std::string& input);
-		GlobalNode* parse();
+		GlobalNode* program();
 	private:
 		std::string id();
 		DataTypeBase* type();

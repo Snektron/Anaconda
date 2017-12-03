@@ -6,7 +6,7 @@ AnacondaParser::AnacondaParser(const std::string& input):
 	Parser(input) {}
 
 // <parse> = <unit> <WS>? <EOF>
-GlobalNode* AnacondaParser::parse()
+GlobalNode* AnacondaParser::program()
 {
 	GlobalNode *node = prog();
 	whitespace();
@@ -20,17 +20,14 @@ GlobalNode* AnacondaParser::parse()
 
 std::string AnacondaParser::id()
 {
-	beginCapture();
+	State state = save();
 	if (!expectLetter())
-	{
-		endCapture();
 		return "";
-	}
 
 	while(expectLetter() || expect('_'))
 		continue;
 
-	return endCapture();
+	return capture(state);
 }
 
 DataTypeBase* AnacondaParser::type() {
@@ -70,9 +67,14 @@ GlobalNode* AnacondaParser::prog()
 // <globalstat> = <funcdecl> | <declstat>
 GlobalElementNode* AnacondaParser::globalstat()
 {
-	state_t state = save();
+	State state = save();
 
 	GlobalElementNode *node = funcdecl();
+	if (node)
+		return node;
+
+	restore(state);
+	node = structdecl();
 	if (node)
 		return node;
 
@@ -100,7 +102,7 @@ StructureDefinitionNode* AnacondaParser::structdecl()
 
 	while (true)
 	{
-		state_t state = save();
+		State state = save();
 
 		whitespace();
 		DataTypeBase *memtype(type());
@@ -183,7 +185,7 @@ FunctionParameters* AnacondaParser::funcpar()
 
 	while (true)
 	{
-		state_t state = save();
+		State state = save();
 
 		whitespace();
 		DataTypeBase *partype(type());
@@ -257,7 +259,7 @@ StatementListNode* AnacondaParser::statlist()
 // <statement> = <ifstat> | <whilestat> | <declstat> | <assignstat>
 StatementNode* AnacondaParser::statement()
 {
-	state_t state = save();
+	State state = save();
 
 	StatementNode *node = ifstat();
 	if (node)
@@ -298,7 +300,7 @@ StatementNode* AnacondaParser::ifstat()
 	if (expect("else"))
 	{
 		StatementNode *alternative(nullptr);
-		state_t state = save();
+		State state = save();
 
 		if (whitespace() && expect("if"))
 		{
@@ -484,7 +486,7 @@ ExpressionNode* AnacondaParser::unary()
 // <atom> = <paren> | <funccall> | <variable>
 ExpressionNode* AnacondaParser::atom()
 {
-	state_t state = save();
+	State state = save();
 
 	ExpressionNode *node = paren();
 	if (node)

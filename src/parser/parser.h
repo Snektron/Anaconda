@@ -2,34 +2,35 @@
 #define SRC_FORMULA_PARSER_H_
 
 #include <string>
-#include <stack>
-
-typedef std::size_t state_t;
 
 class Parser
 {
+	public:
+		struct State {
+			std::size_t pos;
+			std::size_t row, column;
+			std::size_t lineStart;
+		};
+
 	protected:
 		std::string input;
-		state_t pos;
-		std::size_t len, line;
-		std::stack<state_t> capturestack;
+		std::size_t len;
+
+		State state;
 
 	public:
 		Parser(const std::string& input);
 
 	protected:
-		std::size_t getLine();
-
 		bool isAtEnd();
 
 		char peek();
 		char consume();
 
-		state_t save();
-		void restore(state_t backup);
-
-		void beginCapture();
-		std::string endCapture();
+		State save();
+		void restore(State state);
+		std::string capture(State start);
+		std::string captureLine(State start);
 
 		bool expect(char c);
 		bool expect(std::string seq);

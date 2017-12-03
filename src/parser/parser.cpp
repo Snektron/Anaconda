@@ -1,72 +1,78 @@
 #include "parser/parser.h"
 
 Parser::Parser(const std::string& input):
-	input(input), pos(0),
-	len(input.length()), line(0) {}
-
-std::size_t Parser::getLine()
-{
-	return this->line;
-}
+	input(input), len(input.length()), state{0, 0, 0, 0} {}
 
 bool Parser::isAtEnd()
 {
-	return this->pos >= this->len;
+	return this->state.pos >= this->len;
 }
 
 char Parser::peek()
 {
-	return this->pos >= this->len ? EOF : this->input[this->pos];
+	return this->state.pos >= this->len ? EOF : this->input[this->state.pos];
 }
 
 char Parser::consume()
 {
 	int c = peek();
-	if (this->pos < this->len)
+	if (this->state.pos < this->len)
 	{
+		this->state.pos++;
+
 		if (c == '\n')
-			this->line++;
-		this->pos++;
+		{
+			this->state.row++;
+			this->state.column = 0;
+			this->state.lineStart = this->state.pos;
+		}
+		else
+			this->state.column++;
 	}
 
 	return c;
 }
 
-state_t Parser::save()
+Parser::State Parser::save()
 {
-	return this->pos;
+	return this->state;
 }
 
-void Parser::restore(state_t pos)
+void Parser::restore(State state)
 {
-	this->pos = pos;
+	this->state = state;
 }
 
-void Parser::beginCapture()
+std::string Parser::capture(State start)
 {
-	this->capturestack.push(this->pos);
+	State end = save();
+
+	size_t length = end.pos - start.pos;
+	std::string capture(length, '\0');
+
+	restore(start);
+	for (size_t i = 0; i < length; i++)
+		capture[i] = consume();
+	restore(end);
+
+	return capture;
 }
 
-std::string Parser::endCapture()
+std::string Parser::captureLine(State start)
 {
-	if (!this->capturestack.empty())
-	{
-		state_t start = this->capturestack.top(), end = this->pos;
-		this->capturestack.pop();
-		size_t length = end - start;
-		std::string capture(length, '\0');
+	State state = save();
 
-		state_t state = save();
-		this->pos = start;
-		for (size_t i = 0; i < length; i++)
-			capture[i] = consume();
-		restore(state);
+	std::string capture;
 
-		return capture;
-	}
+	this->state.pos = start.lineStart;
+	while (peek() != '\n')
+		capture.append(1, (char) consume());
 
-	return "";
+	restore(state);
+
+	return capture;
 }
+
 
 bool Parser::expect(char c)
 {
@@ -81,7 +87,7 @@ bool Parser::expect(char c)
 
 bool Parser::expect(std::string seq)
 {
-	state_t state = save();
+	State state = save();
 
 	for (char ch : seq)
 	{
@@ -107,9 +113,9 @@ bool Parser::expectRange(char start, char end)
 }
 
 bool Parser::whitespace() {
-	if (peek() != ' ' && peek() != '\n' && peek() != '\t')
+	if (peek() != ' ' && peek() != '\n' && peek() != '\t' && peek() != '\r')
 		return false;
-	while(peek() == ' ' || peek() == '\n' || peek() == '\t')
+	while(peek() == ' ' || peek() == '\n' || peek() == '\t' || peek() == '\r')
 		consume();
 	return true;
 }
