@@ -132,7 +132,7 @@ bool Parser::expectLower()
 
 bool Parser::expectLetter()
 {
-    return expectUpper() || expectLower();
+    return expectUpper() || expectLower() || expect('_');
 }
 
 bool Parser::expectNumber()

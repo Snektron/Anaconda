@@ -2,6 +2,29 @@
 #include "types/datatype.h"
 #include "common/field.h"
 
+const char* KEYWORD_IF = "if";
+const char* KEYWORD_ELSE = "else";
+const char* KEYWORD_WHILE = "while";
+const char* KEYWORD_TYPE = "type";
+const char* KEYWORD_FUNC = "func";
+
+const char* TYPE_U8 = "u8";
+const char* TYPE_VOID = "void";
+
+const char* TOKEN_ARROW = "->";
+const char TOKEN_MINUS = '-';
+const char TOKEN_PLUS = '+';
+const char TOKEN_STAR = '*';
+const char TOKEN_SLASH = '/';
+const char TOKEN_PERCENT = '%';
+const char TOKEN_NEWLINE = '\n';
+const char TOKEN_COMMA = ',';
+const char TOKEN_EQUALS = '=';
+const char TOKEN_BRACE_OPEN = '{';
+const char TOKEN_BRACE_CLOSE = '}';
+const char TOKEN_PAREN_OPEN = '(';
+const char TOKEN_PAREN_OPEN = ')';
+
 AnacondaParser::AnacondaParser(const std::string& input):
     Parser(input) {}
 
@@ -24,7 +47,7 @@ std::string AnacondaParser::id()
     if (!expectLetter())
         return "";
 
-    while (expectLetter() || expect('_'))
+    while (expectLetter())
         continue;
 
     return capture(state);
@@ -34,7 +57,7 @@ DataTypeBase* AnacondaParser::type()
 {
     whitespace();
 
-    if (expect("u8"))
+    if (expect(TYPE_U8))
         return new DataType<DataTypeClass::U8>();
     else
     {
@@ -87,7 +110,7 @@ GlobalElementNode* AnacondaParser::globalstat()
 StructureDefinitionNode* AnacondaParser::structdecl()
 {
     whitespace();
-    if (!expect("type") || !whitespace())
+    if (!expect(KEYWORD_TYPE) || !whitespace())
         return nullptr;
 
     std::string name = id();
@@ -95,7 +118,7 @@ StructureDefinitionNode* AnacondaParser::structdecl()
         return nullptr;
 
     whitespace();
-    if (!expect('{'))
+    if (!expect(TOKEN_BRACE_OPEN))
         return nullptr;
 
     std::vector<Field> members;
@@ -129,9 +152,9 @@ StructureDefinitionNode* AnacondaParser::structdecl()
         members.push_back(Field(memtype, memname));
 
         whitespace();
-        if (expect('}'))
+        if (expect(TOKEN_BRACE_CLOSE))
             return new StructureDefinitionNode(name, members);
-        else if (!expect(','))
+        else if (!expect(TOKEN_COMMA))
             break;
     }
 
@@ -142,7 +165,7 @@ StructureDefinitionNode* AnacondaParser::structdecl()
 FunctionDeclaration* AnacondaParser::funcdecl()
 {
     whitespace();
-    if (!expect("func") || !whitespace())
+    if (!expect(KEYWORD_FUNC) || !whitespace())
         return nullptr;
 
     std::string name = id();
@@ -154,7 +177,7 @@ FunctionDeclaration* AnacondaParser::funcdecl()
         return nullptr;
 
     whitespace();
-    DataTypeBase *rtype(expect("->") ? type() : new DataType<DataTypeClass::VOID>);
+    DataTypeBase *rtype(expect(TOKEN_ARROW) ? type() : new DataType<DataTypeClass::VOID>);
 
     if (!rtype)
     {
@@ -181,7 +204,7 @@ FunctionParameters* AnacondaParser::funcpar()
     DataTypeBase *lasttype(nullptr);
 
     whitespace();
-    if (!expect('('))
+    if (!expect(TOKEN_BRACE_OPEN))
         return nullptr;
 
     while (true)
@@ -212,9 +235,9 @@ FunctionParameters* AnacondaParser::funcpar()
         parameters.push_back(Field(partype, parname));
 
         whitespace();
-        if (expect(')'))
+        if (expect(TOKEN_BRACE_CLOSE))
             return new FunctionParameters(parameters);
-        else if (!expect(','))
+        else if (!expect(TOKEN_COMMA))
             break;
     }
 
@@ -225,13 +248,13 @@ FunctionParameters* AnacondaParser::funcpar()
 BlockNode* AnacondaParser::block()
 {
     whitespace();
-    if (!expect('{'))
+    if (!expect(TOKEN_BRACE_OPEN))
         return nullptr;
 
     StatementListNode *list = statlist();
 
     whitespace();
-    if (!expect('}'))
+    if (!expect(TOKEN_BRACE_CLOSE))
     {
         delete list;
         return nullptr;
@@ -284,7 +307,7 @@ StatementNode* AnacondaParser::statement()
 StatementNode* AnacondaParser::ifstat()
 {
     whitespace();
-    if (!expect("if") || !whitespace())
+    if (!expect(KEYWORD_IF) || !whitespace())
         return nullptr;
 
     ExpressionNode *condition = expr();
@@ -298,12 +321,12 @@ StatementNode* AnacondaParser::ifstat()
         return consequent;
     }
 
-    if (expect("else"))
+    if (expect(KEYWORD_ELSE))
     {
         StatementNode *alternative(nullptr);
         State state = save();
 
-        if (whitespace() && expect("if"))
+        if (whitespace() && expect(KEYWORD_IF))
         {
             restore(state);
             alternative = ifstat();
@@ -328,7 +351,7 @@ StatementNode* AnacondaParser::ifstat()
 WhileNode* AnacondaParser::whilestat()
 {
     whitespace();
-    if (!expect("while") || !whitespace())
+    if (!expect(KEYWORD_WHILE) || !whitespace())
         return nullptr;
 
     ExpressionNode *condition = expr();
@@ -375,7 +398,7 @@ T* AnacondaParser::declstat()
     }
 
     whitespace();
-    if (!expect('='))
+    if (!expect(TOKEN_EQUALS))
         return new T(dtype, name);
 
     whitespace();
@@ -407,7 +430,7 @@ ExpressionNode* AnacondaParser::sum()
         whitespace();
 
         char op = peek();
-        if (op != '+' && op != '-')
+        if (op != TOKEN_PLUS && op != TOKEN_MINUS)
             break;
 
         ExpressionNode *rhs = product();
@@ -419,10 +442,10 @@ ExpressionNode* AnacondaParser::sum()
 
         switch (op)
         {
-            case '+':
+            case TOKEN_PLUS:
                 lhs = new AddNode(lhs, rhs);
                 break;
-            case '-':
+            case TOKEN_MINUS:
                 lhs = new SubNode(lhs, rhs);
                 break;
         }
@@ -443,7 +466,7 @@ ExpressionNode* AnacondaParser::product()
         whitespace();
 
         char op = peek();
-        if (op != '*' && op != '/' && op != '%')
+        if (op != TOKEN_STAR && op != TOKEN_SLASH && op != TOKEN_PERCENT)
             break;
 
         ExpressionNode *rhs = unary();
@@ -455,13 +478,13 @@ ExpressionNode* AnacondaParser::product()
 
         switch (op)
         {
-            case '*':
+            case TOKEN_STAR:
                 lhs = new MulNode(lhs, rhs);
                 break;
-            case '/':
+            case TOKEN_SLASH:
                 lhs = new DivNode(lhs, rhs);
                 break;
-            case '%':
+            case TOKEN_PERCENT:
                 lhs = new ModNode(lhs, rhs);
                 break;
         }
@@ -506,7 +529,7 @@ ExpressionNode* AnacondaParser::atom()
 ExpressionNode* AnacondaParser::paren()
 {
     whitespace();
-    if (!expect('('))
+    if (!expect(TOKEN_PAREN_OPEN))
         return nullptr;
 
     ExpressionNode *node = expr();
@@ -514,7 +537,7 @@ ExpressionNode* AnacondaParser::paren()
         return nullptr;
 
     whitespace();
-    if (!expect(')'))
+    if (!expect(TOKEN_PAREN_CLOSE))
     {
         delete node;
         return nullptr;
@@ -532,13 +555,13 @@ FunctionCallNode* AnacondaParser::funccall()
         return nullptr;
 
     whitespace();
-    if (!expect('('))
+    if (!expect(TOKEN_PAREN_OPEN))
         return nullptr;
 
     FunctionArguments* args = funcargs();
 
     whitespace();
-    if (!expect(')'))
+    if (!expect(TOKEN_PAREN_CLOSE))
     {
         delete args;
         return nullptr;
@@ -553,7 +576,7 @@ FunctionArguments* AnacondaParser::funcargs()
     std::vector<ExpressionNode*> arguments;
 
     whitespace();
-    if (!expect('('))
+    if (!expect(TOKEN_PAREN_OPEN))
         return nullptr;
 
     while (true)
@@ -566,9 +589,9 @@ FunctionArguments* AnacondaParser::funcargs()
         arguments.push_back(arg);
 
         whitespace();
-        if (expect(')'))
+        if (expect(TOKEN_PAREN_CLOSE))
             return new FunctionArguments(arguments);
-        else if (!expect(','))
+        else if (!expect(TOKEN_COMMA))
             break;
     }
 
