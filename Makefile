@@ -6,6 +6,7 @@ FLAGS = -g -O3 -Wall -Wextra -std=c++17 -I$(SRC)
 
 rwildcard = $(foreach d, $(wildcard $1*), $(call rwildcard, $d/, $2) $(filter $(subst *, %, $2), $d))
 
+FMT = $(call rwildcard, $(SRC)/, *.cpp *.h *.inl)
 SRCS = $(patsubst $(SRC)/%, %, $(call rwildcard, $(SRC)/, *.cpp))
 OBJECTS = $(SRCS:%.cpp=%.o)
 
@@ -28,6 +29,9 @@ $(TARGET): $(OBJECTS)
 clean:
 	@echo Cleaning build files
 	@rm -rf $(BUILD) $(TARGET)
+	
+format:
+	@$(foreach file, $(FMT), clang-format -i $(file);)
 	
 run: all
 	@./$(TARGET) test.an
