@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-AddNode::AddNode(ExpressionNode* lop, ExpressionNode* rop) : lop(lop), rop(rop) {}
+AddNode::AddNode(ExpressionNode* lop, ExpressionNode* rop):
+	lop(lop), rop(rop) {}
 
 AddNode::~AddNode()
 {

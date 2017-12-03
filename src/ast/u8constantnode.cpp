@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-U8ConstantNode::U8ConstantNode(uint8_t value) : value(value) {}
+U8ConstantNode::U8ConstantNode(uint8_t value):
+	value(value) {}
 
 U8ConstantNode::~U8ConstantNode() {}
 

@@ -147,7 +147,7 @@ class StructureDefinitionNode : public GlobalElementNode
         DataType<DataTypeClass::STRUCT_FORWARD>* type;
     public:
         StructureDefinitionNode(const std::string&, const std::vector<Field>&);
-        virtual ~StructureDefinitionNode();
+        ~StructureDefinitionNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);

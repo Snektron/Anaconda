@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-IfElseNode::IfElseNode(ExpressionNode* conditional, StatementNode* statement, StatementNode* else_statement) : conditional(conditional), statement(statement), else_statement(else_statement) {}
+IfElseNode::IfElseNode(ExpressionNode* conditional, StatementNode* statement, StatementNode* else_statement):
+	conditional(conditional), statement(statement), else_statement(else_statement) {}
 
 IfElseNode::~IfElseNode()
 {

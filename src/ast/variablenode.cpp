@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-VariableNode::VariableNode(const std::string& variable) : variable(variable) {}
+VariableNode::VariableNode(const std::string& variable):
+	variable(variable) {}
 
 VariableNode::~VariableNode() {}
 

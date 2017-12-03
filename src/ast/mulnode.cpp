@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-MulNode::MulNode(ExpressionNode* lop, ExpressionNode* rop) : lop(lop), rop(rop) {}
+MulNode::MulNode(ExpressionNode* lop, ExpressionNode* rop):
+	lop(lop), rop(rop) {}
 
 MulNode::~MulNode()
 {

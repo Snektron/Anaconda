@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-AssignmentNode::AssignmentNode(const std::string& name, ExpressionNode* expr) : variable_name(name), expression(expr) {}
+AssignmentNode::AssignmentNode(const std::string& name, ExpressionNode* expr):
+	variable_name(name), expression(expr) {}
 
 AssignmentNode::~AssignmentNode()
 {

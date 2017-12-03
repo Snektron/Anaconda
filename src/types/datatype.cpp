@@ -9,9 +9,11 @@ const char* DATATYPE_NAMES[] = {
     "struct"
 };
 
-DataTypeBase::DataTypeBase(DataTypeClass type) : type(type) {}
+DataTypeBase::DataTypeBase(DataTypeClass type):
+	type(type) {}
 
-DataType<DataTypeClass::STRUCT_FORWARD>::DataType(const std::string& name) : DataTypeBase(DataTypeClass::STRUCT_FORWARD), name(name) {}
+DataType<DataTypeClass::STRUCT_FORWARD>::DataType(const std::string& name):
+	DataTypeBase(DataTypeClass::STRUCT_FORWARD), name(name) {}
 
 DataType<DataTypeClass::STRUCT_FORWARD>* DataType<DataTypeClass::STRUCT_FORWARD>::copy() const
 {

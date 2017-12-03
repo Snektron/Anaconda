@@ -3,8 +3,11 @@
 
 #include <iostream>
 
-DeclarationNode::DeclarationNode(DataTypeBase* type, const std::string& name) : variable_type(type), variable_name(name), initializer(nullptr) {}
-DeclarationNode::DeclarationNode(DataTypeBase* type, const std::string& name, ExpressionNode* initializer) : variable_type(type), variable_name(name), initializer(initializer) {}
+DeclarationNode::DeclarationNode(DataTypeBase* type, const std::string& name):
+	variable_type(type), variable_name(name), initializer(nullptr) {}
+
+DeclarationNode::DeclarationNode(DataTypeBase* type, const std::string& name, ExpressionNode* initializer):
+	variable_type(type), variable_name(name), initializer(initializer) {}
 
 DeclarationNode::~DeclarationNode()
 {

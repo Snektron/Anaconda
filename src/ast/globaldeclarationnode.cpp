@@ -7,8 +7,11 @@
 #include <memory>
 #include <sstream>
 
-GlobalDeclarationNode::GlobalDeclarationNode(DataTypeBase* type, const std::string& name) : variable_type(type), variable_name(name), initializer(nullptr) {}
-GlobalDeclarationNode::GlobalDeclarationNode(DataTypeBase* type, const std::string& name, ExpressionNode* initializer) : variable_type(type), variable_name(name), initializer(initializer) {}
+GlobalDeclarationNode::GlobalDeclarationNode(DataTypeBase* type, const std::string& name):
+	variable_type(type), variable_name(name), initializer(nullptr) {}
+
+GlobalDeclarationNode::GlobalDeclarationNode(DataTypeBase* type, const std::string& name, ExpressionNode* initializer):
+	variable_type(type), variable_name(name), initializer(initializer) {}
 
 GlobalDeclarationNode::~GlobalDeclarationNode()
 {

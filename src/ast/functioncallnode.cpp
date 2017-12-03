@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-FunctionCallNode::FunctionCallNode(const std::string& name, FunctionArguments* arguments) : function_name(name), arguments(arguments) {}
+FunctionCallNode::FunctionCallNode(const std::string& name, FunctionArguments* arguments):
+	function_name(name), arguments(arguments) {}
 
 FunctionCallNode::~FunctionCallNode()
 {

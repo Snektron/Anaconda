@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-BlockNode::BlockNode(StatementNode* content) : content(content) {}
+BlockNode::BlockNode(StatementNode* content):
+	content(content) {}
 
 BlockNode::~BlockNode()
 {

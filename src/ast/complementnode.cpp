@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-ComplementNode::ComplementNode(ExpressionNode* op) : op(op) {}
+ComplementNode::ComplementNode(ExpressionNode* op):
+	op(op) {}
 
 ComplementNode::~ComplementNode()
 {

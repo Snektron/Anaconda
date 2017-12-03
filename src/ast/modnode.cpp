@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-ModNode::ModNode(ExpressionNode* lop, ExpressionNode* rop) : lop(lop), rop(rop) {}
+ModNode::ModNode(ExpressionNode* lop, ExpressionNode* rop):
+	lop(lop), rop(rop) {}
 
 ModNode::~ModNode()
 {

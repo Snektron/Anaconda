@@ -8,10 +8,7 @@
 StructureDefinitionNode::StructureDefinitionNode(const std::string& name, const std::vector<Field>& members):
 	name(name), members(members), type(new DataType<DataTypeClass::STRUCT_FORWARD>(name)) {}
 
-StructureDefinitionNode::~StructureDefinitionNode()
-{
-
-}
+StructureDefinitionNode::~StructureDefinitionNode() {};
 
 void StructureDefinitionNode::print(std::ostream& os, size_t level) const
 {

@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-ExpressionStatementNode::ExpressionStatementNode(ExpressionNode* node) : content(node) {}
+ExpressionStatementNode::ExpressionStatementNode(ExpressionNode* node):
+	content(node) {}
 
 ExpressionStatementNode::~ExpressionStatementNode()
 {

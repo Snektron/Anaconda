@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-SubNode::SubNode(ExpressionNode* lop, ExpressionNode* rop) : lop(lop), rop(rop) {}
+SubNode::SubNode(ExpressionNode* lop, ExpressionNode* rop):
+	lop(lop), rop(rop) {}
 
 SubNode::~SubNode()
 {

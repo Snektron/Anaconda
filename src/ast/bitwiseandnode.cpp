@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-BitwiseAndNode::BitwiseAndNode(ExpressionNode* lop, ExpressionNode* rop) : lop(lop), rop(rop) {}
+BitwiseAndNode::BitwiseAndNode(ExpressionNode* lop, ExpressionNode* rop):
+	lop(lop), rop(rop) {}
 
 BitwiseAndNode::~BitwiseAndNode()
 {

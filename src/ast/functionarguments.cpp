@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-FunctionArguments::FunctionArguments(const std::vector<ExpressionNode*>& arguments) : arguments(arguments) {}
+FunctionArguments::FunctionArguments(const std::vector<ExpressionNode*>& arguments):
+	arguments(arguments) {}
 
 FunctionArguments::~FunctionArguments()
 {

@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-WhileNode::WhileNode(ExpressionNode* conditional, StatementNode* statement) : conditional(conditional), statement(statement) {}
+WhileNode::WhileNode(ExpressionNode* conditional, StatementNode* statement):
+	conditional(conditional), statement(statement) {}
 
 WhileNode::~WhileNode()
 {

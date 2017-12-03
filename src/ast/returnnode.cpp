@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-ReturnNode::ReturnNode(ExpressionNode* retval) : retval(retval) {}
+ReturnNode::ReturnNode(ExpressionNode* retval):
+	retval(retval) {}
 
 ReturnNode::~ReturnNode()
 {

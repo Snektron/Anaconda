@@ -1,7 +1,8 @@
 #include "generator/brainfuck.h"
 #include "except/exceptions.h"
 
-Scope::Scope(Scope&& old) : declarations(old.declarations), stack_locations(old.stack_locations) {}
+Scope::Scope(Scope&& old):
+	declarations(old.declarations), stack_locations(old.stack_locations) {}
 
 void Scope::declareVariable(const std::string& name, DataTypeBase* datatype)
 {
@@ -86,9 +87,11 @@ bool FunctionDefinition::parametersEqual(const std::vector<DataTypeBase*>& argum
 StructureDefinition::StructureDefinition(const std::vector<Field>& fields):
 	fields(fields) {}
 
-StructureDefinition::StructureDefinition(StructureDefinition&& old) : fields(std::move(old.fields)) {}
+StructureDefinition::StructureDefinition(StructureDefinition&& old):
+	fields(std::move(old.fields)) {}
 
-BrainfuckWriter::BrainfuckWriter(std::ostream& os) : output(os), current_scope(GLOBAL_SCOPE)
+BrainfuckWriter::BrainfuckWriter(std::ostream& os):
+	output(os), current_scope(GLOBAL_SCOPE)
 {
     //Create the global scope, which always has exactly one frame
     Scope global_scope;

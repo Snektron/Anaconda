@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-BitwiseXorNode::BitwiseXorNode(ExpressionNode* lop, ExpressionNode* rop) : lop(lop), rop(rop) {}
+BitwiseXorNode::BitwiseXorNode(ExpressionNode* lop, ExpressionNode* rop):
+	lop(lop), rop(rop) {}
 
 BitwiseXorNode::~BitwiseXorNode()
 {

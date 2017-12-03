@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-DivNode::DivNode(ExpressionNode* lop, ExpressionNode* rop) : lop(lop), rop(rop) {}
+DivNode::DivNode(ExpressionNode* lop, ExpressionNode* rop):
+	lop(lop), rop(rop) {}
 
 DivNode::~DivNode()
 {

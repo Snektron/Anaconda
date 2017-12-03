@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-BitwiseRightShiftNode::BitwiseRightShiftNode(ExpressionNode* lop, ExpressionNode* rop) : lop(lop), rop(rop) {}
+BitwiseRightShiftNode::BitwiseRightShiftNode(ExpressionNode* lop, ExpressionNode* rop):
+	lop(lop), rop(rop) {}
 
 BitwiseRightShiftNode::~BitwiseRightShiftNode()
 {

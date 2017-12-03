@@ -3,7 +3,8 @@
 
 #include <iostream>
 
-GlobalNode::GlobalNode(const std::vector<GlobalElementNode*>& elements) : elements(elements) {}
+GlobalNode::GlobalNode(const std::vector<GlobalElementNode*>& elements):
+	elements(elements) {}
 
 GlobalNode::~GlobalNode()
 {

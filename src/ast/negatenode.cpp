@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-NegateNode::NegateNode(ExpressionNode* op) : op(op) {}
+NegateNode::NegateNode(ExpressionNode* op):
+	op(op) {}
 
 NegateNode::~NegateNode()
 {

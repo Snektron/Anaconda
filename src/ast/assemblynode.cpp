@@ -2,7 +2,8 @@
 
 #include <iostream>
 
-AssemblyNode::AssemblyNode(const std::string& assembly) : assembly(assembly) {}
+AssemblyNode::AssemblyNode(const std::string& assembly):
+	assembly(assembly) {}
 
 AssemblyNode::~AssemblyNode() {}
 
