@@ -4,6 +4,8 @@
 #include <string>
 #include <utility>
 #include <variant>
+#include <vector>
+#include "types/datatype.h"
 
 enum class TokenType
 {
@@ -39,14 +41,20 @@ enum class Keyword
     WHILE,
     TYPE,
     FUNC,
+};
 
+enum class BuiltinDataType
+{
     U8,
     VOID
 };
 
 struct Token
 {
-    const TokenType type;
+    static const std::vector<const char*> keywords;
+    static const std::vector<const char*> builtinDataTypes;
+
+    TokenType type;
 
     // Contains a string if the type is WHITESPACE, IDENT, COMMENT or UNKNOWN
     // see hasText
@@ -55,8 +63,24 @@ struct Token
     Token(const TokenType type);
     Token(const TokenType type, const std::string& text);
 
-    bool isKeyword(Keyword kw) const;
+    std::string asText() const;
+    DataTypeBase* asDataType() const;
+
     bool hasText() const;
+
+    bool isReserved() const;
+
+    template <Keyword T>
+    bool isKeyword() const
+    {
+        return isType<TokenType::IDENT>() && asText() == keywords[(int) T];
+    }
+
+    template <BuiltinDataType T>
+    bool isBuiltinDatatype() const
+    {
+        return isType<TokenType::IDENT>() && asText() == builtinDataTypes[(int) T];
+    }
 
     template <TokenType T>
     bool isType() const

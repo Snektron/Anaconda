@@ -1,48 +1,106 @@
 #ifndef SRC_FORMULA_PARSER_H_
 #define SRC_FORMULA_PARSER_H_
 
-#include <string>
+#include <istream>
+#include "parser/lexer.h"
+#include "ast/node.h"
 
 class Parser
 {
+    protected:
+        Lexer lexer;
+        Token token;
+
     public:
-        struct State
+        Parser(std::istream& input);
+        GlobalNode* program();
+
+    protected:
+        void unexpected();
+
+        Token nextFiltered();
+        const Token& consume();
+
+        bool isAtEnd()
         {
-            std::size_t pos;
-            std::size_t row, column;
-            std::size_t lineStart;
-        };
+            return this->token.isType<TokenType::EOI>();
+        }
 
-    protected:
-        std::string input;
-        std::size_t len;
+        template <TokenType T>
+        bool expect()
+        {
+            if (this->token.isType<T>())
+            {
+                consume();
+                return true;
+            }
 
-        State state;
+            unexpected();
+            return false;
+        }
 
-    public:
-        Parser(const std::string& input);
+        template <Keyword T>
+        bool expect()
+        {
+            if (this->token.isKeyword<T>())
+            {
+                consume();
+                return true;
+            }
 
-    protected:
-        bool isAtEnd();
+            unexpected();
+            return false;
+        }
 
-        char peek();
-        char consume();
+        template <TokenType T>
+        bool check()
+        {
+            if (this->token.isType<T>())
+            {
+                return true;
+            }
 
-        State save();
-        void restore(State state);
-        std::string capture(State start);
-        std::string captureLine(State start);
+            return false;
+        }
 
-        bool expect(char c);
-        bool expect(std::string seq);
-        bool expectRange(char start, char end);
+        template <Keyword T>
+        bool check()
+        {
+            if (this->token.isKeyword<T>())
+            {
+                return true;
+            }
 
-        bool whitespace();
+            return false;
+        }
 
-        bool expectUpper();
-        bool expectLower();
-        bool expectLetter();
-        bool expectNumber();
+        GlobalNode* prog();
+        GlobalElementNode* globalstat();
+
+        StructureDefinitionNode* structdecl();
+
+        FunctionDeclaration* funcdecl();
+        FunctionParameters* funcpar();
+
+        BlockNode* block();
+
+        StatementListNode* statlist();
+        StatementNode* statement();
+        StatementNode* ifstat();
+        WhileNode* whilestat();
+        AssignmentNode* assignstat();
+        template <typename T>
+        T* declstat();
+
+        ExpressionNode* expr();
+        ExpressionNode* sum();
+        ExpressionNode* product();
+        ExpressionNode* unary();
+        ExpressionNode* atom();
+        ExpressionNode* paren();
+        FunctionCallNode* funccall();
+        FunctionArguments* funcargs();
+        VariableNode* variable();
 };
 
 #endif /* SRC_FORMULA_PARSER_H_ */
