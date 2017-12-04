@@ -16,3 +16,8 @@ void ExpressionStatementNode::print(std::ostream& os, size_t level) const
     os << "expression statement" << std::endl;
     this->content->print(os, level+1);
 }
+
+void ExpressionStatementNode::checkTypes(BrainfuckWriter& writer)
+{
+    this->content->checkTypes(writer);
+}

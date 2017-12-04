@@ -23,7 +23,7 @@ const char TOKEN_EQUALS = '=';
 const char TOKEN_BRACE_OPEN = '{';
 const char TOKEN_BRACE_CLOSE = '}';
 const char TOKEN_PAREN_OPEN = '(';
-const char TOKEN_PAREN_OPEN = ')';
+const char TOKEN_PAREN_CLOSE = ')';
 
 AnacondaParser::AnacondaParser(const std::string& input):
     Parser(input) {}

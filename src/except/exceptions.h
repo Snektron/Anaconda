@@ -36,6 +36,14 @@ class RedefinitionException : public ASTException
         virtual ~RedefinitionException() = default;
 };
 
+class TypeMismatchException : public TypeCheckException
+{
+    public:
+        TypeMismatchException(const std::string& msg);
+        TypeMismatchException(const char* msg);
+        virtual ~TypeMismatchException() = default;
+};
+
 class RecursiveTypeException : public TypeCheckException
 {
     public:

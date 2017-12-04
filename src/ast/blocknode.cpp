@@ -16,3 +16,8 @@ void BlockNode::print(std::ostream& os, size_t level) const
     os << "block node" << std::endl;
     this->content->print(os, level+1);
 }
+
+void BlockNode::checkTypes(BrainfuckWriter& writer)
+{
+    this->content->checkTypes(writer);
+}

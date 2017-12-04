@@ -24,6 +24,12 @@ RedefinitionException::RedefinitionException(const std::string& msg):
 RedefinitionException::RedefinitionException(const char* msg):
 	ASTException(msg) {}
 
+TypeMismatchException::TypeMismatchException(const std::string& msg):
+    TypeCheckException(msg) {}
+
+TypeMismatchException::TypeMismatchException(const char* msg):
+    TypeCheckException(msg) {}
+
 RecursiveTypeException::RecursiveTypeException(const std::string& msg):
 	TypeCheckException(msg) {}
 
