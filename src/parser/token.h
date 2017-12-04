@@ -3,6 +3,7 @@
 
 #include <string>
 #include <utility>
+#include <variant>
 
 enum class TokenType
 {
@@ -47,18 +48,12 @@ struct Token
 {
     const TokenType type;
 
-    union
-    {
-        // Only contains data where token text is variable
-        // WHITESPACE, IDENT, COMMENT, UNKNOWN
-        // see hasText
-        std::string text;
-    };
+    // Contains a string if the type is WHITESPACE, IDENT, COMMENT or UNKNOWN
+    // see hasText
+    std::variant<std::string> data;
 
     Token(const TokenType type);
     Token(const TokenType type, const std::string& text);
-    Token(const Token& other);
-    ~Token();
 
     bool isKeyword(Keyword kw) const;
     bool hasText() const;
