@@ -224,7 +224,7 @@ FunctionParameters* Parser::funcpar()
 // <block> = '{' <statlist> '}'
 BlockNode* Parser::block()
 {
-    if (!this->expect<TokenType::BRACE_OPEN>())
+    if (!this->eat<TokenType::BRACE_OPEN>())
         return statement();
 
     StatementListNode *list = statlist();
