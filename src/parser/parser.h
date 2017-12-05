@@ -30,10 +30,7 @@ class Parser
         bool expect()
         {
             if (this->token.isType<T>())
-            {
-                consume();
                 return true;
-            }
 
             unexpected();
             return false;
@@ -41,38 +38,37 @@ class Parser
 
         template <Keyword T>
         bool expect()
-        {
-            if (this->token.isKeyword<T>())
-            {
-                consume();
-                return true;
-            }
+		{
+			if (this->token.isKeyword<T>())
+				return true;
 
-            unexpected();
-            return false;
-        }
+			unexpected();
+			return false;
+		}
 
         template <TokenType T>
-        bool check()
+        bool eat()
         {
-            if (this->token.isType<T>())
-            {
-                return true;
-            }
+        	if (this->token.isType<T>())
+        	{
+        		consume();
+        		return true;
+        	}
 
-            return false;
+        	return false;
         }
 
         template <Keyword T>
-        bool check()
-        {
-            if (this->token.isKeyword<T>())
-            {
-                return true;
-            }
+		bool eat()
+		{
+			if (this->token.isType<T>())
+			{
+				consume();
+				return true;
+			}
 
-            return false;
-        }
+			return false;
+		}
 
         GlobalNode* prog();
         GlobalElementNode* globalstat();
@@ -88,9 +84,8 @@ class Parser
         StatementNode* statement();
         StatementNode* ifstat();
         WhileNode* whilestat();
-        AssignmentNode* assignstat();
-        template <typename T>
-        T* declstat();
+        StatementNode* assignstat();
+        GlobalDeclarationNode* declstat();
 
         ExpressionNode* expr();
         ExpressionNode* sum();
@@ -98,9 +93,8 @@ class Parser
         ExpressionNode* unary();
         ExpressionNode* atom();
         ExpressionNode* paren();
-        FunctionCallNode* funccall();
+        ExpressionNode* funccallOrVariable();
         FunctionArguments* funcargs();
-        VariableNode* variable();
 };
 
 #endif /* SRC_FORMULA_PARSER_H_ */

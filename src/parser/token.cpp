@@ -16,22 +16,41 @@ Token::Token(const TokenType type):
 Token::Token(const TokenType type, const std::string& text):
     type(type), data(text) {}
 
-bool Token::isReserved() const
+bool Token::isKeyword() const
+{
+    if (!isType<TokenType::IDENT>())
+        return false;
+
+    std::string text = asText();
+    for (auto kw : keywords)
+        if (text == *kw)
+            return true;
+
+    return false;
+}
+
+bool Token::isBuiltinDataType() const
 {
     if (!isType<TokenType::IDENT>())
         return false;
 
     std::string text = asText();
 
-    for (auto kw : keywords)
-        if (text == *kw)
-            return true;
-
     for (auto bdt : builtinDataTypes)
         if (text == *bdt)
             return true;
 
     return false;
+}
+
+bool Token::isDataType() const
+{
+	return isType<TokenType::IDENT>() && !isKeyword();
+}
+
+bool Token::isReserved() const
+{
+	return isKeyword() || isBuiltinDataType();
 }
 
 std::string Token::asText() const

@@ -2,7 +2,6 @@
 #define SRC_PARSER_TOKEN_H_
 
 #include <string>
-#include <utility>
 #include <variant>
 #include <vector>
 #include "types/datatype.h"
@@ -68,18 +67,20 @@ struct Token
 
     bool hasText() const;
 
+    bool isKeyword() const;
+    bool isBuiltinDataType() const;
+    bool isDataType() const;
     bool isReserved() const;
+
+    bool isSeperator() const
+    {
+    	return isOneOf<TokenType::NEWLINE, TokenType::SEMICOLON>();
+    }
 
     template <Keyword T>
     bool isKeyword() const
     {
         return isType<TokenType::IDENT>() && asText() == keywords[(int) T];
-    }
-
-    template <BuiltinDataType T>
-    bool isBuiltinDatatype() const
-    {
-        return isType<TokenType::IDENT>() && asText() == builtinDataTypes[(int) T];
     }
 
     template <TokenType T>
