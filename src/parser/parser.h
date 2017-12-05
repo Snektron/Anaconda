@@ -2,34 +2,46 @@
 #define SRC_FORMULA_PARSER_H_
 
 #include <istream>
+#include <vector>
+#include <string>
 #include "parser/lexer.h"
 #include "ast/node.h"
 
 class Parser
 {
-    protected:
+    private:
         Lexer lexer;
         Token token;
+
+        std::vector<std::string> warnings;
+        std::vector<std::string> errors;
 
     public:
         Parser(std::istream& input);
         GlobalNode* program();
 
-    protected:
+        const std::vector<std::string>& getWarnings() const
+        {
+            return this->warnings;
+        }
+
+        const std::vector<std::string>& getErrors() const
+        {
+            return this->errors;
+        }
+
+    private:
+        void error();
+        void warn();
         void unexpected();
 
         Token nextFiltered();
         const Token& consume();
 
-        bool isAtEnd()
-        {
-            return this->token.isType<TokenType::EOI>();
-        }
-
         template <TokenType... T>
         bool expect()
         {
-            if (this->token.isType<T...>())
+            if (this->token.isOneOf<T...>())
                 return true;
 
             unexpected();
@@ -58,10 +70,10 @@ class Parser
         	return false;
         }
 
-        template <Keyword... T>
+        template <Keyword T>
 		bool eat()
 		{
-			if (this->token.isOneOf<T...>())
+			if (this->token.isKeyword<T>())
 			{
 				consume();
 				return true;

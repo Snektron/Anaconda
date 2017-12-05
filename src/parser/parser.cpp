@@ -4,6 +4,18 @@
 Parser::Parser(std::istream& input):
     lexer(input), token(nextFiltered()) {}
 
+GlobalNode* Parser::program()
+{
+    GlobalNode* node = this->prog();
+    if (!this->token.isType<TokenType::EOI>())
+    {
+        delete node;
+        return nullptr;
+    }
+
+    return node;
+}
+
 Token Parser::nextFiltered()
 {
     Token token(TokenType::UNKNOWN);
@@ -225,14 +237,24 @@ FunctionParameters* Parser::funcpar()
 BlockNode* Parser::block()
 {
     if (!this->eat<TokenType::BRACE_OPEN>())
-        return statement();
-
-    StatementListNode *list = statlist();
-
-    if (!this->expect<TokenType::BRACE_CLOSE>())
     {
-        delete list;
-        return nullptr;
+        StatementNode* stat = statement();
+        if (!stat)
+            return nullptr;
+        return new BlockNode(stat);
+    }
+
+    StatementListNode* list(nullptr);
+
+    while (true)
+    {
+        list = statlist();
+
+        if (!this->expect<TokenType::BRACE_CLOSE>())
+        {
+            delete list;
+            return nullptr;
+        }
     }
 
     return new BlockNode(list);
@@ -275,7 +297,7 @@ ReturnNode* Parser::returnstat()
     if (!this->expect<Keyword::RETURN>())
         return nullptr;
 
-    ExpressionNode* expr = expr();
+    ExpressionNode* expr = this->expr();
     if (!expr)
         return nullptr;
 
@@ -284,7 +306,7 @@ ReturnNode* Parser::returnstat()
 
 StatementNode* Parser::exprstat()
 {
-    ExpressionNode* expr = expr();
+    ExpressionNode* expr = this->expr();
     if (!expr)
         return nullptr;
 
@@ -386,6 +408,8 @@ ExpressionNode* Parser::sum()
             case TokenType::MINUS:
                 lhs = new SubNode(lhs, rhs);
                 break;
+            default:
+                unexpected();
         }
     }
 
@@ -424,6 +448,8 @@ ExpressionNode* Parser::product()
             case TokenType::PERCENT:
                 lhs = new ModNode(lhs, rhs);
                 break;
+            default:
+                unexpected();
         }
     }
 
