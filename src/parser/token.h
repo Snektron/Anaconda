@@ -40,6 +40,7 @@ enum class Keyword
     WHILE,
     TYPE,
     FUNC,
+    RETURN
 };
 
 enum class BuiltinDataType
@@ -71,11 +72,6 @@ struct Token
     bool isBuiltinDataType() const;
     bool isDataType() const;
     bool isReserved() const;
-
-    bool isSeperator() const
-    {
-    	return isOneOf<TokenType::NEWLINE, TokenType::SEMICOLON>();
-    }
 
     template <Keyword T>
     bool isKeyword() const

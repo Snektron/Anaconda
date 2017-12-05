@@ -2,7 +2,7 @@
 
 const std::vector<const char*> Token::keywords =
 {
-    "if", "else", "while", "type", "func",
+    "if", "else", "while", "type", "func", "return"
 };
 
 const std::vector<const char*> Token::builtinDataTypes =

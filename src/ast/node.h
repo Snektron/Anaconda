@@ -56,6 +56,7 @@ class BlockNode;
 class FunctionParameters;
 class FunctionArguments;
 class GlobalElementNode;
+class VariableNode;
 
 class Node
 {
@@ -107,12 +108,12 @@ class GlobalExpressionNode : public GlobalElementNode
 class FunctionDeclaration : public GlobalElementNode
 {
     private:
-        std::string name;
+        VariableNode* name;
         FunctionParameters* parameters;
         DataTypeBase* return_type;
         BlockNode* content;
     public:
-        FunctionDeclaration(const std::string&, FunctionParameters*, DataTypeBase*, BlockNode*);
+        FunctionDeclaration(VariableNode*, FunctionParameters*, DataTypeBase*, BlockNode*);
         virtual ~FunctionDeclaration();
         
         virtual void print(std::ostream&, size_t) const;
@@ -139,11 +140,11 @@ class FunctionParameters : public Node
 class StructureDefinitionNode : public GlobalElementNode
 {
     private:
-        std::string name;
+        VariableNode* name;
         std::vector<Field> members;
         DataType<DataTypeClass::STRUCT_FORWARD>* type;
     public:
-        StructureDefinitionNode(const std::string&, const std::vector<Field>&);
+        StructureDefinitionNode(VariableNode*, const std::vector<Field>&);
         ~StructureDefinitionNode();
         
         virtual void print(std::ostream&, size_t) const;
@@ -485,9 +486,9 @@ class DeclarationNode: public ExpressionNode
 {
     private:
         DataTypeBase* datatype;
-        std::string variable;
+        VariableNode* variable;
     public:
-        DeclarationNode(DataTypeBase*, const std::string&);
+        DeclarationNode(DataTypeBase*, VariableNode*);
         virtual ~DeclarationNode();
         
         virtual void print(std::ostream&, size_t) const;
@@ -513,10 +514,10 @@ class VariableNode : public ExpressionNode
 class FunctionCallNode : public ExpressionNode
 {
     private:
-        std::string function_name;
+        VariableNode* function_name;
         FunctionArguments* arguments;
     public:
-        FunctionCallNode(const std::string&, FunctionArguments* arguments);
+        FunctionCallNode(VariableNode*, FunctionArguments* arguments);
         virtual ~FunctionCallNode();
         
         virtual void print(std::ostream&, size_t) const;

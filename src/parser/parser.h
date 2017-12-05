@@ -72,6 +72,7 @@ class Parser
 
         GlobalNode* prog();
         GlobalElementNode* globalstat();
+        GlobalExpressionNode* globalexpr();
 
         StructureDefinitionNode* structdecl();
 
@@ -82,10 +83,10 @@ class Parser
 
         StatementListNode* statlist();
         StatementNode* statement();
+        ReturnNode* returnstat();
+        StatementNode* exprstat();
         StatementNode* ifstat();
         WhileNode* whilestat();
-        StatementNode* assignstat();
-        GlobalDeclarationNode* declstat();
 
         ExpressionNode* expr();
         ExpressionNode* sum();
@@ -96,6 +97,7 @@ class Parser
         ExpressionNode* atom();
         ExpressionNode* paren();
         FunctionArguments* funcargs();
+        VariableNode* variable();
 };
 
 #endif /* SRC_FORMULA_PARSER_H_ */
