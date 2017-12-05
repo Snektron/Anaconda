@@ -26,30 +26,30 @@ class Parser
             return this->token.isType<TokenType::EOI>();
         }
 
-        template <TokenType T>
+        template <TokenType... T>
         bool expect()
         {
-            if (this->token.isType<T>())
+            if (this->token.isType<T...>())
                 return true;
 
             unexpected();
             return false;
         }
 
-        template <Keyword T>
+        template <Keyword... T>
         bool expect()
 		{
-			if (this->token.isKeyword<T>())
+			if (this->token.isKeyword<T...>())
 				return true;
 
 			unexpected();
 			return false;
 		}
 
-        template <TokenType T>
+        template <TokenType... T>
         bool eat()
         {
-        	if (this->token.isType<T>())
+        	if (this->token.isOneOf<T...>())
         	{
         		consume();
         		return true;
@@ -58,10 +58,10 @@ class Parser
         	return false;
         }
 
-        template <Keyword T>
+        template <Keyword... T>
 		bool eat()
 		{
-			if (this->token.isType<T>())
+			if (this->token.isOneOf<T...>())
 			{
 				consume();
 				return true;
@@ -91,9 +91,10 @@ class Parser
         ExpressionNode* sum();
         ExpressionNode* product();
         ExpressionNode* unary();
+        ExpressionNode* assignment();
+        ExpressionNode* lvalue();
         ExpressionNode* atom();
         ExpressionNode* paren();
-        ExpressionNode* funccallOrVariable();
         FunctionArguments* funcargs();
 };
 

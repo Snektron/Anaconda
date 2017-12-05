@@ -302,7 +302,7 @@ WhileNode* Parser::whilestat()
 
     return new WhileNode(condition, consequent);
 }
-
+//
 // <assignstat> = <type>? <id> ('=' <expr>)? ('\n' | ';')
 StatementNode* Parser::assignstat()
 {
@@ -407,10 +407,9 @@ ExpressionNode* Parser::sum()
 
     while (true)
     {
-        if (!this->token.isOneOf<TokenType::PLUS, TokenType::MINUS>())
-			break;
         TokenType optype = this->token.type;
-		consume();
+        if (!this->expect<TokenType::PLUS, TokenType::MINUS>())
+			break;
 
         ExpressionNode *rhs = product();
         if (!rhs)
@@ -442,9 +441,9 @@ ExpressionNode* Parser::product()
 
     while (true)
     {
-        if (!this->token.isOneOf<TokenType::STAR, TokenType::SLASH, TokenType::PERCENT>())
-        	break;
         TokenType optype = this->token.type;
+        if (!this->expect<TokenType::STAR, TokenType::SLASH, TokenType::PERCENT>())
+        	break;
         consume();
 
         ExpressionNode *rhs = unary();
@@ -481,15 +480,61 @@ ExpressionNode* Parser::unary()
             return new NegateNode(node);
     }
 
-    return atom();
+    return assignment();
 }
 
-// <atom> = <paren> | <funccallOrVariable>
+ExpressionNode* Parser::assignment()
+{
+
+	return nullptr;
+}
+
+ExpressionNode* Parser::lvalue()
+{
+	Token first = this->token;
+	if (!this->expect<TokenType::IDENT>())
+		return nullptr;
+
+	std::string name = this->token.asText();
+
+	if (this->token.isType<TokenType::IDENT>())
+	{
+		DataTypeBase* type = first.asDataType();
+		consume();
+
+		return new DeclarationNode(type, name);
+	}
+
+	return new VariableNode(name);
+}
+
+// expression -> mul_expr
+// ...
+// add_expr -> assignment
+// assignment -> lvalue = expression | atom
+// lvalue -> ID | ID ID | pointer_deref
+
+// return VariableNode(a) * 10
+
+// <atom> = <paren> | <id> (<funcargs>)?
 ExpressionNode* Parser::atom()
 {
 	if (this->token.isType<TokenType::PAREN_OPEN>())
 		return paren();
-	return funccallOrVariable();
+	else if (!this->token.isType<TokenType::IDENT>())
+		return nullptr;
+
+	std::string name = this->token.asText();
+	consume();
+
+	if (!this->token.isType<TokenType::PAREN_OPEN>())
+		return new VariableNode(name);
+
+	FunctionArguments *args = funcargs();
+	if (!args)
+		return nullptr;
+
+	return new FunctionCallNode(name, args);
 }
 
 // <paren> = '(' <expr> ')'
@@ -509,25 +554,6 @@ ExpressionNode* Parser::paren()
     }
 
     return node;
-}
-
-// <funccallOrVariable> = <id> <funcargs>?
-ExpressionNode* Parser::funccallOrVariable()
-{
-	if (!this->token.isType<TokenType::IDENT>())
-		return nullptr;
-
-	std::string name = this->token.asText();
-	consume();
-
-	if (!this->token.isType<TokenType::PAREN_OPEN>())
-		return new VariableNode(name);
-
-	FunctionArguments *args = funcargs();
-	if (!args)
-		return nullptr;
-
-	return new FunctionCallNode(name, args);
 }
 
 // <funcargs> = '(' (<expr> (',' <expr>)*) ')'
