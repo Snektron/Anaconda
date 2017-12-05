@@ -2,17 +2,19 @@
 
 #include <iostream>
 
-AssignmentNode::AssignmentNode(const std::string& name, ExpressionNode* expr):
-	variable_name(name), expression(expr) {}
+AssignmentNode::AssignmentNode(ExpressionNode* name, ExpressionNode* expr):
+    lop(name), rop(expr) {}
 
 AssignmentNode::~AssignmentNode()
 {
-    delete this->expression;
+    delete this->lop;
+    delete this->rop;
 }
 
 void AssignmentNode::print(std::ostream& os, size_t level) const
 {
     this->printIndent(os, level);
-    os << "assignment statement (" << this->variable_name << ")" << std::endl;
-    this->expression->print(os, level+1);
+    os << "assignment expression" << std::endl;
+    this->lop->print(os, level+1);
+    this->rop->print(os, level+1);
 }

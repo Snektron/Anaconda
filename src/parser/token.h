@@ -88,7 +88,7 @@ struct Token
     template <TokenType T, TokenType... Args>
     bool isOneOf() const
     {
-        if constexpr (sizeof...(Args) == 1)
+        if constexpr (sizeof...(Args) == 0)
             return isType<T>();
         else
             return isType<T>() || isOneOf<Args...>();
