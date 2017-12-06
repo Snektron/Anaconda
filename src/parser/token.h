@@ -50,11 +50,18 @@ enum class BuiltinDataType
     VOID
 };
 
+struct Span
+{
+    std::size_t row, col;
+};
+
 struct Token
 {
 	static const std::vector<const char*> types;
     static const std::vector<const char*> keywords;
     static const std::vector<const char*> builtinDataTypes;
+
+    Span span;
 
     TokenType type;
 

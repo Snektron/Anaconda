@@ -20,10 +20,10 @@ const std::vector<const char*> Token::builtinDataTypes =
 };
 
 Token::Token(const TokenType type):
-    type(type) {}
+    span{0, 0}, type(type) {}
 
 Token::Token(const TokenType type, const std::string& text):
-    type(type), data(text) {}
+    span{0, 0}, type(type), data(text) {}
 
 bool Token::isKeyword() const
 {

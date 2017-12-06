@@ -234,17 +234,12 @@ BlockNode* Parser::block()
     if (!this->expect<TokenType::BRACE_OPEN>())
         return nullptr;
 
-    StatementListNode* list(nullptr);
+    StatementListNode* list = statlist();
 
-    while (true)
+    if (!this->expect<TokenType::BRACE_CLOSE>())
     {
-        list = statlist();
-
-        if (!this->expect<TokenType::BRACE_CLOSE>())
-        {
-            delete list;
-            return nullptr;
-        }
+        delete list;
+        return nullptr;
     }
 
     return new BlockNode(list);
