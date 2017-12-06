@@ -16,6 +16,8 @@ class Parser
         Token token;
 
         std::vector<Message> messages;
+        std::vector<TokenType> triedTokens;
+        std::vector<Keyword> triedKeywords;
 
     public:
         Parser(std::istream& input);
@@ -28,35 +30,53 @@ class Parser
 
     private:
         void error(const std::string& msg);
-        void unexpected(const std::string& msg);
+        void unexpected();
 
         Token nextFiltered();
         const Token& consume();
 
-        template <TokenType... T>
-        bool expect(const std::string& msg)
+        template <TokenType T>
+        bool check()
         {
-            if (this->token.isOneOf<T...>())
+        	if (this->token.isType<T>())
+        		return true;
+        	this->triedTokens.push_back(T);
+        	return false;
+        }
+
+        template <Keyword T>
+	    bool check()
+	    {
+			if (this->token.isKeyword<T>())
+				return true;
+			this->triedKeywords.push_back(T);
+			return false;
+	    }
+
+        template <TokenType T>
+        bool expect()
+        {
+            if (this->check<T>())
                 return true;
 
-            unexpected(msg);
+            unexpected();
             return false;
         }
 
-        template <Keyword... T>
-        bool expect(const std::string& msg)
+        template <Keyword T>
+        bool expect()
 		{
-			if (this->token.isKeyword<T...>())
+			if (this->check<T>())
 				return true;
 
-			unexpected(msg);
+			unexpected();
 			return false;
 		}
 
-        template <TokenType... T>
+        template <TokenType T>
         bool eat()
         {
-        	if (this->token.isOneOf<T...>())
+        	if (this->check<T>())
         	{
         		consume();
         		return true;
@@ -68,7 +88,7 @@ class Parser
         template <Keyword T>
 		bool eat()
 		{
-			if (this->token.isKeyword<T>())
+			if (this->check<T>())
 			{
 				consume();
 				return true;

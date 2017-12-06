@@ -1,4 +1,14 @@
 #include "parser/token.h"
+#include <ostream>
+
+const std::vector<const char*> Token::types =
+{
+    "<eoi>", "<unknown>", "<whitespace>", "<newline>",
+	"<ident>",
+	"(", ")", "{", "}",
+	"->", ",", "=", "+", "-", "*", "/", "%", ";",
+	"<comment>"
+};
 
 const std::vector<const char*> Token::keywords =
 {
@@ -74,4 +84,23 @@ DataTypeBase* Token::asDataType() const
 bool Token::hasText() const
 {
     return isOneOf<TokenType::WHITESPACE, TokenType::IDENT, TokenType::COMMENT>();
+}
+
+std::ostream& operator<<(std::ostream& os, const TokenType type)
+{
+	os << Token::types[(std::size_t) type];
+	return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const Token& token)
+{
+	if (token.hasText())
+	{
+		std::string str = token.asText();
+		os << '\'' << str << '\'';
+	}
+	else
+		os << token.type;
+
+	return os;
 }

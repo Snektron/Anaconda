@@ -51,6 +51,7 @@ enum class BuiltinDataType
 
 struct Token
 {
+	static const std::vector<const char*> types;
     static const std::vector<const char*> keywords;
     static const std::vector<const char*> builtinDataTypes;
 
