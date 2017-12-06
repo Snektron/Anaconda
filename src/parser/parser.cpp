@@ -320,7 +320,7 @@ StatementNode* Parser::exprstat()
     if (!expr)
         return nullptr;
 
-    if (this->eat<TokenType::NEWLINE, TokenType::SEMICOLON>())
+    if (this->eat<TokenType::SEMICOLON>())
         return new ExpressionStatementNode(expr);
     else
         return new ReturnNode(expr);
