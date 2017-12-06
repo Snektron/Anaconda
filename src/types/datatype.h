@@ -26,6 +26,7 @@ class DataTypeBase
         virtual void print(std::ostream&) const = 0;
         virtual bool equals(const DataTypeBase&) const = 0;
         virtual bool isBoolean() const = 0;
+        virtual bool supportsArithmetic() const = 0;
 };
 
 template <DataTypeClass dtype>
@@ -39,6 +40,7 @@ class DataType : public DataTypeBase
         virtual void print(std::ostream&) const;
         virtual bool equals(const DataTypeBase&) const;
         virtual bool isBoolean() const;
+        virtual bool supportsArithmetic() const;
 };
 
 template<>
@@ -54,10 +56,14 @@ class DataType<DataTypeClass::STRUCT_FORWARD> : public DataTypeBase
         virtual void print(std::ostream&) const;
         virtual bool equals(const DataTypeBase&) const;
         virtual bool isBoolean() const;
+        virtual bool supportsArithmetic() const;
 };
 
 template<>
 bool DataType<DataTypeClass::VOID>::isBoolean() const;
+
+template<>
+bool DataType<DataTypeClass::VOID>::supportsArithmetic() const;
 
 std::ostream& operator<<(std::ostream&, const DataTypeBase&);
 

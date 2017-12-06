@@ -298,7 +298,7 @@ class AddNode : public BinaryExpressionNode
 {
     public:
         AddNode(ExpressionNode*, ExpressionNode*);
-        virtual ~AddNode();
+        virtual ~AddNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -308,7 +308,7 @@ class SubNode : public BinaryExpressionNode
 {
     public:
         SubNode(ExpressionNode*, ExpressionNode*);
-        virtual ~SubNode();
+        virtual ~SubNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -318,7 +318,7 @@ class MulNode : public BinaryExpressionNode
 {
     public:
         MulNode(ExpressionNode*, ExpressionNode*);
-        virtual ~MulNode();
+        virtual ~MulNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -328,7 +328,7 @@ class DivNode : public BinaryExpressionNode
 {
     public:
         DivNode(ExpressionNode*, ExpressionNode*);
-        virtual ~DivNode();
+        virtual ~DivNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -338,7 +338,7 @@ class ModNode : public BinaryExpressionNode
 {
     public:
         ModNode(ExpressionNode*, ExpressionNode*);
-        virtual ~ModNode();
+        virtual ~ModNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -376,7 +376,7 @@ class BitwiseAndNode : public BinaryExpressionNode
 {
     public:
         BitwiseAndNode(ExpressionNode*, ExpressionNode*);
-        virtual ~BitwiseAndNode();
+        virtual ~BitwiseAndNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -386,7 +386,7 @@ class BitwiseOrNode : public BinaryExpressionNode
 {
     public:
         BitwiseOrNode(ExpressionNode*, ExpressionNode*);
-        virtual ~BitwiseOrNode();
+        virtual ~BitwiseOrNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -396,7 +396,7 @@ class BitwiseXorNode : public BinaryExpressionNode
 {
     public:
         BitwiseXorNode(ExpressionNode*, ExpressionNode*);
-        virtual ~BitwiseXorNode();
+        virtual ~BitwiseXorNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -406,7 +406,7 @@ class BitwiseLeftShiftNode : public BinaryExpressionNode
 {
     public:
         BitwiseLeftShiftNode(ExpressionNode*, ExpressionNode*);
-        virtual ~BitwiseLeftShiftNode();
+        virtual ~BitwiseLeftShiftNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -416,7 +416,7 @@ class BitwiseRightShiftNode : public BinaryExpressionNode
 {
     public:
         BitwiseRightShiftNode(ExpressionNode*, ExpressionNode*);
-        virtual ~BitwiseRightShiftNode();
+        virtual ~BitwiseRightShiftNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);

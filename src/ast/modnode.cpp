@@ -3,13 +3,7 @@
 #include <iostream>
 
 ModNode::ModNode(ExpressionNode* lop, ExpressionNode* rop):
-	lop(lop), rop(rop) {}
-
-ModNode::~ModNode()
-{
-    delete this->lop;
-    delete this->rop;
-}
+	BinaryExpressionNode(lop, rop) {}
 
 void ModNode::print(std::ostream& os, size_t level) const
 {

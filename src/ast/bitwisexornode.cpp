@@ -3,13 +3,7 @@
 #include <iostream>
 
 BitwiseXorNode::BitwiseXorNode(ExpressionNode* lop, ExpressionNode* rop):
-	lop(lop), rop(rop) {}
-
-BitwiseXorNode::~BitwiseXorNode()
-{
-    delete this->lop;
-    delete this->rop;
-}
+	BinaryExpressionNode(lop, rop) {}
 
 void BitwiseXorNode::print(std::ostream& os, size_t level) const
 {
