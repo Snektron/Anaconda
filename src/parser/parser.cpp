@@ -1,8 +1,19 @@
 #include "parser/parser.h"
+#include "common/format.h"
 #include <iostream>
 
 Parser::Parser(std::istream& input):
     lexer(input), token(nextFiltered()) {}
+
+void Parser::error(const std::string& msg)
+{
+	this->messages.push_back(Message(MessageType::ERROR, msg));
+}
+
+void Parser::unexpected()
+{
+	this->error(fmt::sprintf("Unexpected token ", (int) this->token.type));
+}
 
 GlobalNode* Parser::program()
 {
@@ -69,15 +80,14 @@ StructureDefinitionNode* Parser::structdecl()
     if (!this->expect<Keyword::TYPE>())
         return nullptr;
 
-    VariableNode* name = variable();
-    if (!name)
-        return nullptr;
+    if (!this->token.isType<TokenType::IDENT>())
+    	return nullptr;
+
+    std::string name = this->token.asText();
+    consume();
 
     if (!this->token.isType<TokenType::BRACE_OPEN>())
-    {
-        delete name;
         return nullptr;
-    }
 
     std::vector<Field> members;
     DataTypeBase *lasttype(nullptr);
@@ -128,7 +138,6 @@ StructureDefinitionNode* Parser::structdecl()
             break;
     }
 
-    delete name;
     delete lasttype;
     return nullptr;
 }
@@ -139,10 +148,10 @@ FunctionDeclaration* Parser::funcdecl()
     if (!this->expect<Keyword::TYPE>())
         return nullptr;
 
-    VariableNode* name = variable();
-    if (!name)
-        return nullptr;
+    if (!this->token.isType<TokenType::IDENT>())
+    	return nullptr;
 
+    std::string name = this->token.asText();
     consume();
 
     FunctionParameters* parameters = funcpar();
@@ -155,7 +164,6 @@ FunctionDeclaration* Parser::funcdecl()
     {
     	if (!this->token.isDataType())
     	{
-    	    delete name;
     		delete parameters;
     		return nullptr;
     	}
@@ -169,7 +177,6 @@ FunctionDeclaration* Parser::funcdecl()
 
     if (!list)
     {
-        delete name;
         delete parameters;
         delete rtype;
         return nullptr;
@@ -483,19 +490,17 @@ ExpressionNode* Parser::atom()
 
     if (this->token.isType<TokenType::PAREN_OPEN>())
     {
+        delete name;
         FunctionArguments *args = funcargs();
-        if (!args)
-        {
-            delete name;
             return nullptr;
-        }
-        return new FunctionCallNode(name, args);
+        return new FunctionCallNode(token.asText(), args);
     }
 
     if (this->token.isType<TokenType::IDENT>())
     {
         delete name;
-        name = variable();
+        std::string tname = this->token.asText();
+        consume();
         DataTypeBase *type = token.asDataType();
 
         if (this->eat<TokenType::EQUALS>())
@@ -507,10 +512,10 @@ ExpressionNode* Parser::atom()
                 return nullptr;
             }
 
-            return new AssignmentNode(new DeclarationNode(type, name), rhs);
+            return new AssignmentNode(new DeclarationNode(type, tname), rhs);
         }
 
-        return new DeclarationNode(type, name);
+        return new DeclarationNode(type, tname);
     }
 
     if (this->eat<TokenType::EQUALS>())
