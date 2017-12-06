@@ -4,6 +4,8 @@
 #include <istream>
 #include <vector>
 #include <string>
+
+#include "except/message.h"
 #include "parser/lexer.h"
 #include "ast/node.h"
 
@@ -13,26 +15,19 @@ class Parser
         Lexer lexer;
         Token token;
 
-        std::vector<std::string> warnings;
-        std::vector<std::string> errors;
+        std::vector<Message> messages;
 
     public:
         Parser(std::istream& input);
         GlobalNode* program();
 
-        const std::vector<std::string>& getWarnings() const
+        const std::vector<Message>& getMessages() const
         {
-            return this->warnings;
-        }
-
-        const std::vector<std::string>& getErrors() const
-        {
-            return this->errors;
+            return this->messages;
         }
 
     private:
-        void error();
-        void warn();
+        void error(const std::string& msg);
         void unexpected();
 
         Token nextFiltered();
