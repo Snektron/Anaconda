@@ -12,27 +12,14 @@ void Parser::error(const std::string& msg)
 
 void Parser::unexpected()
 {
-	this->error("Error: unexpected token");
-
 	std::stringstream ss;
-	fmt::ssprintf(ss, "Error: unexpected token '", this->token, "' expected ");
-	if (this->triedKeywords)
-	{
-		fmt::ssprintf(ss, "keywords '");
-		bool first(true);
+	fmt::ssprintf(ss, "Error: unexpected token '", this->token, "' expected");
+	if (this->triedKeywords.size() > 0)
+		fmt::ssprintf(ss, " - keyword(s) ", this->triedKeywords, '\n');
+    if (this->triedKeywords.size() > 0)
+        fmt::ssprintf(ss, " - token(s) ", this->triedKeywords, '\n');
 
-		for (auto kw: this->triedKeywords)
-		{
-			if (first)
-			{
-				fmt::ssprintf(ss, "', '");
-				first = false;
-			}
-		}
-
-		fmt::ssprintf(ss, "' ");
-	}
-
+    this->error(ss.str());
 
 	this->triedTokens.clear();
 	this->triedKeywords.clear();

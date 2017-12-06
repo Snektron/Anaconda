@@ -92,6 +92,12 @@ std::ostream& operator<<(std::ostream& os, const TokenType type)
 	return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const Keyword kw)
+{
+    os << '\'' << Token::keywords[(std::size_t) kw] << '\'';
+    return os;
+}
+
 std::ostream& operator<<(std::ostream& os, const Token& token)
 {
 	if (token.hasText())

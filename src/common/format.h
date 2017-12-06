@@ -5,6 +5,7 @@
 #include <memory>
 #include <ostream>
 #include <sstream>
+#include <vector>
 
 namespace fmt
 {
@@ -26,6 +27,22 @@ namespace fmt
 		std::stringstream ss;
 		ssprintf(ss, first, args...);
 		return ss.str();
+	}
+
+	template <typename T>
+	std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+	{
+	    bool first(true);
+	    for (T& item : vec)
+	    {
+	        if (!first)
+	            os << ", ";
+	        else
+	            first = false;
+
+	        os << T;
+	    }
+	    return os;
 	}
 }
 
