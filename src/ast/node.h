@@ -264,6 +264,20 @@ class ExpressionNode : public Node
         virtual DataTypeBase* getType() = 0;
 };
 
+class UnaryExpressionNode : public ExpressionNode
+{
+    protected:
+        ExpressionNode* op;
+        DataTypeBase* type;
+        
+        UnaryExpressionNode(ExpressionNode*);
+    public:
+        virtual ~UnaryExpressionNode();
+        
+        virtual void checkTypes(BrainfuckWriter&);
+        DataTypeBase* getType();
+};
+
 class BinaryExpressionNode : public ExpressionNode
 {
     protected:
@@ -344,32 +358,24 @@ class ModNode : public BinaryExpressionNode
         virtual void generate(BrainfuckWriter&);
 };
 
-class NegateNode : public ExpressionNode
+class NegateNode : public UnaryExpressionNode
 {
-    private:
-        ExpressionNode* op;
     public:
         NegateNode(ExpressionNode*);
-        virtual ~NegateNode();
+        virtual ~NegateNode() = default;
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
-class ComplementNode : public ExpressionNode
+class ComplementNode : public UnaryExpressionNode
 {
-    private:
-        ExpressionNode* op;
     public:
         ComplementNode(ExpressionNode*);
         virtual ~ComplementNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
 class BitwiseAndNode : public BinaryExpressionNode
