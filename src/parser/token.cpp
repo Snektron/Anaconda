@@ -23,7 +23,7 @@ bool Token::isKeyword() const
 
     std::string text = asText();
     for (auto kw : keywords)
-        if (text == *kw)
+        if (text == kw)
             return true;
 
     return false;
@@ -37,7 +37,7 @@ bool Token::isBuiltinDataType() const
     std::string text = asText();
 
     for (auto bdt : builtinDataTypes)
-        if (text == *bdt)
+        if (text == bdt)
             return true;
 
     return false;
