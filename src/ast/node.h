@@ -517,10 +517,10 @@ class VariableNode : public ExpressionNode
 class FunctionCallNode : public ExpressionNode
 {
     private:
-        VariableNode* function_var;
+        std::string function_var;
         FunctionArguments* arguments;
     public:
-        FunctionCallNode(VariableNode*, FunctionArguments* arguments);
+        FunctionCallNode(const std::string&, FunctionArguments* arguments);
         virtual ~FunctionCallNode();
         
         virtual void print(std::ostream&, size_t) const;
