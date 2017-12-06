@@ -288,6 +288,7 @@ class AssignmentNode : public ExpressionNode
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
+        virtual DataTypeBase* getType();
 };
 
 class AddNode : public ExpressionNode

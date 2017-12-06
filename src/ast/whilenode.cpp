@@ -18,3 +18,13 @@ void WhileNode::print(std::ostream& os, size_t level) const
     this->conditional->print(os, level+1);
     this->statement->print(os, level+1);
 }
+
+void WhileNode::checkTypes(BrainfuckWriter& writer)
+{
+    this->conditional->checkTypes(writer);
+    this->statement->checkTypes(writer);
+    
+    std::unique_ptr<DataTypeBase> cond_type(this->conditional->getType());
+    if(!cond_type->isBoolean())
+        throw TypeMismatchException("Cannot convert conditional in while-loop to a boolean");
+}
