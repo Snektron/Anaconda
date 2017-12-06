@@ -31,7 +31,6 @@ class Parser
     private:
         void error(const std::string& msg);
         void unexpected();
-        Token nextFiltered();
         const Token& consume();
 
         template <TokenType T>

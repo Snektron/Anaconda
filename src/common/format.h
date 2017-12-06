@@ -9,6 +9,22 @@
 
 namespace fmt
 {
+    template <typename T>
+    std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+    {
+        bool first(true);
+        for (const T& item : vec)
+        {
+            if (!first)
+                os << ", ";
+            else
+                first = false;
+
+            os << item;
+        }
+        return os;
+    }
+
 	template <typename T, typename... Args>
 	void ssprintf(std::ostream& ss, T&& first, Args&&... args)
 	{
@@ -27,22 +43,6 @@ namespace fmt
 		std::stringstream ss;
 		ssprintf(ss, first, args...);
 		return ss.str();
-	}
-
-	template <typename T>
-	std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
-	{
-	    bool first(true);
-	    for (const T& item : vec)
-	    {
-	        if (!first)
-	            os << ", ";
-	        else
-	            first = false;
-
-	        os << item;
-	    }
-	    return os;
 	}
 }
 

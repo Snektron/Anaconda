@@ -3,7 +3,10 @@
 #include <sstream>
 
 Parser::Parser(std::istream& input):
-    lexer(input), token(nextFiltered()) {}
+    lexer(input), token(Token(TokenType::EOI))
+{
+    consume();
+}
 
 void Parser::error(const std::string& msg)
 {
@@ -32,17 +35,6 @@ GlobalNode* Parser::program()
     }
 
     return node;
-}
-
-Token Parser::nextFiltered()
-{
-    Token token(TokenType::UNKNOWN);
-
-    do
-        token = this->lexer.next();
-    while (token.isOneOf<TokenType::WHITESPACE, TokenType::COMMENT>());
-
-    return token;
 }
 
 const Token& Parser::consume()
