@@ -4,15 +4,15 @@
 
 #include <iostream>
 
-FunctionParameters::FunctionParameters(const std::vector<Field>& arguments):
+FieldListNode::FieldListNode(const std::vector<Field>& arguments):
 	arguments(arguments) {}
 
-FunctionParameters::~FunctionParameters()
+FieldListNode::~FieldListNode()
 {
 
 }
 
-void FunctionParameters::print(std::ostream& os, size_t level) const
+void FieldListNode::print(std::ostream& os, size_t level) const
 {
     this->printIndent(os, level);
     os << "function parameters (";
@@ -28,12 +28,12 @@ void FunctionParameters::print(std::ostream& os, size_t level) const
     os << ")" << std::endl;
 }
 
-std::vector<Field>& FunctionParameters::getParameters()
+std::vector<Field>& FieldListNode::getParameters()
 {
     return this->arguments;
 }
 
-void FunctionParameters::checkTypes(BrainfuckWriter& writer)
+void FieldListNode::checkTypes(BrainfuckWriter& writer)
 {
     UNUSED(writer);
 }

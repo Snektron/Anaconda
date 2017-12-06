@@ -31,7 +31,6 @@ class Parser
     private:
         void error(const std::string& msg);
         void unexpected();
-
         Token nextFiltered();
         const Token& consume();
 
@@ -102,9 +101,9 @@ class Parser
         GlobalExpressionNode* globalexpr();
 
         StructureDefinitionNode* structdecl();
-
         FunctionDeclaration* funcdecl();
-        FunctionParameters* funcpar();
+        FieldListNode* funcpar();
+        FieldListNode* fieldlist();
 
         BlockNode* block();
 
@@ -123,7 +122,8 @@ class Parser
         ExpressionNode* lvalue();
         ExpressionNode* atom();
         ExpressionNode* paren();
-        FunctionArguments* funcargs();
+        ArgumentListNode* funcargs();
+        ArgumentListNode* arglist();
         VariableNode* variable();
 };
 

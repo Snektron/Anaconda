@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-AssemblyNode::AssemblyNode(DataTypeBase* datatype, const std::string& assembly, FunctionArguments* arguments):
+AssemblyNode::AssemblyNode(DataTypeBase* datatype, const std::string& assembly, ArgumentListNode* arguments):
 	datatype(datatype), assembly(assembly), arguments(arguments) {}
 
 AssemblyNode::~AssemblyNode() {}

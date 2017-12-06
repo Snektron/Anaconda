@@ -33,14 +33,14 @@ namespace fmt
 	std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
 	{
 	    bool first(true);
-	    for (T& item : vec)
+	    for (const T& item : vec)
 	    {
 	        if (!first)
 	            os << ", ";
 	        else
 	            first = false;
 
-	        os << T;
+	        os << item;
 	    }
 	    return os;
 	}

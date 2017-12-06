@@ -53,8 +53,8 @@ class DataTypeBase;
 class StatementNode;
 class ExpressionNode;
 class BlockNode;
-class FunctionParameters;
-class FunctionArguments;
+class FieldListNode;
+class ArgumentListNode;
 class GlobalElementNode;
 class VariableNode;
 
@@ -109,12 +109,12 @@ class FunctionDeclaration : public GlobalElementNode
 {
     private:
         std::string name;
-        FunctionParameters* parameters;
+        FieldListNode* parameters;
         DataTypeBase* return_type;
         BlockNode* content;
         size_t scope;
     public:
-        FunctionDeclaration(const std::string&, FunctionParameters*, DataTypeBase*, BlockNode*);
+        FunctionDeclaration(const std::string&, FieldListNode*, DataTypeBase*, BlockNode*);
         virtual ~FunctionDeclaration();
         
         virtual void print(std::ostream&, size_t) const;
@@ -123,13 +123,13 @@ class FunctionDeclaration : public GlobalElementNode
         virtual void checkTypes(BrainfuckWriter&);
 };
 
-class FunctionParameters : public Node
+class FieldListNode : public Node
 {
     private:
         std::vector<Field> arguments;
     public:
-        FunctionParameters(const std::vector<Field>&);
-        virtual ~FunctionParameters();
+        FieldListNode(const std::vector<Field>&);
+        virtual ~FieldListNode();
 
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -142,10 +142,10 @@ class StructureDefinitionNode : public GlobalElementNode
 {
     private:
         std::string name;
-        std::vector<Field> members;
+        FieldListNode* members;
         DataType<DataTypeClass::STRUCT_FORWARD>* type;
     public:
-        StructureDefinitionNode(const std::string&, const std::vector<Field>&);
+        StructureDefinitionNode(const std::string&, FieldListNode* members);
         ~StructureDefinitionNode();
         
         virtual void print(std::ostream&, size_t) const;
@@ -477,9 +477,9 @@ class FunctionCallNode : public ExpressionNode
 {
     private:
         std::string function_var;
-        FunctionArguments* arguments;
+        ArgumentListNode* arguments;
     public:
-        FunctionCallNode(const std::string&, FunctionArguments*);
+        FunctionCallNode(const std::string&, ArgumentListNode*);
         virtual ~FunctionCallNode();
         
         virtual void print(std::ostream&, size_t) const;
@@ -488,13 +488,13 @@ class FunctionCallNode : public ExpressionNode
         virtual DataTypeBase* getType();
 };
 
-class FunctionArguments : public Node
+class ArgumentListNode : public Node
 {
     private:
         std::vector<ExpressionNode*> arguments;
     public:
-        FunctionArguments(const std::vector<ExpressionNode*>& arguments);
-        virtual ~FunctionArguments();
+        ArgumentListNode(const std::vector<ExpressionNode*>& arguments);
+        virtual ~ArgumentListNode();
 
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
@@ -522,9 +522,9 @@ class AssemblyNode : public ExpressionNode
     private:
         DataTypeBase* datatype;
         std::string assembly;
-        FunctionArguments* arguments;
+        ArgumentListNode* arguments;
     public:
-        AssemblyNode(DataTypeBase*, const std::string&, FunctionArguments*);
+        AssemblyNode(DataTypeBase*, const std::string&, ArgumentListNode*);
         virtual ~AssemblyNode();
         
         virtual void print(std::ostream&, size_t) const;

@@ -4,7 +4,7 @@
 
 #include <iostream>
 
-FunctionDeclaration::FunctionDeclaration(const std::string& name, FunctionParameters* parameters, DataTypeBase* return_type, BlockNode* content):
+FunctionDeclaration::FunctionDeclaration(const std::string& name, FieldListNode* parameters, DataTypeBase* return_type, BlockNode* content):
 	name(name), parameters(parameters), return_type(return_type), content(content) {}
 
 FunctionDeclaration::~FunctionDeclaration()

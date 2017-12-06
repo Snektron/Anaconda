@@ -1,5 +1,4 @@
 #include "parser/token.h"
-#include <ostream>
 
 const std::vector<const char*> Token::types =
 {

@@ -20,9 +20,6 @@ void Parser::unexpected()
         fmt::ssprintf(ss, " - token(s) ", this->triedKeywords, '\n');
 
     this->error(ss.str());
-
-	this->triedTokens.clear();
-	this->triedKeywords.clear();
 }
 
 GlobalNode* Parser::program()
@@ -47,6 +44,19 @@ Token Parser::nextFiltered()
 
     return token;
 }
+
+const Token& Parser::consume()
+{
+    this->triedTokens.clear();
+    this->triedKeywords.clear();
+
+    do
+       this->token = this->lexer.next();
+    while (this->token.isOneOf<TokenType::WHITESPACE, TokenType::COMMENT>());
+
+    return this->token;
+}
+
 // <unit> = <globalstat>*
 GlobalNode* Parser::prog()
 {
@@ -84,7 +94,7 @@ GlobalExpressionNode* Parser::globalexpr()
     return new GlobalExpressionNode(expr);
 }
 
-// <structdecl> = 'type' <id> '{' (<type> <id> (',' <id>)* ',')+ '}'
+// <structdecl> = 'type' <id> '{' <fieldlist> '}'
 StructureDefinitionNode* Parser::structdecl()
 {
     if (!this->expect<Keyword::TYPE>())
@@ -99,60 +109,18 @@ StructureDefinitionNode* Parser::structdecl()
     std::string name = this->token.asText();
     consume();
 
-    if (!this->check<TokenType::BRACE_OPEN>())
+    if (!this->expect<TokenType::BRACE_OPEN>())
         return nullptr;
 
-    std::vector<Field> members;
-    DataTypeBase *lasttype(nullptr);
+    FieldListNode* members = fieldlist();
 
-    while (true)
+    if (!this->expect<TokenType::BRACE_CLOSE>())
     {
-        Token saved = this->token;
-        if (!this->expect<TokenType::IDENT>())
-            break;
-
-        std::string memname;
-        DataTypeBase *memtype(nullptr);
-
-        if (this->check<TokenType::COMMA>())
-        {
-            if (!lasttype || saved.isReserved())
-                break;
-
-            memname = saved.asText();
-            memtype = lasttype->copy();
-            consume();
-        }
-        else if (this->expect<TokenType::IDENT>())
-        {
-            if (this->token.isReserved())
-                break;
-
-            memname = this->token.asText();
-            memtype = saved.asDataType();
-
-            delete lasttype;
-            lasttype = memtype->copy();
-        }
-        else
-            return nullptr;
-
-        members.push_back(Field(memtype, memname));
-
-        if (this->eat<TokenType::BRACE_CLOSE>())
-        {
-        	delete lasttype;
-        	if (members.size() == 0)
-        		return nullptr;
-
-            return new StructureDefinitionNode(name, members);
-        }
-        else if (!this->expect<TokenType::COMMA>())
-            break;
+        delete members;
+        return nullptr;
     }
 
-    delete lasttype;
-    return nullptr;
+    return new StructureDefinitionNode(name, members);
 }
 
 // <funcdecl> = 'func' <id> <funcpar> ('->' <id>)? <block>
@@ -167,7 +135,7 @@ FunctionDeclaration* Parser::funcdecl()
     std::string name = this->token.asText();
     consume();
 
-    FunctionParameters* parameters = funcpar();
+    FieldListNode* parameters = funcpar();
     if (!parameters)
         return nullptr;
 
@@ -186,83 +154,93 @@ FunctionDeclaration* Parser::funcdecl()
     else
     	rtype = new DataType<DataTypeClass::VOID>();
 
-    BlockNode *list = block();
+    BlockNode *body = block();
 
-    if (!list)
+    if (!body)
     {
         delete parameters;
         delete rtype;
         return nullptr;
     }
 
-    return new FunctionDeclaration(name, parameters, rtype, list);
+    return new FunctionDeclaration(name, parameters, rtype, body);
 }
 
-// <funcpar> = '(' (<type> <id> (',' <type>? <id>)*) ')'
-FunctionParameters* Parser::funcpar()
+// <funcpar> = '(' <fieldlist> ')'
+FieldListNode* Parser::funcpar()
 {
     if (!this->expect<TokenType::PAREN_OPEN>())
         return nullptr;
 
+    FieldListNode* parameters = fieldlist();
+    if (!parameters)
+        return nullptr;
+
+    if (!this->expect<TokenType::PAREN_CLOSE>())
+    {
+        delete parameters;
+        return nullptr;
+    }
+
+    return parameters;
+}
+
+// <fieldlist> = (<type> <id> (',' <type>? <id>)*)
+FieldListNode* Parser::fieldlist()
+{
     std::vector<Field> parameters;
     DataTypeBase *lasttype(nullptr);
 
     while (true)
     {
-    	Token saved = this->token;
-		if (!this->expect<TokenType::IDENT>())
-			break;
+        Token saved = this->token;
+        if (!this->expect<TokenType::IDENT>())
+            break;
 
-		std::string parname;
-		DataTypeBase *partype(nullptr);
+        std::string parname;
+        DataTypeBase *partype(nullptr);
 
-		if (this->check<TokenType::COMMA>())
-		{
-			if (!lasttype || saved.isReserved())
-				break;
+        if (this->eat<TokenType::COMMA>())
+        {
+            if (!lasttype || saved.isReserved())
+                break;
 
-			parname = saved.asText();
-			partype = lasttype->copy();
-			consume();
-		}
-		else if (this->expect<TokenType::IDENT>())
-		{
-			if (this->token.isReserved())
-				break;
+            parname = saved.asText();
+            partype = lasttype->copy();
+        }
+        else if (this->expect<TokenType::IDENT>())
+        {
+            if (this->token.isReserved())
+                break;
 
-			parname = this->token.asText();
-			partype = saved.asDataType();
+            parname = this->token.asText();
+            partype = saved.asDataType();
 
-			delete lasttype;
-			lasttype = partype->copy();
-		}
-		else
-			return nullptr;
+            delete lasttype;
+            lasttype = partype->copy();
+        }
+        else
+            return nullptr;
 
-		parameters.push_back(Field(partype, parname));
+        parameters.push_back(Field(partype, parname));
 
-		if (this->eat<TokenType::PAREN_CLOSE>())
-		{
-			delete lasttype;
-			return new FunctionParameters(parameters);
-		}
-		else if (!this->expect<TokenType::COMMA>())
-			break;
+
+        if (!this->expect<TokenType::COMMA>())
+        {
+            delete lasttype;
+            return new FieldListNode(parameters);
+        }
     }
 
+    delete lasttype;
     return nullptr;
 }
 
 // <block> = '{' <statlist> '}'
 BlockNode* Parser::block()
 {
-    if (!this->eat<TokenType::BRACE_OPEN>())
-    {
-        StatementNode* stat = statement();
-        if (!stat)
-            return nullptr;
-        return new BlockNode(stat);
-    }
+    if (!this->expect<TokenType::BRACE_OPEN>())
+        return nullptr;
 
     StatementListNode* list(nullptr);
 
@@ -309,6 +287,9 @@ StatementNode* Parser::statement()
 	if (this->check<Keyword::RETURN>())
 	    return returnstat();
 
+	if (this->check<TokenType::BRACE_OPEN>())
+	    return block();
+
 	return this->exprstat();
 }
 
@@ -345,7 +326,7 @@ StatementNode* Parser::ifstat()
     if (!condition)
         return nullptr;
 
-    BlockNode *consequent = block();
+    StatementNode *consequent = statement();
     if (!consequent)
     {
         delete condition;
@@ -358,7 +339,7 @@ StatementNode* Parser::ifstat()
     	if (this->check<Keyword::IF>())
     		alternative = ifstat();
     	else
-    		alternative = block();
+    		alternative = statement();
 
         if (!alternative)
         {
@@ -383,7 +364,7 @@ WhileNode* Parser::whilestat()
     if (!condition)
         return nullptr;
 
-    BlockNode *consequent = block();
+    StatementNode *consequent = statement();
     if (!consequent)
     {
         delete condition;
@@ -506,7 +487,7 @@ ExpressionNode* Parser::atom()
     if (this->check<TokenType::PAREN_OPEN>())
     {
         delete name;
-        FunctionArguments *args = funcargs();
+        ArgumentListNode *args = funcargs();
             return nullptr;
         return new FunctionCallNode(token.asText(), args);
     }
@@ -522,10 +503,7 @@ ExpressionNode* Parser::atom()
         {
             ExpressionNode* rhs = expr();
             if (!rhs)
-            {
-                delete name;
                 return nullptr;
-            }
 
             return new AssignmentNode(new DeclarationNode(type, tname), rhs);
         }
@@ -568,12 +546,28 @@ ExpressionNode* Parser::paren()
 }
 
 // <funcargs> = '(' (<expr> (',' <expr>)*) ')'
-FunctionArguments* Parser::funcargs()
+ArgumentListNode* Parser::funcargs()
 {
-    std::vector<ExpressionNode*> arguments;
-
     if (!this->expect<TokenType::PAREN_OPEN>())
         return nullptr;
+
+    ArgumentListNode* args = arglist();
+    if (!args)
+        return nullptr;
+
+    if (!this->expect<TokenType::PAREN_CLOSE>())
+    {
+        delete args;
+        return nullptr;
+    }
+
+    return args;
+}
+
+// <arglist> = (<expr> (',' <expr>)*)?
+ArgumentListNode* Parser::arglist()
+{
+    std::vector<ExpressionNode*> arguments;
 
     while (true)
     {
@@ -583,10 +577,8 @@ FunctionArguments* Parser::funcargs()
 
         arguments.push_back(arg);
 
-        if (this->check<TokenType::PAREN_CLOSE>())
-            return new FunctionArguments(arguments);
-        else if (!this->expect<TokenType::COMMA>())
-            break;
+        if (!this->check<TokenType::COMMA>())
+            return new ArgumentListNode(arguments);
     }
 
     for (auto expr : arguments)

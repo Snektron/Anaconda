@@ -1,4 +1,4 @@
-#ifndef BRAINFUCK_HPP_INCLUDE
+#ifndef BRAINFUCK_HPP_INCLUDED
 #define BRAINFUCK_HPP_INCLUDED
 
 #include <iosfwd>

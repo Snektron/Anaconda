@@ -4,6 +4,7 @@
 #include <string>
 #include <variant>
 #include <vector>
+#include <ostream>
 #include "types/datatype.h"
 
 enum class TokenType
@@ -95,5 +96,9 @@ struct Token
             return isType<T>() || isOneOf<Args...>();
     }
 };
+
+std::ostream& operator<<(std::ostream& os, const TokenType type);
+std::ostream& operator<<(std::ostream& os, const Keyword kw);
+std::ostream& operator<<(std::ostream& os, const Token& token);
 
 #endif

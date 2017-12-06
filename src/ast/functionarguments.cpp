@@ -2,16 +2,16 @@
 
 #include <iostream>
 
-FunctionArguments::FunctionArguments(const std::vector<ExpressionNode*>& arguments):
+ArgumentListNode::ArgumentListNode(const std::vector<ExpressionNode*>& arguments):
 	arguments(arguments) {}
 
-FunctionArguments::~FunctionArguments()
+ArgumentListNode::~ArgumentListNode()
 {
     for(auto& it : this->arguments)
         delete it;
 }
 
-void FunctionArguments::print(std::ostream& os, size_t level) const
+void ArgumentListNode::print(std::ostream& os, size_t level) const
 {
     this->printIndent(os, level);
     os << "function arguments" << std::endl;
