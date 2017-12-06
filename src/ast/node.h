@@ -108,12 +108,12 @@ class GlobalExpressionNode : public GlobalElementNode
 class FunctionDeclaration : public GlobalElementNode
 {
     private:
-        VariableNode* name;
+        std::string name;
         FunctionParameters* parameters;
         DataTypeBase* return_type;
         BlockNode* content;
     public:
-        FunctionDeclaration(VariableNode*, FunctionParameters*, DataTypeBase*, BlockNode*);
+        FunctionDeclaration(const std::string&, FunctionParameters*, DataTypeBase*, BlockNode*);
         virtual ~FunctionDeclaration();
         
         virtual void print(std::ostream&, size_t) const;
@@ -140,11 +140,11 @@ class FunctionParameters : public Node
 class StructureDefinitionNode : public GlobalElementNode
 {
     private:
-        VariableNode* name;
+        std::string name;
         std::vector<Field> members;
         DataType<DataTypeClass::STRUCT_FORWARD>* type;
     public:
-        StructureDefinitionNode(VariableNode*, const std::vector<Field>&);
+        StructureDefinitionNode(const std::string&, const std::vector<Field>&);
         ~StructureDefinitionNode();
         
         virtual void print(std::ostream&, size_t) const;
@@ -487,9 +487,9 @@ class DeclarationNode: public ExpressionNode
 {
     private:
         DataTypeBase* datatype;
-        VariableNode* variable;
+        std::string variable;
     public:
-        DeclarationNode(DataTypeBase*, VariableNode*);
+        DeclarationNode(DataTypeBase*, const std::string&);
         virtual ~DeclarationNode();
         
         virtual void print(std::ostream&, size_t) const;
@@ -510,12 +510,14 @@ class VariableNode : public ExpressionNode
         virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
         virtual DataTypeBase* getType();
+
+        std::string getName();
 };
 
 class FunctionCallNode : public ExpressionNode
 {
     private:
-        VariableNode* function_name;
+        VariableNode* function_var;
         FunctionArguments* arguments;
     public:
         FunctionCallNode(VariableNode*, FunctionArguments* arguments);

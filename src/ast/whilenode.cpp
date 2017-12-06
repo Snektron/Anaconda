@@ -1,6 +1,8 @@
 #include "ast/node.h"
+#include "except/exceptions.h"
 
 #include <iostream>
+#include <memory>
 
 WhileNode::WhileNode(ExpressionNode* conditional, StatementNode* statement):
 	conditional(conditional), statement(statement) {}
