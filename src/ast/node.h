@@ -243,19 +243,6 @@ class IfElseNode : public StatementNode
         virtual void checkTypes(BrainfuckWriter&);
 };
 
-class AssemblyNode : public StatementNode
-{
-    private:
-        std::string assembly;
-    public:
-        AssemblyNode(const std::string&);
-        virtual ~AssemblyNode();
-        
-        virtual void print(std::ostream&, size_t) const;
-        virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-};
-
 class ReturnNode : public StatementNode
 {
     private:
@@ -277,6 +264,21 @@ class ExpressionNode : public Node
         virtual DataTypeBase* getType() = 0;
 };
 
+class BinaryExpressionNode : public ExpressionNode
+{
+    protected:
+        ExpressionNode* lop;
+        ExpressionNode* rop;
+        DataTypeBase* type;
+
+        BinaryExpressionNode(ExpressionNode*, ExpressionNode*);
+    public:
+        virtual ~BinaryExpressionNode();
+        
+        virtual void checkTypes(BrainfuckWriter&);
+        DataTypeBase* getType();
+};
+
 class AssignmentNode : public ExpressionNode
 {
     private:
@@ -292,79 +294,54 @@ class AssignmentNode : public ExpressionNode
         virtual DataTypeBase* getType();
 };
 
-class AddNode : public ExpressionNode
+class AddNode : public BinaryExpressionNode
 {
-    private:
-        ExpressionNode* lop;
-        ExpressionNode* rop;
     public:
         AddNode(ExpressionNode*, ExpressionNode*);
         virtual ~AddNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
-class SubNode : public ExpressionNode
+class SubNode : public BinaryExpressionNode
 {
-    private:
-        ExpressionNode* lop;
-        ExpressionNode* rop;
     public:
         SubNode(ExpressionNode*, ExpressionNode*);
         virtual ~SubNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
-class MulNode : public ExpressionNode
+class MulNode : public BinaryExpressionNode
 {
-    private:
-        ExpressionNode* lop;
-        ExpressionNode* rop;
     public:
         MulNode(ExpressionNode*, ExpressionNode*);
         virtual ~MulNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
-class DivNode : public ExpressionNode
+class DivNode : public BinaryExpressionNode
 {
-    private:
-        ExpressionNode* lop;
-        ExpressionNode* rop;
     public:
         DivNode(ExpressionNode*, ExpressionNode*);
         virtual ~DivNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
-class ModNode : public ExpressionNode
+class ModNode : public BinaryExpressionNode
 {
-    private:
-        ExpressionNode* lop;
-        ExpressionNode* rop;
     public:
         ModNode(ExpressionNode*, ExpressionNode*);
         virtual ~ModNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
 class NegateNode : public ExpressionNode
@@ -395,79 +372,54 @@ class ComplementNode : public ExpressionNode
         virtual DataTypeBase* getType();
 };
 
-class BitwiseAndNode : public ExpressionNode
+class BitwiseAndNode : public BinaryExpressionNode
 {
-    private:
-        ExpressionNode* lop;
-        ExpressionNode* rop;
     public:
         BitwiseAndNode(ExpressionNode*, ExpressionNode*);
         virtual ~BitwiseAndNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
-class BitwiseOrNode : public ExpressionNode
+class BitwiseOrNode : public BinaryExpressionNode
 {
-    private:
-        ExpressionNode* lop;
-        ExpressionNode* rop;
     public:
         BitwiseOrNode(ExpressionNode*, ExpressionNode*);
         virtual ~BitwiseOrNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
-class BitwiseXorNode : public ExpressionNode
+class BitwiseXorNode : public BinaryExpressionNode
 {
-    private:
-        ExpressionNode* lop;
-        ExpressionNode* rop;
     public:
         BitwiseXorNode(ExpressionNode*, ExpressionNode*);
         virtual ~BitwiseXorNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
-class BitwiseLeftShiftNode : public ExpressionNode
+class BitwiseLeftShiftNode : public BinaryExpressionNode
 {
-    private:
-        ExpressionNode* lop;
-        ExpressionNode* rop;
     public:
         BitwiseLeftShiftNode(ExpressionNode*, ExpressionNode*);
         virtual ~BitwiseLeftShiftNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
-class BitwiseRightShiftNode : public ExpressionNode
+class BitwiseRightShiftNode : public BinaryExpressionNode
 {
-    private:
-        ExpressionNode* lop;
-        ExpressionNode* rop;
     public:
         BitwiseRightShiftNode(ExpressionNode*, ExpressionNode*);
         virtual ~BitwiseRightShiftNode();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void checkTypes(BrainfuckWriter&);
-        virtual DataTypeBase* getType();
 };
 
 class U8ConstantNode : public ExpressionNode
@@ -521,7 +473,7 @@ class FunctionCallNode : public ExpressionNode
         std::string function_var;
         FunctionArguments* arguments;
     public:
-        FunctionCallNode(const std::string&, FunctionArguments* arguments);
+        FunctionCallNode(const std::string&, FunctionArguments*);
         virtual ~FunctionCallNode();
         
         virtual void print(std::ostream&, size_t) const;
@@ -553,6 +505,22 @@ class CastExpression : public ExpressionNode
         CastExpression(ExpressionNode*, DataTypeBase*);
         virtual ~CastExpression();
 
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
+        virtual void checkTypes(BrainfuckWriter&);
+        virtual DataTypeBase* getType();
+};
+
+class AssemblyNode : public ExpressionNode
+{
+    private:
+        DataTypeBase* datatype;
+        std::string assembly;
+        FunctionArguments* arguments;
+    public:
+        AssemblyNode(DataTypeBase*, const std::string&, FunctionArguments*);
+        virtual ~AssemblyNode();
+        
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);

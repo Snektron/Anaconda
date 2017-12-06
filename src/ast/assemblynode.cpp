@@ -3,8 +3,8 @@
 
 #include <iostream>
 
-AssemblyNode::AssemblyNode(const std::string& assembly):
-	assembly(assembly) {}
+AssemblyNode::AssemblyNode(DataTypeBase* datatype, const std::string& assembly, FunctionArguments* arguments):
+	datatype(datatype), assembly(assembly), arguments(arguments) {}
 
 AssemblyNode::~AssemblyNode() {}
 
@@ -16,5 +16,10 @@ void AssemblyNode::print(std::ostream& os, size_t level) const
 
 void AssemblyNode::checkTypes(BrainfuckWriter& writer)
 {
-    UNUSED(writer);
+    this->arguments->checkTypes(writer);
+}
+
+DataTypeBase* AssemblyNode::getType()
+{
+    return this->datatype->copy();
 }
