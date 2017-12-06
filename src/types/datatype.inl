@@ -20,3 +20,15 @@ bool DataType<dtype>::equals(const DataTypeBase& other) const
 {
     return other.type == dtype;
 }
+
+template <DataTypeClass dtype>
+bool DataType<dtype>::isBoolean() const
+{
+    return true;
+}
+
+template <>
+bool DataType<DataTypeClass::VOID>::isBoolean() const
+{
+    return false;
+}

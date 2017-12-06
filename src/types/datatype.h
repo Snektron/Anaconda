@@ -9,7 +9,6 @@ enum class DataTypeClass
 {
     VOID,
     U8,
-    STRUCT,
     STRUCT_FORWARD
 };
 
@@ -26,6 +25,7 @@ class DataTypeBase
         virtual DataTypeBase* copy() const = 0;
         virtual void print(std::ostream&) const = 0;
         virtual bool equals(const DataTypeBase&) const = 0;
+        virtual bool isBoolean() const = 0;
 };
 
 template <DataTypeClass dtype>
@@ -38,6 +38,7 @@ class DataType : public DataTypeBase
         virtual DataType<dtype>* copy() const;
         virtual void print(std::ostream&) const;
         virtual bool equals(const DataTypeBase&) const;
+        virtual bool isBoolean() const;
 };
 
 template<>
@@ -52,6 +53,7 @@ class DataType<DataTypeClass::STRUCT_FORWARD> : public DataTypeBase
         virtual DataType<DataTypeClass::STRUCT_FORWARD>* copy() const;
         virtual void print(std::ostream&) const;
         virtual bool equals(const DataTypeBase&) const;
+        virtual bool isBoolean() const;
 };
 
 std::ostream& operator<<(std::ostream&, const DataTypeBase&);
