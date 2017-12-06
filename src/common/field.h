@@ -1,6 +1,7 @@
 #ifndef SRC_COMMON_FIELD_H_
 #define SRC_COMMON_FIELD_H_
 
+#include <ostream>
 #include "types/datatype.h"
 
 class Field
@@ -16,6 +17,8 @@ class Field
 		const std::string& getName() const;
 
 		Field* copy() const;
+
+		std::ostream& operator<<(std::ostream os);
 };
 
 #endif

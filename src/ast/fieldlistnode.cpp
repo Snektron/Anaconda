@@ -1,7 +1,7 @@
 #include "ast/node.h"
 #include "types/datatype.h"
 #include "util/utils.h"
-
+#include "common/format.h"
 #include <iostream>
 
 FieldListNode::FieldListNode(const std::vector<Field>& arguments):
@@ -15,17 +15,7 @@ FieldListNode::~FieldListNode()
 void FieldListNode::print(std::ostream& os, size_t level) const
 {
     this->printIndent(os, level);
-    os << "function parameters (";
-    bool first = true;
-    for(auto& it : this->arguments)
-    {
-        if(!first)
-            os << ", ";
-        else
-            first = false;
-        os << it.getName() << ": " << *it.getType();
-    }
-    os << ")" << std::endl;
+    fmt::ssprintf(os, "function parameters (", this->arguments, ")");
 }
 
 std::vector<Field>& FieldListNode::getParameters()

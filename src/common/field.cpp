@@ -21,3 +21,9 @@ const std::string& Field::getName() const
 Field* Field::copy() const {
 	return new Field(this->type->copy(), this->name);
 }
+
+std::ostream& Field::operator<<(std::ostream os)
+{
+    os << this->name << ":" << *this->type;
+    return os;
+}
