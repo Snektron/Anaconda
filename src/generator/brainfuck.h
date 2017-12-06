@@ -59,6 +59,7 @@ class FunctionDefinition
         FunctionDefinition& operator=(const FunctionDefinition&) = delete;
 
         bool parametersEqual(const std::vector<DataTypeBase*>& arguments);
+        DataTypeBase* getReturnType() const;
 };
 
 class StructureDefinition
@@ -81,6 +82,7 @@ class BrainfuckWriter
         std::vector<Scope> scopes;
         std::multimap<std::string, FunctionDefinition> functions;
         std::map<std::string, StructureDefinition> structures;
+        std::vector<FunctionDefinition*> scope_func_lookup;
         size_t current_scope;
 	public:
 		BrainfuckWriter(std::ostream&);
@@ -99,6 +101,7 @@ class BrainfuckWriter
         //Controlling function-level scope
         void switchScope(size_t);
         size_t getScope();
+        FunctionDefinition* lookupScope(size_t);
 
         //Controlling statement-level frames
         void enterFrame();

@@ -2,7 +2,9 @@
 #include "except/exceptions.h"
 
 Scope::Scope(Scope&& old):
-	declarations(old.declarations), stack_locations(old.stack_locations) {}
+	declarations(old.declarations), stack_locations(old.stack_locations)
+{
+}
 
 void Scope::declareVariable(const std::string& name, DataTypeBase* datatype)
 {
@@ -84,6 +86,11 @@ bool FunctionDefinition::parametersEqual(const std::vector<DataTypeBase*>& argum
     return true;
 }
 
+DataTypeBase* FunctionDefinition::getReturnType() const
+{
+    return this->return_type->copy();
+}
+
 StructureDefinition::StructureDefinition(const std::vector<Field>& fields):
 	fields(fields) {}
 
@@ -97,14 +104,16 @@ BrainfuckWriter::BrainfuckWriter(std::ostream& os):
     Scope global_scope;
     global_scope.enterFrame();
     this->scopes.emplace_back(std::move(global_scope));
+    this->scope_func_lookup.emplace_back(nullptr);
 }
 
 size_t BrainfuckWriter::declareFunction(const std::string& name, const std::vector<Field>& arguments, DataTypeBase* return_value, BlockNode* block_node)
 {
     if(this->isFunctionDeclared(name, arguments))
         throw RedefinitionException("Redefinition of function " + name);
-    this->functions.emplace(name, FunctionDefinition(arguments, return_value, block_node));
+    auto it = this->functions.emplace(name, FunctionDefinition(arguments, return_value, block_node));
     this->scopes.emplace_back(Scope());
+    this->scope_func_lookup.emplace_back(&it->second);
     return this->scopes.size() - 1;
 }
 
@@ -156,6 +165,11 @@ void BrainfuckWriter::switchScope(size_t new_scope)
 size_t BrainfuckWriter::getScope()
 {
     return this->current_scope;
+}
+
+FunctionDefinition* BrainfuckWriter::lookupScope(size_t index)
+{
+    return this->scope_func_lookup[index];
 }
 
 void BrainfuckWriter::enterFrame()

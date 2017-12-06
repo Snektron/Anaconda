@@ -56,6 +56,9 @@ class DataType<DataTypeClass::STRUCT_FORWARD> : public DataTypeBase
         virtual bool isBoolean() const;
 };
 
+template<>
+bool DataType<DataTypeClass::VOID>::isBoolean() const;
+
 std::ostream& operator<<(std::ostream&, const DataTypeBase&);
 
 #include "datatype.inl"

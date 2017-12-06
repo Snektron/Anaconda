@@ -22,7 +22,7 @@ void StructureDefinitionNode::print(std::ostream& os, size_t level) const
     }
 }
 
-void StructureDefinitionNode::declareGlobals(BrainfuckWriter& writer) const
+void StructureDefinitionNode::declareGlobals(BrainfuckWriter& writer)
 {
     writer.declareStructure(this->name, this->members);
 }

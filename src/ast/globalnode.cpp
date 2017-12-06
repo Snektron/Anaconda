@@ -21,7 +21,7 @@ void GlobalNode::print(std::ostream& os, size_t level) const
         it->print(os, level+1);
 }
 
-void GlobalNode::declareGlobals(BrainfuckWriter& writer) const
+void GlobalNode::declareGlobals(BrainfuckWriter& writer)
 {
     size_t old_scope = writer.getScope();
     writer.switchScope(GLOBAL_SCOPE);

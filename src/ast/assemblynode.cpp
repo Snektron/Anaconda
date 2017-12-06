@@ -1,4 +1,5 @@
 #include "ast/node.h"
+#include "util/utils.h"
 
 #include <iostream>
 
@@ -11,4 +12,9 @@ void AssemblyNode::print(std::ostream& os, size_t level) const
 {
     this->printIndent(os, level);
     os << "assembly statement (" << this->assembly << ")" << std::endl;
+}
+
+void AssemblyNode::checkTypes(BrainfuckWriter& writer)
+{
+    UNUSED(writer);
 }

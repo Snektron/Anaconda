@@ -67,7 +67,7 @@ class Node
         
         virtual void print(std::ostream&, size_t) const = 0;
         virtual void generate(BrainfuckWriter&) = 0;
-        virtual void declareGlobals(BrainfuckWriter&) const;
+        virtual void declareGlobals(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&) = 0;
 };
 
@@ -81,7 +81,7 @@ class GlobalNode : public Node
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void declareGlobals(BrainfuckWriter&) const;
+        virtual void declareGlobals(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
@@ -101,7 +101,7 @@ class GlobalExpressionNode : public GlobalElementNode
     
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void declareGlobals(BrainfuckWriter&) const;
+        virtual void declareGlobals(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
@@ -112,13 +112,14 @@ class FunctionDeclaration : public GlobalElementNode
         FunctionParameters* parameters;
         DataTypeBase* return_type;
         BlockNode* content;
+        size_t scope;
     public:
         FunctionDeclaration(const std::string&, FunctionParameters*, DataTypeBase*, BlockNode*);
         virtual ~FunctionDeclaration();
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void declareGlobals(BrainfuckWriter&) const;
+        virtual void declareGlobals(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
@@ -149,7 +150,7 @@ class StructureDefinitionNode : public GlobalElementNode
         
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);
-        virtual void declareGlobals(BrainfuckWriter&) const;
+        virtual void declareGlobals(BrainfuckWriter&);
         virtual void checkTypes(BrainfuckWriter&);
 };
 
