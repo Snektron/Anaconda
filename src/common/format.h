@@ -3,22 +3,20 @@
 
 #include <string>
 #include <memory>
+#include <ostream>
 #include <sstream>
 
 namespace fmt
 {
-	namespace
+	template <typename T, typename... Args>
+	void ssprintf(std::ostream& ss, T&& first, Args&&... args)
 	{
-		template <typename T, typename... Args>
-		void ssprintf(std::stringstream& ss, T&& first, Args&&... args)
+		if constexpr (sizeof...(Args) == 0)
+			ss << first;
+		else
 		{
-			if constexpr (sizeof...(Args) == 0)
-				ss << first;
-			else
-			{
-				ss << first;
-				ssprintf(ss, args...);
-			}
+			ss << first;
+			ssprintf(ss, args...);
 		}
 	}
 
