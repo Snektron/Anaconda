@@ -20,7 +20,7 @@ void GlobalExpressionNode::print(std::ostream& os, size_t size) const
     this->expression->print(os, size+1);
 }
 
-void GlobalExpressionNode::declareGlobals(BrainfuckWriter& writer) const
+void GlobalExpressionNode::declareGlobals(BrainfuckWriter& writer)
 {
     this->expression->declareGlobals(writer);
 }

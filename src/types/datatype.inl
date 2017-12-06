@@ -27,8 +27,8 @@ bool DataType<dtype>::isBoolean() const
     return true;
 }
 
-template <>
-bool DataType<DataTypeClass::VOID>::isBoolean() const
+template <DataTypeClass dtype>
+bool DataType<dtype>::supportsArithmetic() const
 {
-    return false;
+    return true;
 }

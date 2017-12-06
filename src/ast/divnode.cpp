@@ -3,13 +3,7 @@
 #include <iostream>
 
 DivNode::DivNode(ExpressionNode* lop, ExpressionNode* rop):
-	lop(lop), rop(rop) {}
-
-DivNode::~DivNode()
-{
-    delete this->lop;
-    delete this->rop;
-}
+	BinaryExpressionNode(lop, rop) {}
 
 void DivNode::print(std::ostream& os, size_t level) const
 {

@@ -14,6 +14,18 @@ DataTypeBase::DataTypeBase(DataTypeClass type):
 DataType<DataTypeClass::STRUCT_FORWARD>::DataType(const std::string& name):
 	DataTypeBase(DataTypeClass::STRUCT_FORWARD), name(name) {}
 
+template <>
+bool DataType<DataTypeClass::VOID>::isBoolean() const
+{
+    return false;
+}
+
+template <>
+bool DataType<DataTypeClass::VOID>::supportsArithmetic() const
+{
+    return false;
+}
+
 DataType<DataTypeClass::STRUCT_FORWARD>* DataType<DataTypeClass::STRUCT_FORWARD>::copy() const
 {
     return new DataType<DataTypeClass::STRUCT_FORWARD>(this->name);
@@ -32,6 +44,11 @@ bool DataType<DataTypeClass::STRUCT_FORWARD>::equals(const DataTypeBase& other) 
 }
 
 bool DataType<DataTypeClass::STRUCT_FORWARD>::isBoolean() const
+{
+    return false;
+}
+
+bool DataType<DataTypeClass::STRUCT_FORWARD>::supportsArithmetic() const
 {
     return false;
 }

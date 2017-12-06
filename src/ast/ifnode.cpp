@@ -28,5 +28,5 @@ void IfNode::checkTypes(BrainfuckWriter& writer)
     
     std::unique_ptr<DataTypeBase> cond_type(this->conditional->getType());
     if(!cond_type->isBoolean())
-        throw TypeMismatchException("Conditional for if statement was not convertable too boolean");    
+        throw TypeMismatchException("Conditional for if statement was not convertable to boolean");    
 }

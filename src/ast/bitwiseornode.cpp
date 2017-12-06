@@ -3,13 +3,7 @@
 #include <iostream>
 
 BitwiseOrNode::BitwiseOrNode(ExpressionNode* lop, ExpressionNode* rop):
-	lop(lop), rop(rop) {}
-
-BitwiseOrNode::~BitwiseOrNode()
-{
-    delete this->lop;
-    delete this->rop;
-}
+	BinaryExpressionNode(lop, rop) {}
 
 void BitwiseOrNode::print(std::ostream& os, size_t level) const
 {

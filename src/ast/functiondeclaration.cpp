@@ -23,13 +23,18 @@ void FunctionDeclaration::print(std::ostream& output, size_t level) const
     this->parameters->print(output, level+1);
 }
 
-void FunctionDeclaration::declareGlobals(BrainfuckWriter& writer) const
+void FunctionDeclaration::declareGlobals(BrainfuckWriter& writer)
 {
-    writer.declareFunction(this->name, this->parameters->getParameters(), this->return_type, this->content);
+    this->scope = writer.declareFunction(this->name, this->parameters->getParameters(), this->return_type, this->content);
 }
 
 void FunctionDeclaration::checkTypes(BrainfuckWriter& writer)
 {
+    size_t old_scope = writer.getScope();
+    writer.switchScope(this->scope);
+
     this->parameters->checkTypes(writer);
     this->content->checkTypes(writer);
+
+    writer.switchScope(old_scope);
 }

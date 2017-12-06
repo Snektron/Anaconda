@@ -3,12 +3,7 @@
 #include <iostream>
 
 ComplementNode::ComplementNode(ExpressionNode* op):
-	op(op) {}
-
-ComplementNode::~ComplementNode()
-{
-    delete this->op;
-}
+	UnaryExpressionNode(op) {}
 
 void ComplementNode::print(std::ostream& os, size_t level) const
 {

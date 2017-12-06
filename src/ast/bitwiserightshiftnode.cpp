@@ -3,13 +3,7 @@
 #include <iostream>
 
 BitwiseRightShiftNode::BitwiseRightShiftNode(ExpressionNode* lop, ExpressionNode* rop):
-	lop(lop), rop(rop) {}
-
-BitwiseRightShiftNode::~BitwiseRightShiftNode()
-{
-    delete this->lop;
-    delete this->rop;
-}
+	BinaryExpressionNode(lop, rop) {}
 
 void BitwiseRightShiftNode::print(std::ostream& os, size_t level) const
 {
