@@ -77,19 +77,19 @@ class StructureDefinition
 
 class BrainfuckWriter
 {
-	private:
-		std::ostream& output;
+    private:
+        std::ostream& output;
         std::vector<Scope> scopes;
         std::multimap<std::string, FunctionDefinition> functions;
         std::map<std::string, StructureDefinition> structures;
         std::vector<FunctionDefinition*> scope_func_lookup;
         size_t current_scope;
-	public:
-		BrainfuckWriter(std::ostream&);
-		~BrainfuckWriter() = default;
+    public:
+        BrainfuckWriter(std::ostream&);
+        ~BrainfuckWriter() = default;
 
         //Declarations
-	    size_t declareFunction(const std::string&, const std::vector<Field>&, DataTypeBase*, BlockNode*);
+        size_t declareFunction(const std::string&, const std::vector<Field>&, DataTypeBase*, BlockNode*);
         void declareStructure(const std::string&, const std::vector<Field>&);
         void declareVariable(const std::string&, DataTypeBase*);
 

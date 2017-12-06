@@ -3,7 +3,7 @@
 #include <iostream>
 
 FunctionCallNode::FunctionCallNode(const std::string& function_var, ArgumentListNode* arguments):
-	function_var(function_var), arguments(arguments) {}
+    function_var(function_var), arguments(arguments) {}
 
 FunctionCallNode::~FunctionCallNode()
 {

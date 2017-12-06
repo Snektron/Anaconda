@@ -3,7 +3,7 @@
 #include <iostream>
 
 VariableNode::VariableNode(const std::string& variable):
-	variable(variable) {}
+    variable(variable) {}
 
 VariableNode::~VariableNode() {}
 

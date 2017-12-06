@@ -1,7 +1,7 @@
 #include "ast/node.h"
 
 StatementListNode::StatementListNode(StatementNode* first, StatementNode* second):
-	first(first), second(second) {}
+    first(first), second(second) {}
 
 StatementListNode::~StatementListNode()
 {

@@ -3,7 +3,7 @@
 #include <iostream>
 
 BitwiseLeftShiftNode::BitwiseLeftShiftNode(ExpressionNode* lop, ExpressionNode* rop):
-	BinaryExpressionNode(lop, rop) {}
+    BinaryExpressionNode(lop, rop) {}
 
 void BitwiseLeftShiftNode::print(std::ostream& os, size_t level) const
 {

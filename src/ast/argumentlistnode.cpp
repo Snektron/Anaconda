@@ -3,7 +3,7 @@
 #include <iostream>
 
 ArgumentListNode::ArgumentListNode(const std::vector<ExpressionNode*>& arguments):
-	arguments(arguments) {}
+    arguments(arguments) {}
 
 ArgumentListNode::~ArgumentListNode()
 {

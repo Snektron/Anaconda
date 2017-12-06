@@ -5,7 +5,7 @@
 #include <memory>
 
 IfNode::IfNode(ExpressionNode* conditional, StatementNode* statement):
-	conditional(conditional), statement(statement) {}
+    conditional(conditional), statement(statement) {}
 
 IfNode::~IfNode()
 {

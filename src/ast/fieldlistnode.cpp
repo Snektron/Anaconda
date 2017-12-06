@@ -5,7 +5,7 @@
 #include <iostream>
 
 FieldListNode::FieldListNode(const std::vector<Field>& arguments):
-	arguments(arguments) {}
+    arguments(arguments) {}
 
 FieldListNode::~FieldListNode()
 {

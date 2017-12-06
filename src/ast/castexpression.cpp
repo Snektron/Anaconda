@@ -4,7 +4,7 @@
 #include <iostream>
 
 CastExpression::CastExpression(ExpressionNode* expression, DataTypeBase* desired_type):
-	expression(expression), desired_type(desired_type) {}
+    expression(expression), desired_type(desired_type) {}
 
 CastExpression::~CastExpression()
 {

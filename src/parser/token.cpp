@@ -3,10 +3,10 @@
 const std::vector<const char*> Token::types =
 {
     "<eoi>", "<unknown>", "<whitespace>", "<newline>",
-	"<ident>",
-	"(", ")", "{", "}",
-	"->", ",", "=", "+", "-", "*", "/", "%", ";",
-	"<comment>"
+    "<ident>",
+    "(", ")", "{", "}",
+    "->", ",", "=", "+", "-", "*", "/", "%", ";",
+    "<comment>"
 };
 
 const std::vector<const char*> Token::keywords =
@@ -54,12 +54,12 @@ bool Token::isBuiltinDataType() const
 
 bool Token::isDataType() const
 {
-	return isType<TokenType::IDENT>() && !isKeyword();
+    return isType<TokenType::IDENT>() && !isKeyword();
 }
 
 bool Token::isReserved() const
 {
-	return isKeyword() || isBuiltinDataType();
+    return isKeyword() || isBuiltinDataType();
 }
 
 std::string Token::asText() const
@@ -87,8 +87,8 @@ bool Token::hasText() const
 
 std::ostream& operator<<(std::ostream& os, const TokenType type)
 {
-	os << Token::types[(std::size_t) type];
-	return os;
+    os << Token::types[(std::size_t) type];
+    return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const Keyword kw)
@@ -99,13 +99,13 @@ std::ostream& operator<<(std::ostream& os, const Keyword kw)
 
 std::ostream& operator<<(std::ostream& os, const Token& token)
 {
-	if (token.hasText())
-	{
-		std::string str = token.asText();
-		os << '\'' << str << '\'';
-	}
-	else
-		os << token.type;
+    if (token.hasText())
+    {
+        std::string str = token.asText();
+        os << '\'' << str << '\'';
+    }
+    else
+        os << token.type;
 
-	return os;
+    return os;
 }

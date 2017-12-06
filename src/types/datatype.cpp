@@ -9,10 +9,10 @@ const char* DATATYPE_NAMES[] = {
 };
 
 DataTypeBase::DataTypeBase(DataTypeClass type):
-	type(type) {}
+    type(type) {}
 
 DataType<DataTypeClass::STRUCT_FORWARD>::DataType(const std::string& name):
-	DataTypeBase(DataTypeClass::STRUCT_FORWARD), name(name) {}
+    DataTypeBase(DataTypeClass::STRUCT_FORWARD), name(name) {}
 
 template <>
 bool DataType<DataTypeClass::VOID>::isBoolean() const

@@ -7,8 +7,8 @@
 class AnacondaException : public std::runtime_error
 {
     public:
-		AnacondaException(const std::string& msg);
-		AnacondaException(const char* msg);
+        AnacondaException(const std::string& msg);
+        AnacondaException(const char* msg);
         virtual ~AnacondaException() = default;
 };
 
@@ -54,9 +54,9 @@ class RecursiveTypeException : public TypeCheckException
 
 class SyntaxException : public AnacondaException
 {
-	SyntaxException(const std::string& msg);
-	SyntaxException(const char* msg);
-	virtual ~SyntaxException() = default;
+    SyntaxException(const std::string& msg);
+    SyntaxException(const char* msg);
+    virtual ~SyntaxException() = default;
 };
 
 #endif

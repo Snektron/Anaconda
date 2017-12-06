@@ -1,28 +1,28 @@
 #include "except/exceptions.h"
 
 AnacondaException::AnacondaException(const std::string& msg):
-	std::runtime_error(msg) {}
+    std::runtime_error(msg) {}
 
 AnacondaException::AnacondaException(const char* msg):
-	std::runtime_error(msg) {}
+    std::runtime_error(msg) {}
 
 ASTException::ASTException(const std::string& msg):
-	AnacondaException(msg) {}
+    AnacondaException(msg) {}
 
 ASTException::ASTException(const char* msg):
-	AnacondaException(msg) {}
+    AnacondaException(msg) {}
 
 TypeCheckException::TypeCheckException(const std::string& msg):
-	ASTException(msg) {}
+    ASTException(msg) {}
 
 TypeCheckException::TypeCheckException(const char* msg):
-	ASTException(msg) {}
+    ASTException(msg) {}
 
 RedefinitionException::RedefinitionException(const std::string& msg):
-	ASTException(msg) {}
+    ASTException(msg) {}
 
 RedefinitionException::RedefinitionException(const char* msg):
-	ASTException(msg) {}
+    ASTException(msg) {}
 
 TypeMismatchException::TypeMismatchException(const std::string& msg):
     TypeCheckException(msg) {}
@@ -31,10 +31,10 @@ TypeMismatchException::TypeMismatchException(const char* msg):
     TypeCheckException(msg) {}
 
 RecursiveTypeException::RecursiveTypeException(const std::string& msg):
-	TypeCheckException(msg) {}
+    TypeCheckException(msg) {}
 
 RecursiveTypeException::RecursiveTypeException(const char* msg):
-	TypeCheckException(msg) {}
+    TypeCheckException(msg) {}
 
 SyntaxException::SyntaxException(const std::string& msg):
     AnacondaException(msg) {}

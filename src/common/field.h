@@ -6,19 +6,19 @@
 
 class Field
 {
-	private:
-		const DataTypeBase* type;
-		const std::string name;
-	public:
-		Field(DataTypeBase* type, const std::string& name);
-		~Field();
+    private:
+        const DataTypeBase* type;
+        const std::string name;
+    public:
+        Field(DataTypeBase* type, const std::string& name);
+        ~Field();
 
-		const DataTypeBase* getType() const;
-		const std::string& getName() const;
+        const DataTypeBase* getType() const;
+        const std::string& getName() const;
 
-		Field* copy() const;
+        Field* copy() const;
 
-		std::ostream& operator<<(std::ostream os);
+        std::ostream& operator<<(std::ostream os);
 };
 
 #endif

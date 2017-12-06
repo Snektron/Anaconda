@@ -36,20 +36,20 @@ class Parser
         template <TokenType T>
         bool check()
         {
-        	if (this->token.isType<T>())
-        		return true;
-        	this->triedTokens.push_back(T);
-        	return false;
+            if (this->token.isType<T>())
+                return true;
+            this->triedTokens.push_back(T);
+            return false;
         }
 
         template <Keyword T>
-	    bool check()
-	    {
-			if (this->token.isKeyword<T>())
-				return true;
-			this->triedKeywords.push_back(T);
-			return false;
-	    }
+        bool check()
+        {
+            if (this->token.isKeyword<T>())
+                return true;
+            this->triedKeywords.push_back(T);
+            return false;
+        }
 
         template <TokenType T>
         bool expect()
@@ -63,37 +63,37 @@ class Parser
 
         template <Keyword T>
         bool expect()
-		{
-			if (this->check<T>())
-				return true;
+        {
+            if (this->check<T>())
+                return true;
 
-			unexpected();
-			return false;
-		}
+            unexpected();
+            return false;
+        }
 
         template <TokenType T>
         bool eat()
         {
-        	if (this->check<T>())
-        	{
-        		consume();
-        		return true;
-        	}
+            if (this->check<T>())
+            {
+                consume();
+                return true;
+            }
 
-        	return false;
+            return false;
         }
 
         template <Keyword T>
-		bool eat()
-		{
-			if (this->check<T>())
-			{
-				consume();
-				return true;
-			}
+        bool eat()
+        {
+            if (this->check<T>())
+            {
+                consume();
+                return true;
+            }
 
-			return false;
-		}
+            return false;
+        }
 
         GlobalNode* prog();
         GlobalElementNode* globalstat();

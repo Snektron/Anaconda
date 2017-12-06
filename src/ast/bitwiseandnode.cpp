@@ -3,7 +3,7 @@
 #include <iostream>
 
 BitwiseAndNode::BitwiseAndNode(ExpressionNode* lop, ExpressionNode* rop):
-	BinaryExpressionNode(lop, rop) {}
+    BinaryExpressionNode(lop, rop) {}
 
 void BitwiseAndNode::print(std::ostream& os, size_t level) const
 {

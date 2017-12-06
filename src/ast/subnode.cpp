@@ -3,7 +3,7 @@
 #include <iostream>
 
 SubNode::SubNode(ExpressionNode* lop, ExpressionNode* rop):
-	BinaryExpressionNode(lop, rop) {}
+    BinaryExpressionNode(lop, rop) {}
 
 void SubNode::print(std::ostream& os, size_t level) const
 {

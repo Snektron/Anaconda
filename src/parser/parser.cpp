@@ -10,15 +10,15 @@ Parser::Parser(std::istream& input):
 
 void Parser::error(const std::string& msg)
 {
-	this->messages.push_back(Message(MessageType::ERROR, msg));
+    this->messages.push_back(Message(MessageType::ERROR, msg));
 }
 
 void Parser::unexpected()
 {
-	std::stringstream ss;
-	fmt::ssprintf(ss, "Error: unexpected token '", this->token, "' expected");
-	if (this->triedKeywords.size() > 0)
-		fmt::ssprintf(ss, " - keyword(s) ", this->triedKeywords, '\n');
+    std::stringstream ss;
+    fmt::ssprintf(ss, "Error: unexpected token '", this->token, "' expected");
+    if (this->triedKeywords.size() > 0)
+        fmt::ssprintf(ss, " - keyword(s) ", this->triedKeywords, '\n');
     if (this->triedKeywords.size() > 0)
         fmt::ssprintf(ss, " - token(s) ", this->triedKeywords, '\n');
 
@@ -94,8 +94,8 @@ StructureDefinitionNode* Parser::structdecl()
 
     if (!this->check<TokenType::IDENT>())
     {
-    	this->unexpected();
-    	return nullptr;
+        this->unexpected();
+        return nullptr;
     }
 
     std::string name = this->token.asText();
@@ -122,7 +122,7 @@ FunctionDeclaration* Parser::funcdecl()
         return nullptr;
 
     if (!this->check<TokenType::IDENT>())
-    	return nullptr;
+        return nullptr;
 
     std::string name = this->token.asText();
     consume();
@@ -135,16 +135,16 @@ FunctionDeclaration* Parser::funcdecl()
 
     if (this->eat<TokenType::ARROW>())
     {
-    	if (!this->token.isDataType())
-    	{
-    		delete parameters;
-    		return nullptr;
-    	}
+        if (!this->token.isDataType())
+        {
+            delete parameters;
+            return nullptr;
+        }
 
-    	rtype = this->token.asDataType();
+        rtype = this->token.asDataType();
     }
     else
-    	rtype = new DataType<DataTypeClass::VOID>();
+        rtype = new DataType<DataTypeClass::VOID>();
 
     BlockNode *body = block();
 
@@ -265,19 +265,19 @@ StatementListNode* Parser::statlist()
 // <statement> = <ifstat> | <whilestat>
 StatementNode* Parser::statement()
 {
-	if (this->check<Keyword::IF>())
-		return ifstat();
+    if (this->check<Keyword::IF>())
+        return ifstat();
 
-	if (this->check<Keyword::WHILE>())
-		return whilestat();
+    if (this->check<Keyword::WHILE>())
+        return whilestat();
 
-	if (this->check<Keyword::RETURN>())
-	    return returnstat();
+    if (this->check<Keyword::RETURN>())
+        return returnstat();
 
-	if (this->check<TokenType::BRACE_OPEN>())
-	    return block();
+    if (this->check<TokenType::BRACE_OPEN>())
+        return block();
 
-	return this->exprstat();
+    return this->exprstat();
 }
 
 ReturnNode* Parser::returnstat()
@@ -307,7 +307,7 @@ StatementNode* Parser::exprstat()
 StatementNode* Parser::ifstat()
 {
     if (!this->expect<Keyword::IF>())
-    	return nullptr;
+        return nullptr;
 
     ExpressionNode *condition = expr();
     if (!condition)
@@ -322,11 +322,11 @@ StatementNode* Parser::ifstat()
 
     if (this->eat<Keyword::ELSE>())
     {
-    	StatementNode *alternative(nullptr);
-    	if (this->check<Keyword::IF>())
-    		alternative = ifstat();
-    	else
-    		alternative = statement();
+        StatementNode *alternative(nullptr);
+        if (this->check<Keyword::IF>())
+            alternative = ifstat();
+        else
+            alternative = statement();
 
         if (!alternative)
         {
@@ -378,8 +378,8 @@ ExpressionNode* Parser::sum()
     {
         TokenType optype = this->token.type;
         if (!this->eat<TokenType::PLUS>() ||
-        	!this->eat<TokenType::MINUS>())
-			break;
+            !this->eat<TokenType::MINUS>())
+            break;
 
         ExpressionNode *rhs = product();
         if (!rhs)
@@ -415,9 +415,9 @@ ExpressionNode* Parser::product()
     {
         TokenType optype = this->token.type;
         if (!this->eat<TokenType::STAR>() ||
-        	!this->eat<TokenType::SLASH>() ||
-			!this->eat<TokenType::PERCENT>())
-        	break;
+            !this->eat<TokenType::SLASH>() ||
+            !this->eat<TokenType::PERCENT>())
+            break;
         consume();
 
         ExpressionNode *rhs = unary();
@@ -510,7 +510,7 @@ ExpressionNode* Parser::atom()
         return new AssignmentNode(name, rhs);
     }
 
-	return name;
+    return name;
 }
 
 // <paren> = '(' <expr> ')'

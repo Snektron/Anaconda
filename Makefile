@@ -31,7 +31,7 @@ clean:
 	@rm -rf $(BUILD) $(TARGET)
 	
 format:
-	@$(foreach file, $(FMT), clang-format -i $(file);)
+	@$(foreach file, $(FMT), $(shell E:\\Programs\\msys2\\usr\\bin\\expand -i -t 4 $(file) > $(file)))
 	
 run: all
 	@./$(TARGET) test.an

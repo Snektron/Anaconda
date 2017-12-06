@@ -4,7 +4,7 @@
 #include <iostream>
 
 GlobalNode::GlobalNode(const std::vector<GlobalElementNode*>& elements):
-	elements(elements) {}
+    elements(elements) {}
 
 GlobalNode::~GlobalNode()
 {

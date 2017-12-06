@@ -7,7 +7,7 @@
 #include <iostream>
 
 StructureDefinitionNode::StructureDefinitionNode(const std::string& name, FieldListNode* members):
-	name(name), members(members), type(new DataType<DataTypeClass::STRUCT_FORWARD>(name)) {}
+    name(name), members(members), type(new DataType<DataTypeClass::STRUCT_FORWARD>(name)) {}
 
 StructureDefinitionNode::~StructureDefinitionNode()
 {

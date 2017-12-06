@@ -2,7 +2,7 @@
 #include "except/exceptions.h"
 
 Scope::Scope(Scope&& old):
-	declarations(old.declarations), stack_locations(old.stack_locations)
+    declarations(old.declarations), stack_locations(old.stack_locations)
 {
 }
 
@@ -69,10 +69,10 @@ std::map<std::string, DataTypeBase*>& Scope::getFrameDeclarations()
 }
 
 FunctionDefinition::FunctionDefinition(const std::vector<Field>& arguments, DataTypeBase* return_type, BlockNode* code):
-	arguments(arguments), return_type(return_type), code(code) {}
+    arguments(arguments), return_type(return_type), code(code) {}
 
 FunctionDefinition::FunctionDefinition(FunctionDefinition&& old):
-	arguments(std::move(old.arguments)), return_type(old.return_type), code(old.code) {}
+    arguments(std::move(old.arguments)), return_type(old.return_type), code(old.code) {}
 
 bool FunctionDefinition::parametersEqual(const std::vector<DataTypeBase*>& arguments)
 {
@@ -92,13 +92,13 @@ DataTypeBase* FunctionDefinition::getReturnType() const
 }
 
 StructureDefinition::StructureDefinition(const std::vector<Field>& fields):
-	fields(fields) {}
+    fields(fields) {}
 
 StructureDefinition::StructureDefinition(StructureDefinition&& old):
-	fields(std::move(old.fields)) {}
+    fields(std::move(old.fields)) {}
 
 BrainfuckWriter::BrainfuckWriter(std::ostream& os):
-	output(os), current_scope(GLOBAL_SCOPE)
+    output(os), current_scope(GLOBAL_SCOPE)
 {
     //Create the global scope, which always has exactly one frame
     Scope global_scope;

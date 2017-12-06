@@ -8,7 +8,7 @@
 #include <sstream>
 
 DeclarationNode::DeclarationNode(DataTypeBase* type, const std::string& name):
-	datatype(type), variable(name) {}
+    datatype(type), variable(name) {}
 
 DeclarationNode::~DeclarationNode()
 {

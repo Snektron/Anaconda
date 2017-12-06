@@ -25,25 +25,25 @@ namespace fmt
         return os;
     }
 
-	template <typename T, typename... Args>
-	void ssprintf(std::ostream& ss, T&& first, Args&&... args)
-	{
-		if constexpr (sizeof...(Args) == 0)
-			ss << first;
-		else
-		{
-			ss << first;
-			ssprintf(ss, args...);
-		}
-	}
+    template <typename T, typename... Args>
+    void ssprintf(std::ostream& ss, T&& first, Args&&... args)
+    {
+        if constexpr (sizeof...(Args) == 0)
+            ss << first;
+        else
+        {
+            ss << first;
+            ssprintf(ss, args...);
+        }
+    }
 
-	template <typename T, typename... Args>
-	std::string sprintf(T first, Args&&... args)
-	{
-		std::stringstream ss;
-		ssprintf(ss, first, args...);
-		return ss.str();
-	}
+    template <typename T, typename... Args>
+    std::string sprintf(T first, Args&&... args)
+    {
+        std::stringstream ss;
+        ssprintf(ss, first, args...);
+        return ss.str();
+    }
 }
 
 #endif

@@ -5,30 +5,30 @@
 
 enum class MessageType
 {
-	WARNING,
-	ERROR
+    WARNING,
+    ERROR
 };
 
 class Message
 {
-	private:
-		const MessageType type;
-		const std::string msg;
+    private:
+        const MessageType type;
+        const std::string msg;
 
-	public:
-		Message(const MessageType type, const std::string& msg):
-			type(type), msg(msg)
-		{}
+    public:
+        Message(const MessageType type, const std::string& msg):
+            type(type), msg(msg)
+        {}
 
-		MessageType getType()
-		{
-			return type;
-		}
+        MessageType getType()
+        {
+            return type;
+        }
 
-		const std::string& getMsg()
-		{
-			return msg;
-		}
+        const std::string& getMsg()
+        {
+            return msg;
+        }
 };
 
 #endif

@@ -3,7 +3,7 @@
 #include <iostream>
 
 BlockNode::BlockNode(StatementNode* content):
-	content(content) {}
+    content(content) {}
 
 BlockNode::~BlockNode()
 {
