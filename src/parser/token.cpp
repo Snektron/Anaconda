@@ -64,9 +64,9 @@ DataTypeBase* Token::asDataType() const
         return nullptr;
 
     std::string text = asText();
-    if (text == builtinDataTypes[BuiltinDataType::U8])
+    if (text == builtinDataTypes[(std::size_t) BuiltinDataType::U8])
         return new DataType<DataTypeClass::U8>();
-    else if (text == builtinDataTypes[BuiltinDataType::VOID])
+    else if (text == builtinDataTypes[(std::size_t) BuiltinDataType::VOID])
         return new DataType<DataTypeClass::VOID>();
     return new DataType<DataTypeClass::STRUCT_FORWARD>(text);
 }

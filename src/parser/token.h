@@ -76,7 +76,7 @@ struct Token
     template <Keyword T>
     bool isKeyword() const
     {
-        return isType<TokenType::IDENT>() && asText() == keywords[(int) T];
+        return isType<TokenType::IDENT>() && asText() == keywords[(std::size_t) T];
     }
 
     template <TokenType T>
