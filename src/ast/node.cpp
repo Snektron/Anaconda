@@ -1,4 +1,5 @@
 #include "ast/node.h"
+#include "util/utils.h"
 
 #include <iostream>
 
@@ -10,4 +11,7 @@ void Node::printIndent(std::ostream& output, size_t level) const
         output << NODE_PRINT_INDENT;
 }
 
-void Node::declareGlobals(BrainfuckWriter& writer) const {}
+void Node::declareGlobals(BrainfuckWriter& writer) const
+{
+    UNUSED(writer);
+}

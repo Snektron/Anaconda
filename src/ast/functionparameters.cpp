@@ -1,5 +1,6 @@
 #include "ast/node.h"
 #include "types/datatype.h"
+#include "util/utils.h"
 
 #include <iostream>
 
@@ -34,5 +35,5 @@ std::vector<Field>& FunctionParameters::getParameters()
 
 void FunctionParameters::checkTypes(BrainfuckWriter& writer)
 {
-    
+    UNUSED(writer);
 }

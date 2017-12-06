@@ -2,6 +2,7 @@
 #include "types/datatype.h"
 #include "generator/brainfuck.h"
 #include "except/exceptions.h"
+#include "util/utils.h"
 
 #include <iostream>
 
@@ -28,6 +29,8 @@ void StructureDefinitionNode::declareGlobals(BrainfuckWriter& writer) const
 
 void StructureDefinitionNode::checkTypes(BrainfuckWriter& writer)
 {
+    UNUSED(writer);
+
     for(auto& it : this->members)
     {
         if(it.getType()->equals(*this->type))

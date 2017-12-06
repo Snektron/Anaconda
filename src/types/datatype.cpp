@@ -5,7 +5,6 @@
 const char* DATATYPE_NAMES[] = {
     "void",
     "u8",
-    "struct",
     "struct"
 };
 
@@ -29,6 +28,11 @@ bool DataType<DataTypeClass::STRUCT_FORWARD>::equals(const DataTypeBase& other) 
 {
     if(other.type == DataTypeClass::STRUCT_FORWARD)
         return this->name == ((const DataType<DataTypeClass::STRUCT_FORWARD>&)other).name;
+    return false;
+}
+
+bool DataType<DataTypeClass::STRUCT_FORWARD>::isBoolean() const
+{
     return false;
 }
 

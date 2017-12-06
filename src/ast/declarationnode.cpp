@@ -1,6 +1,7 @@
 #include "ast/node.h"
 #include "types/datatype.h"
 #include "except/exceptions.h"
+#include "util/utils.h"
 
 #include <iostream>
 #include <memory>
@@ -22,4 +23,5 @@ void DeclarationNode::print(std::ostream& os, size_t level) const
 
 void DeclarationNode::checkTypes(BrainfuckWriter& writer)
 {
+    UNUSED(writer);
 }

@@ -1,6 +1,8 @@
 #include "ast/node.h"
+#include "except/exceptions.h"
 
 #include <iostream>
+#include <memory>
 
 IfNode::IfNode(ExpressionNode* conditional, StatementNode* statement):
 	conditional(conditional), statement(statement) {}
@@ -17,4 +19,14 @@ void IfNode::print(std::ostream& os, size_t level) const
     os << "if statement" << std::endl;
     this->conditional->print(os, level+1);
     this->statement->print(os, level+1);
+}
+
+void IfNode::checkTypes(BrainfuckWriter& writer)
+{
+    this->conditional->checkTypes(writer);
+    this->statement->checkTypes(writer);
+    
+    std::unique_ptr<DataTypeBase> cond_type(this->conditional->getType());
+    if(!cond_type->isBoolean())
+        throw TypeMismatchException("Conditional for if statement was not convertable too boolean");    
 }
