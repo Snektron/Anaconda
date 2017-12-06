@@ -28,28 +28,28 @@ class Parser
 
     private:
         void error(const std::string& msg);
-        void unexpected();
+        void unexpected(const std::string& msg);
 
         Token nextFiltered();
         const Token& consume();
 
         template <TokenType... T>
-        bool expect()
+        bool expect(const std::string& msg)
         {
             if (this->token.isOneOf<T...>())
                 return true;
 
-            unexpected();
+            unexpected(msg);
             return false;
         }
 
         template <Keyword... T>
-        bool expect()
+        bool expect(const std::string& msg)
 		{
 			if (this->token.isKeyword<T...>())
 				return true;
 
-			unexpected();
+			unexpected(msg);
 			return false;
 		}
 

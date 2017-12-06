@@ -10,9 +10,9 @@ void Parser::error(const std::string& msg)
 	this->messages.push_back(Message(MessageType::ERROR, msg));
 }
 
-void Parser::unexpected()
+void Parser::unexpected(const std::string& msg)
 {
-	this->error(fmt::sprintf("Unexpected token ", (int) this->token.type));
+	this->error(fmt::sprintf("Error: ", msg));
 }
 
 GlobalNode* Parser::program()
@@ -77,11 +77,14 @@ GlobalExpressionNode* Parser::globalexpr()
 // <structdecl> = 'type' <id> '{' (<type> <id> (',' <id>)* ',')+ '}'
 StructureDefinitionNode* Parser::structdecl()
 {
-    if (!this->expect<Keyword::TYPE>())
+    if (!this->expect<Keyword::TYPE>("structdecl: Expected keyword 'type'"))
         return nullptr;
 
     if (!this->token.isType<TokenType::IDENT>())
+    {
+    	this->unexpected("structdecl: Expected identfier");
     	return nullptr;
+    }
 
     std::string name = this->token.asText();
     consume();
@@ -95,7 +98,7 @@ StructureDefinitionNode* Parser::structdecl()
     while (true)
     {
         Token saved = this->token;
-        if (!this->expect<TokenType::IDENT>())
+        if (!this->expect<TokenType::IDENT>("structdecl: Expected identifier"))
             break;
 
         std::string memname;
@@ -110,7 +113,7 @@ StructureDefinitionNode* Parser::structdecl()
             memtype = lasttype->copy();
             consume();
         }
-        else if (this->expect<TokenType::IDENT>())
+        else if (this->expect<TokenType::IDENT>("structdecl: Expected identifier"))
         {
             if (this->token.isReserved())
                 break;
@@ -134,7 +137,7 @@ StructureDefinitionNode* Parser::structdecl()
 
             return new StructureDefinitionNode(name, members);
         }
-        else if (!this->expect<TokenType::COMMA>())
+        else if (!this->expect<TokenType::COMMA>("structdecl: Expected ',' or '}'"))
             break;
     }
 
@@ -145,7 +148,7 @@ StructureDefinitionNode* Parser::structdecl()
 // <funcdecl> = 'func' <id> <funcpar> ('->' <id>)? <block>
 FunctionDeclaration* Parser::funcdecl()
 {
-    if (!this->expect<Keyword::TYPE>())
+    if (!this->expect<Keyword::FUNC>("funcdecl: Expected keyword 'func'"))
         return nullptr;
 
     if (!this->token.isType<TokenType::IDENT>())
@@ -188,7 +191,7 @@ FunctionDeclaration* Parser::funcdecl()
 // <funcpar> = '(' (<type> <id> (',' <type>? <id>)*) ')'
 FunctionParameters* Parser::funcpar()
 {
-    if (!this->expect<TokenType::PAREN_OPEN>())
+    if (!this->expect<TokenType::PAREN_OPEN>("funcpar: Expected '('"))
         return nullptr;
 
     std::vector<Field> parameters;
@@ -197,7 +200,7 @@ FunctionParameters* Parser::funcpar()
     while (true)
     {
     	Token saved = this->token;
-		if (!this->expect<TokenType::IDENT>())
+		if (!this->expect<TokenType::IDENT>("funcpar: Expected identifier"))
 			break;
 
 		std::string parname;
@@ -212,7 +215,7 @@ FunctionParameters* Parser::funcpar()
 			partype = lasttype->copy();
 			consume();
 		}
-		else if (this->expect<TokenType::IDENT>())
+		else if (this->expect<TokenType::IDENT>("funcpar: Expected ',' or identifier"))
 		{
 			if (this->token.isReserved())
 				break;
@@ -228,12 +231,12 @@ FunctionParameters* Parser::funcpar()
 
 		parameters.push_back(Field(partype, parname));
 
-		if (this->eat<TokenType::BRACE_CLOSE>())
+		if (this->eat<TokenType::PAREN_CLOSE>())
 		{
 			delete lasttype;
 			return new FunctionParameters(parameters);
 		}
-		else if (!this->expect<TokenType::COMMA>())
+		else if (!this->expect<TokenType::COMMA>("funcpar: Expected ',' or ')'"))
 			break;
     }
 
@@ -257,7 +260,7 @@ BlockNode* Parser::block()
     {
         list = statlist();
 
-        if (!this->expect<TokenType::BRACE_CLOSE>())
+        if (!this->expect<TokenType::BRACE_CLOSE>("block: Expected '}'"))
         {
             delete list;
             return nullptr;
@@ -301,7 +304,7 @@ StatementNode* Parser::statement()
 
 ReturnNode* Parser::returnstat()
 {
-    if (!this->expect<Keyword::RETURN>())
+    if (!this->expect<Keyword::RETURN>("returnstat: Expected keyword 'return'"))
         return nullptr;
 
     ExpressionNode* expr = this->expr();
@@ -317,7 +320,7 @@ StatementNode* Parser::exprstat()
     if (!expr)
         return nullptr;
 
-    if (this->eat<TokenType::NEWLINE, TokenType::SEMICOLON>())
+    if (this->eat<TokenType::SEMICOLON>())
         return new ExpressionStatementNode(expr);
     else
         return new ReturnNode(expr);
@@ -326,7 +329,7 @@ StatementNode* Parser::exprstat()
 // <ifstat> = 'if' <expr> <block> ('else' (<ifstat> | <block>))?
 StatementNode* Parser::ifstat()
 {
-    if (!this->expect<Keyword::IF>())
+    if (!this->expect<Keyword::IF>("ifstat: Expected keyword 'if'"))
     	return nullptr;
 
     ExpressionNode *condition = expr();
@@ -364,7 +367,7 @@ StatementNode* Parser::ifstat()
 // <whilestat> = 'while' <expr> <block>
 WhileNode* Parser::whilestat()
 {
-    if (!this->expect<Keyword::WHILE>())
+    if (!this->expect<Keyword::WHILE>("whilestat: Expected keyword 'while'"))
         return nullptr;
 
     ExpressionNode *condition = expr();
@@ -397,7 +400,7 @@ ExpressionNode* Parser::sum()
     while (true)
     {
         TokenType optype = this->token.type;
-        if (!this->expect<TokenType::PLUS, TokenType::MINUS>())
+        if (!this->eat<TokenType::PLUS, TokenType::MINUS>())
 			break;
 
         ExpressionNode *rhs = product();
@@ -416,7 +419,7 @@ ExpressionNode* Parser::sum()
                 lhs = new SubNode(lhs, rhs);
                 break;
             default:
-                unexpected();
+                unexpected("sum: Unreachable");
         }
     }
 
@@ -433,7 +436,7 @@ ExpressionNode* Parser::product()
     while (true)
     {
         TokenType optype = this->token.type;
-        if (!this->expect<TokenType::STAR, TokenType::SLASH, TokenType::PERCENT>())
+        if (!this->eat<TokenType::STAR, TokenType::SLASH, TokenType::PERCENT>())
         	break;
         consume();
 
@@ -456,7 +459,7 @@ ExpressionNode* Parser::product()
                 lhs = new ModNode(lhs, rhs);
                 break;
             default:
-                unexpected();
+                unexpected("product: Unreachable");
         }
     }
 
@@ -536,14 +539,14 @@ ExpressionNode* Parser::atom()
 // <paren> = '(' <expr> ')'
 ExpressionNode* Parser::paren()
 {
-    if (!this->expect<TokenType::PAREN_OPEN>())
+    if (!this->expect<TokenType::PAREN_OPEN>("paren: Expected token '('"))
         return nullptr;
 
     ExpressionNode *node = expr();
     if (!node)
         return nullptr;
 
-    if (!this->expect<TokenType::PAREN_CLOSE>())
+    if (!this->expect<TokenType::PAREN_CLOSE>("paren: Expected token ')'"))
     {
         delete node;
         return nullptr;
@@ -557,7 +560,7 @@ FunctionArguments* Parser::funcargs()
 {
     std::vector<ExpressionNode*> arguments;
 
-    if (!this->expect<TokenType::PAREN_OPEN>())
+    if (!this->expect<TokenType::PAREN_OPEN>("funcargs: Expected token '('"))
         return nullptr;
 
     while (true)
@@ -570,7 +573,7 @@ FunctionArguments* Parser::funcargs()
 
         if (this->token.isType<TokenType::PAREN_CLOSE>())
             return new FunctionArguments(arguments);
-        else if (!this->expect<TokenType::COMMA>())
+        else if (!this->expect<TokenType::COMMA>("funcargs: Expected ',' or ')'"))
             break;
     }
 
