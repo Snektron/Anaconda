@@ -22,8 +22,8 @@ Field* Field::copy() const {
     return new Field(this->type->copy(), this->name);
 }
 
-std::ostream& Field::operator<<(std::ostream os)
+std::ostream& operator<<(std::ostream& os, const Field& field)
 {
-    os << this->name << ":" << *this->type;
+    os << field.name << ":" << *field.type;
     return os;
 }

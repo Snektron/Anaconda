@@ -174,6 +174,17 @@ class StatementListNode : public StatementNode
         virtual void checkTypes(BrainfuckWriter&);
 };
 
+class EmptyStatementNode : public StatementNode
+{
+    public:
+        EmptyStatementNode();
+        virtual ~EmptyStatementNode();
+        
+        virtual void print(std::ostream&, size_t) const;
+        virtual void generate(BrainfuckWriter&);
+        virtual void checkTypes(BrainfuckWriter&);
+};
+
 class BlockNode : public StatementNode
 {
     private:

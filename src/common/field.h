@@ -9,6 +9,8 @@ class Field
     private:
         const DataTypeBase* type;
         const std::string name;
+
+        friend std::ostream& operator<<(std::ostream&, const Field&);
     public:
         Field(DataTypeBase* type, const std::string& name);
         ~Field();
@@ -17,8 +19,8 @@ class Field
         const std::string& getName() const;
 
         Field* copy() const;
-
-        std::ostream& operator<<(std::ostream os);
 };
+
+std::ostream& operator<<(std::ostream&, const Field&);
 
 #endif
