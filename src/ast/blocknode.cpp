@@ -1,4 +1,6 @@
 #include "ast/node.h"
+#include "generator/brainfuck.h"
+#include "util/utils.h"
 
 #include <iostream>
 
@@ -19,5 +21,24 @@ void BlockNode::print(std::ostream& os, size_t level) const
 
 void BlockNode::checkTypes(BrainfuckWriter& writer)
 {
+    writer.enterFrame();
     this->content->checkTypes(writer);
+    writer.exitFrame();
+}
+
+void BlockNode::generate(BrainfuckWriter& writer)
+{
+    writer.enterFrame();
+    this->content->declareLocals(writer);
+
+    writer.makeStackFrame();
+    this->content->generate(writer);
+    writer.destroyStackFrame();
+
+    writer.exitFrame();
+}
+
+void BlockNode::declareLocals(BrainfuckWriter& writer)
+{
+    UNUSED(writer);
 }

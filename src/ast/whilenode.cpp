@@ -1,5 +1,6 @@
 #include "ast/node.h"
 #include "except/exceptions.h"
+#include "generator/brainfuck.h"
 
 #include <iostream>
 #include <memory>
@@ -25,8 +26,20 @@ void WhileNode::checkTypes(BrainfuckWriter& writer)
 {
     this->conditional->checkTypes(writer);
     this->statement->checkTypes(writer);
-    
+
     std::unique_ptr<DataTypeBase> cond_type(this->conditional->getType());
     if(!cond_type->isBoolean())
         throw TypeMismatchException("Cannot convert conditional in while-loop to a boolean");
+}
+
+void WhileNode::generate(BrainfuckWriter& writer)
+{
+    ///TODO
+    writer.unimplemented();
+}
+
+void WhileNode::declareLocals(BrainfuckWriter& writer)
+{
+    this->conditional->declareLocals(writer);
+    this->statement->declareLocals(writer);
 }

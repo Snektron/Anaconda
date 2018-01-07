@@ -2,6 +2,7 @@
 #include "types/datatype.h"
 #include "except/exceptions.h"
 #include "util/utils.h"
+#include "generator/brainfuck.h"
 
 #include <iostream>
 #include <memory>
@@ -23,5 +24,30 @@ void DeclarationNode::print(std::ostream& os, size_t level) const
 
 void DeclarationNode::checkTypes(BrainfuckWriter& writer)
 {
-    UNUSED(writer);
+    if(writer.getScope() != GLOBAL_SCOPE)
+    {
+        writer.declareVariable(this->variable, this->datatype);
+    }
+}
+
+void DeclarationNode::declareGlobals(BrainfuckWriter& writer)
+{
+    writer.declareVariable(this->variable, this->datatype);
+}
+
+
+void DeclarationNode::generate(BrainfuckWriter& writer)
+{
+    ///TODO
+    writer.unimplemented();
+}
+
+DataTypeBase* DeclarationNode::getType()
+{
+    return this->datatype->copy();
+}
+
+void DeclarationNode::declareLocals(BrainfuckWriter& writer)
+{
+    writer.declareVariable(this->variable, this->datatype);
 }

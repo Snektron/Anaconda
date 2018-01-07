@@ -1,5 +1,6 @@
 #include "ast/node.h"
 #include "util/utils.h"
+#include "generator/brainfuck.h"
 
 #include <iostream>
 
@@ -23,4 +24,15 @@ void AssemblyNode::checkTypes(BrainfuckWriter& writer)
 DataTypeBase* AssemblyNode::getType()
 {
     return this->datatype->copy();
+}
+
+void AssemblyNode::generate(BrainfuckWriter& writer)
+{
+    ///TODO
+    writer.unimplemented();
+}
+
+void AssemblyNode::declareLocals(BrainfuckWriter& writer)
+{
+    UNUSED(writer);
 }

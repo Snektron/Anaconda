@@ -40,3 +40,8 @@ void StructureDefinitionNode::checkTypes(BrainfuckWriter& writer)
             throw RecursiveTypeException("Structure " + this->name + " contains itself in member " + it.getName());
     }
 }
+
+void StructureDefinitionNode::generate(BrainfuckWriter& writer)
+{
+    UNUSED(writer);
+}

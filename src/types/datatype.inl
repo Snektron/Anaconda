@@ -1,4 +1,5 @@
 #include <iostream>
+#include "util/utils.h"
 
 template <DataTypeClass dtype>
 DataType<dtype>::DataType() : DataTypeBase(dtype) {}
@@ -31,4 +32,17 @@ template <DataTypeClass dtype>
 bool DataType<dtype>::supportsArithmetic() const
 {
     return true;
+}
+
+template <DataTypeClass dtype>
+bool DataType<dtype>::canCastFrom(const DataTypeBase& type) const
+{
+    return type.supportsArithmetic();
+}
+
+template <DataTypeClass dtype>
+size_t DataType<dtype>::size(BrainfuckWriter& writer) const
+{
+    UNUSED(writer);
+    return DATATYPE_SIZES[(size_t)dtype];
 }

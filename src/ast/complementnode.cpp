@@ -1,4 +1,5 @@
 #include "ast/node.h"
+#include "generator/brainfuck.h"
 
 #include <iostream>
 
@@ -10,4 +11,10 @@ void ComplementNode::print(std::ostream& os, size_t level) const
     this->printIndent(os, level);
     os << "bitwise complement expression";
     this->op->print(os, level+1);
+}
+
+void ComplementNode::generate(BrainfuckWriter& writer)
+{
+    ///TODO
+    writer.unimplemented();
 }

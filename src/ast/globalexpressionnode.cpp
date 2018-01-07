@@ -29,3 +29,11 @@ void GlobalExpressionNode::checkTypes(BrainfuckWriter& writer)
 {
     this->expression->checkTypes(writer);
 }
+
+void GlobalExpressionNode::generate(BrainfuckWriter& writer)
+{
+    std::unique_ptr<DataTypeBase> datatype(this->expression->getType());
+
+    this->expression->generate(writer);
+    writer.pop(datatype.get());
+}

@@ -16,7 +16,7 @@ UnaryExpressionNode::~UnaryExpressionNode()
 void UnaryExpressionNode::checkTypes(BrainfuckWriter& writer)
 {
     this->op->checkTypes(writer);
-    
+
     std::unique_ptr<DataTypeBase> op_type(this->op->getType());
     if(!op_type->supportsArithmetic())
     {
@@ -31,4 +31,9 @@ void UnaryExpressionNode::checkTypes(BrainfuckWriter& writer)
 DataTypeBase* UnaryExpressionNode::getType()
 {
     return this->type->copy();
+}
+
+void UnaryExpressionNode::declareLocals(BrainfuckWriter& writer)
+{
+    this->op->declareLocals(writer);
 }

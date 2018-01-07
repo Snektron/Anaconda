@@ -1,6 +1,7 @@
 #include "ast/node.h"
 #include "types/datatype.h"
 #include "generator/brainfuck.h"
+#include "util/utils.h"
 
 #include <iostream>
 
@@ -34,7 +35,15 @@ void FunctionDeclaration::checkTypes(BrainfuckWriter& writer)
     writer.switchScope(this->scope);
 
     this->parameters->checkTypes(writer);
+    for(Field& field : this->parameters->getParameters())
+        writer.declareVariable(field.getName(), field.getType());
+
     this->content->checkTypes(writer);
 
     writer.switchScope(old_scope);
+}
+
+void FunctionDeclaration::generate(BrainfuckWriter& writer)
+{
+    UNUSED(writer);
 }

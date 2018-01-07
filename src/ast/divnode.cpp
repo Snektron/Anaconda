@@ -1,4 +1,5 @@
 #include "ast/node.h"
+#include "generator/brainfuck.h"
 
 #include <iostream>
 
@@ -11,4 +12,10 @@ void DivNode::print(std::ostream& os, size_t level) const
     os << "division expression" << std::endl;
     this->lop->print(os, level+1);
     this->rop->print(os, level+1);
+}
+
+void DivNode::generate(BrainfuckWriter& writer)
+{
+    ///TODO
+    writer.unimplemented();
 }

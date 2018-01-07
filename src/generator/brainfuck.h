@@ -14,7 +14,7 @@ const size_t GLOBAL_SCOPE = 0;
 class Scope
 {
     private:
-        std::vector<std::map<std::string, DataTypeBase*>> declarations;
+        std::vector<std::map<std::string, const DataTypeBase*>> declarations;
         std::vector<std::map<std::string, size_t>> stack_locations;
     public:
         Scope() = default;
@@ -25,11 +25,11 @@ class Scope
         Scope& operator=(const Scope&) = delete;
 
         //Declares a variable in the currently active frame
-        void declareVariable(const std::string&, DataTypeBase* datatype);
+        void declareVariable(const std::string&, const DataTypeBase* datatype);
         void setVariableLocation(const std::string&, size_t);
 
         //Variable search
-        DataTypeBase* findVariable(const std::string&);
+        const DataTypeBase* findVariable(const std::string&);
         size_t findVariableLocation(const std::string&);
 
         //Checks
@@ -41,17 +41,17 @@ class Scope
         void exitFrame();
 
         //Scope fetch
-        std::map<std::string, DataTypeBase*>& getFrameDeclarations();
+        std::map<std::string, const DataTypeBase*>& getFrameDeclarations();
 };
 
 class FunctionDefinition
 {
     private:
         std::vector<Field> arguments;
-        DataTypeBase* return_type;
+        const DataTypeBase* return_type;
         BlockNode* code;
     public:
-        FunctionDefinition(const std::vector<Field>&, DataTypeBase*, BlockNode*);
+        FunctionDefinition(const std::vector<Field>&, const DataTypeBase*, BlockNode*);
         FunctionDefinition(FunctionDefinition&&);
         FunctionDefinition(const FunctionDefinition&) = delete;
         ~FunctionDefinition() = default;
@@ -73,30 +73,40 @@ class StructureDefinition
         ~StructureDefinition() = default;
 
         StructureDefinition& operator=(const StructureDefinition&) = delete;
+
+        size_t size(BrainfuckWriter&) const;
 };
 
 class BrainfuckWriter
 {
     private:
-        std::ostream& output;
+        std::ostream* output;
+
         std::vector<Scope> scopes;
         std::multimap<std::string, FunctionDefinition> functions;
         std::map<std::string, StructureDefinition> structures;
         std::vector<FunctionDefinition*> scope_func_lookup;
         size_t current_scope;
+
+        size_t stack_pointer;
     public:
         BrainfuckWriter(std::ostream&);
         ~BrainfuckWriter() = default;
 
         //Declarations
-        size_t declareFunction(const std::string&, const std::vector<Field>&, DataTypeBase*, BlockNode*);
+        size_t declareFunction(const std::string&, const std::vector<Field>&, const DataTypeBase*, BlockNode*);
         void declareStructure(const std::string&, const std::vector<Field>&);
-        void declareVariable(const std::string&, DataTypeBase*);
+        void declareVariable(const std::string&, const DataTypeBase*);
 
         //Checks
         bool isFunctionDeclared(const std::string&, const std::vector<Field>&);
         bool isFunctionDeclared(const std::string&, const std::vector<DataTypeBase*>&);
         bool isStructureDeclared(const std::string&);
+
+        //Lookup operations
+        FunctionDefinition* getDeclaredFunction(const std::string&, const std::vector<DataTypeBase*>&);
+        StructureDefinition* getDeclaredStructure(const std::string&);
+        DataTypeBase* getDeclaredVariable(const std::string&);
 
         //Controlling function-level scope
         void switchScope(size_t);
@@ -106,6 +116,37 @@ class BrainfuckWriter
         //Controlling statement-level frames
         void enterFrame();
         void exitFrame();
+
+        //Output control
+        std::ostream& getOutput();
+        std::ostream& setOutput(std::ostream&);
+
+        //Code generation functions
+        //Basic variable arithmetic
+        void increment();
+        void decrement();
+        void incrementBy(size_t);
+        void decrementBy(size_t);
+        //Basic stack manipulation
+        void incrementStackPointer();
+        void decrementStackPointer();
+        void incrementStackPointerBy(size_t);
+        void decrementStackPointerBy(size_t);
+        //Basic control flow structures
+        void branchOpen();
+        void branchClose();
+        //Scope manipulation
+        void makeStackFrame();
+        void destroyStackFrame();
+        //Advanced stack manipulation
+        void push(const DataTypeBase*);
+        void pop(const DataTypeBase*);
+        //Constants
+        void pushByte(uint8_t);
+        //Advanced value manipulation
+        void clearByte();
+
+        void unimplemented();
 };
 
 #endif

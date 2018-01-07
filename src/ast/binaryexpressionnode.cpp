@@ -20,7 +20,7 @@ void BinaryExpressionNode::checkTypes(BrainfuckWriter& writer)
     this->rop->checkTypes(writer);
     std::unique_ptr<DataTypeBase> lop_type(this->lop->getType());
     std::unique_ptr<DataTypeBase> rop_type(this->rop->getType());
-    
+
     if(!lop_type->equals(*rop_type))
     {
         std::stringstream ss;
@@ -41,4 +41,10 @@ void BinaryExpressionNode::checkTypes(BrainfuckWriter& writer)
 DataTypeBase* BinaryExpressionNode::getType()
 {
     return this->type->copy();
+}
+
+void BinaryExpressionNode::declareLocals(BrainfuckWriter& writer)
+{
+    this->lop->declareLocals(writer);
+    this->rop->declareLocals(writer);
 }

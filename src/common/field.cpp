@@ -18,7 +18,8 @@ const std::string& Field::getName() const
     return this->name;
 }
 
-Field* Field::copy() const {
+Field* Field::copy() const
+{
     return new Field(this->type->copy(), this->name);
 }
 

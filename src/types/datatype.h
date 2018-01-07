@@ -5,6 +5,8 @@
 #include <map>
 #include <iosfwd>
 
+class BrainfuckWriter;
+
 enum class DataTypeClass
 {
     VOID,
@@ -13,6 +15,7 @@ enum class DataTypeClass
 };
 
 extern const char* DATATYPE_NAMES[];
+extern const size_t DATATYPE_SIZES[];
 
 class DataTypeBase
 {
@@ -27,6 +30,8 @@ class DataTypeBase
         virtual bool equals(const DataTypeBase&) const = 0;
         virtual bool isBoolean() const = 0;
         virtual bool supportsArithmetic() const = 0;
+        virtual bool canCastFrom(const DataTypeBase&) const = 0;
+        virtual size_t size(BrainfuckWriter&) const = 0;
 };
 
 template <DataTypeClass dtype>
@@ -41,6 +46,8 @@ class DataType : public DataTypeBase
         virtual bool equals(const DataTypeBase&) const;
         virtual bool isBoolean() const;
         virtual bool supportsArithmetic() const;
+        virtual bool canCastFrom(const DataTypeBase&) const;
+        virtual size_t size(BrainfuckWriter&) const;
 };
 
 template<>
@@ -48,7 +55,7 @@ class DataType<DataTypeClass::STRUCT_FORWARD> : public DataTypeBase
 {
     public:
         std::string name;
-    
+
         DataType(const std::string&);
         virtual ~DataType() = default;
 
@@ -57,13 +64,16 @@ class DataType<DataTypeClass::STRUCT_FORWARD> : public DataTypeBase
         virtual bool equals(const DataTypeBase&) const;
         virtual bool isBoolean() const;
         virtual bool supportsArithmetic() const;
+        virtual bool canCastFrom(const DataTypeBase&) const;
+        virtual size_t size(BrainfuckWriter&) const;
 };
 
 template<>
 bool DataType<DataTypeClass::VOID>::isBoolean() const;
-
 template<>
 bool DataType<DataTypeClass::VOID>::supportsArithmetic() const;
+template<>
+bool DataType<DataTypeClass::VOID>::canCastFrom(const DataTypeBase&) const;
 
 std::ostream& operator<<(std::ostream&, const DataTypeBase&);
 
