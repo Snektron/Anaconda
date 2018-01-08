@@ -47,8 +47,7 @@ void AssignmentNode::checkTypes(BrainfuckWriter& writer)
 
 DataTypeBase* AssignmentNode::getType()
 {
-    ///TODO
-    return nullptr;
+    return this->lop->getType();
 }
 
 void AssignmentNode::declareLocals(BrainfuckWriter& writer)

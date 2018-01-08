@@ -1,6 +1,8 @@
 #include "generator/brainfuck.h"
 #include "except/exceptions.h"
 
+#include <memory>
+
 Scope::Scope(Scope&& old):
     declarations(old.declarations), stack_locations(old.stack_locations)
 {
@@ -107,6 +109,18 @@ size_t StructureDefinition::size(BrainfuckWriter& writer) const
     return total_size;
 }
 
+VariableDefinition::VariableDefinition(const DataTypeBase* datatype, size_t location) : datatype(datatype), stack_location(location) {}
+
+DataTypeBase* VariableDefinition::dataType() const
+{
+    return this->datatype->copy();
+}
+
+size_t VariableDefinition::location() const
+{
+    return this->stack_location;
+}
+
 BrainfuckWriter::BrainfuckWriter(std::ostream& os):
     output(&os), current_scope(GLOBAL_SCOPE), stack_pointer(0)
 {
@@ -187,15 +201,19 @@ StructureDefinition* BrainfuckWriter::getDeclaredStructure(const std::string& na
     return nullptr;
 }
 
-DataTypeBase* BrainfuckWriter::getDeclaredVariable(const std::string& variable)
+VariableDefinition* BrainfuckWriter::getDeclaredVariable(const std::string& variable)
 {
     const DataTypeBase* datatype = this->scopes[this->current_scope].findVariable(variable);
+    size_t location = this->scopes[this->current_scope].findVariableLocation(variable);
     if(datatype == nullptr)
+    {
         datatype = this->scopes[GLOBAL_SCOPE].findVariable(variable);
+        location = this->scopes[GLOBAL_SCOPE].findVariableLocation(variable);
+    }
 
-    if(datatype != nullptr)
-        return datatype->copy();
-    return nullptr;
+    if(datatype == nullptr)
+        return nullptr;
+    return new VariableDefinition(datatype, location);
 }
 
 void BrainfuckWriter::switchScope(size_t new_scope)
@@ -293,6 +311,14 @@ void BrainfuckWriter::decrementStackPointerBy(size_t num)
         this->decrementStackPointer();
 }
 
+void BrainfuckWriter::moveStackPointerTo(size_t index)
+{
+    if(index < this->stack_pointer)
+        this->decrementStackPointerBy(this->stack_pointer - index);
+    else
+        this->incrementStackPointerBy(index - this->stack_pointer);
+}
+
 void BrainfuckWriter::makeStackFrame()
 {
     std::map<std::string, const DataTypeBase*>& variables = this->scopes[this->current_scope].getFrameDeclarations();
@@ -333,6 +359,56 @@ void BrainfuckWriter::clearByte()
     this->branchOpen();
     this->decrement();
     this->branchClose();
+}
+
+void BrainfuckWriter::copyByte(size_t from, size_t to, size_t temp)
+{
+    size_t old_stack_pointer = this->stack_pointer;
+
+    this->moveStackPointerTo(temp);
+    this->clearByte();
+
+    this->moveStackPointerTo(to);
+    this->clearByte();
+
+    this->moveStackPointerTo(from);
+    this->branchOpen();
+    this->moveStackPointerTo(to);
+    this->increment();
+    this->moveStackPointerTo(temp);
+    this->increment();
+    this->moveStackPointerTo(from);
+    this->decrement();
+    this->branchClose();
+
+    this->moveStackPointerTo(temp);
+    this->branchOpen();
+    this->moveStackPointerTo(from);
+    this->increment();
+    this->moveStackPointerTo(temp);
+    this->decrement();
+    this->branchClose();
+
+    //Restore stack pointer
+    this->moveStackPointerTo(old_stack_pointer);
+}
+
+void BrainfuckWriter::copyValue(size_t from, size_t to, size_t temp, size_t size)
+{
+    for(size_t i = 0; i < size; ++i)
+        this->copyByte(from + i, to + i, temp + i);
+}
+
+void BrainfuckWriter::loadValue(size_t from, size_t size)
+{
+    size_t variable_start = this->stack_pointer;
+    this->incrementStackPointerBy(size);
+    size_t temporary_start = this->stack_pointer;
+    this->incrementStackPointerBy(size);
+    this->copyValue(from, variable_start, temporary_start, size);
+
+    //Clean up temporary storage
+    this->decrementStackPointerBy(size);
 }
 
 void BrainfuckWriter::unimplemented()

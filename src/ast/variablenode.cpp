@@ -23,21 +23,22 @@ void VariableNode::print(std::ostream& os, size_t level) const
 
 void VariableNode::generate(BrainfuckWriter& writer)
 {
-    ///TODO
-    writer.unimplemented();
+    std::unique_ptr<VariableDefinition> variable(writer.getDeclaredVariable(this->variable));
+    std::unique_ptr<DataTypeBase> datatype(variable->dataType());
+    writer.loadValue(variable->location(), datatype->size(writer));
 }
 
 void VariableNode::checkTypes(BrainfuckWriter& writer)
 {
-    std::unique_ptr<DataTypeBase> datatype(writer.getDeclaredVariable(this->variable));
-    if(datatype == nullptr)
+    std::unique_ptr<VariableDefinition> variable(writer.getDeclaredVariable(this->variable));
+    if(variable == nullptr)
     {
         std::stringstream ss;
         ss << "Use of undeclared variable " << this->variable;
         throw TypeCheckException(ss.str());
     }
 
-    this->datatype = datatype.release();
+    this->datatype = variable->dataType();
 }
 
 DataTypeBase* VariableNode::getType()

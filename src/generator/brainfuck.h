@@ -77,6 +77,19 @@ class StructureDefinition
         size_t size(BrainfuckWriter&) const;
 };
 
+class VariableDefinition
+{
+    public:
+        const DataTypeBase* datatype;
+        size_t stack_location;
+    public:
+        VariableDefinition(const DataTypeBase*, size_t);
+        ~VariableDefinition() = default;
+
+        size_t location() const;
+        DataTypeBase* dataType() const;
+};
+
 class BrainfuckWriter
 {
     private:
@@ -106,7 +119,7 @@ class BrainfuckWriter
         //Lookup operations
         FunctionDefinition* getDeclaredFunction(const std::string&, const std::vector<DataTypeBase*>&);
         StructureDefinition* getDeclaredStructure(const std::string&);
-        DataTypeBase* getDeclaredVariable(const std::string&);
+        VariableDefinition* getDeclaredVariable(const std::string&);
 
         //Controlling function-level scope
         void switchScope(size_t);
@@ -132,6 +145,7 @@ class BrainfuckWriter
         void decrementStackPointer();
         void incrementStackPointerBy(size_t);
         void decrementStackPointerBy(size_t);
+        void moveStackPointerTo(size_t);
         //Basic control flow structures
         void branchOpen();
         void branchClose();
@@ -145,6 +159,9 @@ class BrainfuckWriter
         void pushByte(uint8_t);
         //Advanced value manipulation
         void clearByte();
+        void copyByte(size_t, size_t, size_t);
+        void copyValue(size_t, size_t, size_t, size_t);
+        void loadValue(size_t, size_t);
 
         void unimplemented();
 };

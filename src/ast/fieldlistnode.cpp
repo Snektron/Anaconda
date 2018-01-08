@@ -30,4 +30,5 @@ void FieldListNode::checkTypes(BrainfuckWriter& writer)
 
 void FieldListNode::generate(BrainfuckWriter& writer)
 {
+    UNUSED(writer);
 }
