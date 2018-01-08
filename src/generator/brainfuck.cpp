@@ -255,6 +255,11 @@ std::ostream& BrainfuckWriter::setOutput(std::ostream& output)
     return *result;
 }
 
+size_t BrainfuckWriter::getStackLocation()
+{
+    return this->stack_pointer;
+}
+
 void BrainfuckWriter::copyAssembly(const std::string& code)
 {
     std::ostream& output = this->getOutput();

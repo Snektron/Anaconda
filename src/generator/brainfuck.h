@@ -134,6 +134,9 @@ class BrainfuckWriter
         std::ostream& getOutput();
         std::ostream& setOutput(std::ostream&);
 
+        //Stack location
+        size_t getStackLocation();
+
         //Code generation functions
         //Raw assembly copy
         void copyAssembly(const std::string&);

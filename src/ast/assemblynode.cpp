@@ -31,7 +31,22 @@ DataTypeBase* AssemblyNode::getType()
 
 void AssemblyNode::generate(BrainfuckWriter& writer)
 {
+    //Zero initialized return value
+    size_t stack_location = writer.getStackLocation();
+    writer.push(this->datatype);
+    size_t new_stack_location = writer.getStackLocation();
+    for(size_t i = 0; i != new_stack_location; ++i)
+    {
+        writer.moveStackPointerTo(stack_location + i);
+        writer.clearByte();
+    }
+    writer.moveStackPointerTo(new_stack_location);
+    //Arguments
+    this->arguments->generate(writer);
+    //Assembly code
     writer.copyAssembly(this->assembly);
+    //Argument cleanup
+    writer.moveStackPointerTo(new_stack_location);
 }
 
 void AssemblyNode::declareLocals(BrainfuckWriter& writer)
