@@ -16,6 +16,8 @@ void MulNode::print(std::ostream& os, size_t level) const
 
 void MulNode::generate(BrainfuckWriter& writer)
 {
-    ///TODO
-    writer.unimplemented();
+    if(this->type->equals(DataType<DataTypeClass::U8>()))
+        writer.mulU8();
+    else
+        writer.unimplemented();
 }

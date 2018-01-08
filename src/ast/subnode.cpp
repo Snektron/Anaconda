@@ -16,6 +16,8 @@ void SubNode::print(std::ostream& os, size_t level) const
 
 void SubNode::generate(BrainfuckWriter& writer)
 {
-    ///TODO
-    writer.unimplemented();
+    if(this->type->equals(DataType<DataTypeClass::U8>()))
+        writer.subU8();
+    else
+        writer.unimplemented();
 }

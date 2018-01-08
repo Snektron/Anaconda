@@ -411,6 +411,128 @@ void BrainfuckWriter::loadValue(size_t from, size_t size)
     this->decrementStackPointerBy(size);
 }
 
+void BrainfuckWriter::addU8()
+{
+    //Assume stack top contains 2 u8
+    size_t x = this->stack_pointer - 2;
+    size_t y = this->stack_pointer - 1;
+    size_t temp = this->stack_pointer;
+    //Create temporary storage
+    this->incrementStackPointer();
+
+    //Add routine
+    this->moveStackPointerTo(temp);
+    this->clearByte();
+
+    this->moveStackPointerTo(y);
+    this->branchOpen();
+    this->moveStackPointerTo(x);
+    this->decrement();
+    this->moveStackPointerTo(temp);
+    this->increment();
+    this->moveStackPointerTo(y);
+    this->decrement();
+    this->branchClose();
+
+    this->moveStackPointerTo(temp);
+    this->branchOpen();
+    this->moveStackPointerTo(y);
+    this->increment();
+    this->moveStackPointerTo(temp);
+    this->decrement();
+    this->branchClose();
+
+    //Destroy temporary storage and 2nd operand
+    this->decrementStackPointerBy(2);
+
+    //Restore the stack pointer
+    this->moveStackPointerTo(y);
+}
+
+void BrainfuckWriter::subU8()
+{
+    //Assume stack top contains 2 u8
+    size_t x = this->stack_pointer - 2;
+    size_t y = this->stack_pointer - 1;
+    size_t temp = this->stack_pointer;
+    //Create temporary storage
+    this->incrementStackPointer();
+
+    //Sub routine
+    this->moveStackPointerTo(temp);
+    this->clearByte();
+
+    this->moveStackPointerTo(y);
+    this->branchOpen();
+    this->moveStackPointerTo(x);
+    this->increment();
+    this->moveStackPointerTo(temp);
+    this->increment();
+    this->moveStackPointerTo(y);
+    this->decrement();
+    this->branchClose();
+
+    this->moveStackPointerTo(temp);
+    this->branchOpen();
+    this->moveStackPointerTo(y);
+    this->increment();
+    this->moveStackPointerTo(temp);
+    this->decrement();
+    this->branchClose();
+
+    //Destroy temporary storage and 2nd operator
+    this->decrementStackPointerBy(2);
+
+    //Restore the stack pointer
+    this->moveStackPointerTo(y);
+}
+
+void BrainfuckWriter::mulU8()
+{
+    //Assume the stack top contains 2 u8
+    size_t x = this->stack_pointer - 2;
+    size_t y = this->stack_pointer - 1;
+    size_t temp = this->stack_pointer;
+    size_t temp2 = this->stack_pointer + 1;
+    size_t temp3 = this->stack_pointer + 2;
+    size_t temp4 = this->stack_pointer + 3;
+
+    //Multiply(x, y) {
+    //    temp = y
+    //    temp2 = x
+    //    x = 0
+    //    while(temp) {
+    //        x += temp2
+    //        --temp;
+    //    }
+    //}
+
+    //temp = y
+    this->loadValue(y, 1);
+    //temp2 = x
+    this->loadValue(x, 1);
+    //x = 0
+    this->moveStackPointerTo(x);
+    this->clearByte();
+    //while(temp) {
+    this->moveStackPointerTo(temp);
+    this->branchOpen();
+    //x += temp2
+    this->moveStackPointerTo(temp3);
+    this->loadValue(x, 1);
+    this->loadValue(temp2, 1);
+    this->addU8();
+    this->copyByte(temp3, x, temp4);
+    //--temp
+    this->moveStackPointerTo(temp);
+    this->decrement();
+    //}
+    this->branchClose();
+
+    //Destroy the temporaries + 2nd operand
+    this->moveStackPointerTo(y);
+}
+
 void BrainfuckWriter::unimplemented()
 {
     std::ostream& out = this->getOutput();

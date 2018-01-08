@@ -16,6 +16,8 @@ void AddNode::print(std::ostream& os, size_t level) const
 
 void AddNode::generate(BrainfuckWriter& writer)
 {
-    ///TODO
-    writer.unimplemented();
+    if(this->type->equals(DataType<DataTypeClass::U8>()))
+        writer.addU8();
+    else
+        writer.unimplemented();
 }

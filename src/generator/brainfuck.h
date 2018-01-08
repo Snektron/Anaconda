@@ -162,6 +162,10 @@ class BrainfuckWriter
         void copyByte(size_t, size_t, size_t);
         void copyValue(size_t, size_t, size_t, size_t);
         void loadValue(size_t, size_t);
+        //8-bit unsigned arithmetic
+        void addU8();
+        void subU8();
+        void mulU8();
 
         void unimplemented();
 };

@@ -1,4 +1,4 @@
-TARGET = Anaconda
+TARGET = build/target/Anaconda
 SRC = src
 BUILD = build
 LIBS = 
