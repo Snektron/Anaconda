@@ -255,6 +255,21 @@ std::ostream& BrainfuckWriter::setOutput(std::ostream& output)
     return *result;
 }
 
+void BrainfuckWriter::copyAssembly(const std::string& code)
+{
+    std::ostream& output = this->getOutput();
+    for(char c : code)
+    {
+        //Keep track of the stack operations
+        if(c == '<')
+            this->decrementStackPointer();
+        else if(c == '>')
+            this->incrementStackPointer();
+        else
+            output << c;
+    }
+}
+
 void BrainfuckWriter::increment()
 {
     this->getOutput() << "+";

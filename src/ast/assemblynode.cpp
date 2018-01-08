@@ -7,7 +7,10 @@
 AssemblyNode::AssemblyNode(DataTypeBase* datatype, const std::string& assembly, ArgumentListNode* arguments):
     datatype(datatype), assembly(assembly), arguments(arguments) {}
 
-AssemblyNode::~AssemblyNode() {}
+AssemblyNode::~AssemblyNode()
+{
+    delete this->datatype;
+}
 
 void AssemblyNode::print(std::ostream& os, size_t level) const
 {
@@ -28,8 +31,7 @@ DataTypeBase* AssemblyNode::getType()
 
 void AssemblyNode::generate(BrainfuckWriter& writer)
 {
-    ///TODO
-    writer.unimplemented();
+    writer.copyAssembly(this->assembly);
 }
 
 void AssemblyNode::declareLocals(BrainfuckWriter& writer)

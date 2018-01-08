@@ -135,6 +135,8 @@ class BrainfuckWriter
         std::ostream& setOutput(std::ostream&);
 
         //Code generation functions
+        //Raw assembly copy
+        void copyAssembly(const std::string&);
         //Basic variable arithmetic
         void increment();
         void decrement();
