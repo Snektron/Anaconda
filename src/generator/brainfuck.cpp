@@ -260,11 +260,11 @@ void BrainfuckWriter::copyAssembly(const std::string& code)
     std::ostream& output = this->getOutput();
     for(char c : code)
     {
-        //Keep track of the stack operations
-        if(c == '<')
-            this->decrementStackPointer();
+        //Keep track of the branch operations
+        if(c == '[')
+            this->branchOpen();
         else if(c == '>')
-            this->incrementStackPointer();
+            this->branchClose();
         else
             output << c;
     }
