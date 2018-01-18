@@ -1,5 +1,5 @@
-.settings/
 build/
-.cproject
-.project
 Anaconda
+*.sublime-project
+
+*.sublime-workspace
