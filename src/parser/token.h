@@ -2,7 +2,7 @@
 #define SRC_PARSER_TOKEN_H_
 
 #include <string>
-#include <variant>
+#include <optional>
 #include <vector>
 #include <ostream>
 #include "types/datatype.h"
@@ -13,8 +13,10 @@ enum class TokenType
     UNKNOWN,
     WHITESPACE,
     NEWLINE,
+    COMMENT,
 
     IDENT,
+    INTEGER,
 
     BRACE_OPEN,
     BRACE_CLOSE,
@@ -31,21 +33,13 @@ enum class TokenType
     PERCENT,
     SEMICOLON,
 
-    COMMENT
-};
-
-enum class Keyword
-{
     IF,
     ELSE,
     WHILE,
     TYPE,
     FUNC,
-    RETURN
-};
+    RETURN,
 
-enum class BuiltinDataType
-{
     U8,
     VOID
 };
@@ -58,35 +52,26 @@ struct Span
 struct Token
 {
     static const std::vector<const char*> types;
-    static const std::vector<const char*> keywords;
-    static const std::vector<const char*> builtinDataTypes;
 
     Span span;
 
     TokenType type;
 
-    // Contains a string if the type is WHITESPACE, IDENT, COMMENT or UNKNOWN
+    // Contains a string if the type is WHITESPACE, IDENT, COMMENT, INTEGER or UNKNOWN
     // see hasText
-    std::variant<std::string> data;
+    std::string lexeme;
 
-    Token(const TokenType type);
-    Token(const TokenType type, const std::string& text);
-
-    std::string asText() const;
-    DataTypeBase* asDataType() const;
-
-    bool hasText() const;
+    Token(const Span span, const TokenType type);
+    Token(const Span span, const TokenType type, const std::string& text);
 
     bool isKeyword() const;
     bool isBuiltinDataType() const;
-    bool isDataType() const;
     bool isReserved() const;
+    bool isDataType() const;
 
-    template <Keyword T>
-    bool isKeyword() const
-    {
-        return isType<TokenType::IDENT>() && asText() == keywords[(std::size_t) T];
-    }
+    bool hasText() const;
+
+    DataTypeBase* asDataType() const;
 
     template <TokenType T>
     bool isType() const
@@ -105,7 +90,6 @@ struct Token
 };
 
 std::ostream& operator<<(std::ostream& os, const TokenType type);
-std::ostream& operator<<(std::ostream& os, const Keyword kw);
 std::ostream& operator<<(std::ostream& os, const Token& token);
 
 #endif

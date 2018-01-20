@@ -3,7 +3,7 @@
 #include <sstream>
 
 Parser::Parser(std::istream& input):
-    lexer(input), token(Token(TokenType::EOI))
+    lexer(input), token(Span{0, 0}, TokenType::EOI)
 {
     consume();
 }
@@ -16,11 +16,9 @@ void Parser::error(const std::string& msg)
 void Parser::unexpected()
 {
     std::stringstream ss;
-    fmt::ssprintf(ss, "Error: unexpected token '", this->token, "' expected");
-    if (this->triedKeywords.size() > 0)
-        fmt::ssprintf(ss, " - keyword(s) ", this->triedKeywords, '\n');
-    if (this->triedKeywords.size() > 0)
-        fmt::ssprintf(ss, " - token(s) ", this->triedKeywords, '\n');
+    fmt::ssprintf(ss, "Error: unexpected token '", this->token, "'");
+    if (this->tried.size() > 0)
+        fmt::ssprintf(ss, " expected token(s) ", this->tried, '\n');
 
     this->error(ss.str());
 }
@@ -39,12 +37,11 @@ GlobalNode* Parser::program()
 
 const Token& Parser::consume()
 {
-    this->triedTokens.clear();
-    this->triedKeywords.clear();
+    this->tried.clear();
 
     do
        this->token = this->lexer.next();
-    while (this->token.isOneOf<TokenType::WHITESPACE, TokenType::COMMENT>());
+    while (this->token.isOneOf<TokenType::WHITESPACE, TokenType::COMMENT, TokenType::NEWLINE>());
 
     return this->token;
 }
@@ -66,13 +63,13 @@ GlobalNode* Parser::prog()
     return new GlobalNode(elements);
 }
 
-// <globalstat> = <funcdecl> | <structdecl> | <declstat>
+// <globalstat> = <funcdecl> | <structdecl> | <globalexpr>
 GlobalElementNode* Parser::globalstat()
 {
-    if (this->check<Keyword::FUNC>())
+    if (this->check<TokenType::FUNC>())
         return this->funcdecl();
 
-    if (this->check<Keyword::TYPE>())
+    if (this->check<TokenType::TYPE>())
         return this->structdecl();
 
     return this->globalexpr();
@@ -89,7 +86,7 @@ GlobalExpressionNode* Parser::globalexpr()
 // <structdecl> = 'type' <id> '{' <fieldlist> '}'
 StructureDefinitionNode* Parser::structdecl()
 {
-    if (!this->expect<Keyword::TYPE>())
+    if (!this->expect<TokenType::TYPE>())
         return nullptr;
 
     if (!this->check<TokenType::IDENT>())
@@ -98,7 +95,7 @@ StructureDefinitionNode* Parser::structdecl()
         return nullptr;
     }
 
-    std::string name = this->token.asText();
+    const std::string& name = this->token.lexeme;
     consume();
 
     if (!this->expect<TokenType::BRACE_OPEN>())
@@ -118,13 +115,13 @@ StructureDefinitionNode* Parser::structdecl()
 // <funcdecl> = 'func' <id> <funcpar> ('->' <id>)? <block>
 FunctionDeclaration* Parser::funcdecl()
 {
-    if (!this->expect<Keyword::FUNC>())
+    if (!this->expect<TokenType::FUNC>())
         return nullptr;
 
-    if (!this->check<TokenType::IDENT>())
+    if (!this->check<TokenType::IDENT>() || this->token.isReserved())
         return nullptr;
 
-    std::string name = this->token.asText();
+    const std::string& name = this->token.lexeme;
     consume();
 
     FieldListNode* parameters = funcpar();
@@ -197,15 +194,12 @@ FieldListNode* Parser::fieldlist()
             if (!lasttype || saved.isReserved())
                 break;
 
-            parname = saved.asText();
+            parname = saved.lexeme;
             partype = lasttype->copy();
         }
         else if (this->expect<TokenType::IDENT>())
         {
-            if (this->token.isReserved())
-                break;
-
-            parname = this->token.asText();
+            parname = this->token.lexeme;
             partype = saved.asDataType();
 
             delete lasttype;
@@ -224,6 +218,7 @@ FieldListNode* Parser::fieldlist()
         }
     }
 
+    unexpected();
     delete lasttype;
     return nullptr;
 }
@@ -265,13 +260,13 @@ StatementListNode* Parser::statlist()
 // <statement> = <ifstat> | <whilestat>
 StatementNode* Parser::statement()
 {
-    if (this->check<Keyword::IF>())
+    if (this->check<TokenType::IF>())
         return ifstat();
 
-    if (this->check<Keyword::WHILE>())
+    if (this->check<TokenType::WHILE>())
         return whilestat();
 
-    if (this->check<Keyword::RETURN>())
+    if (this->check<TokenType::RETURN>())
         return returnstat();
 
     if (this->check<TokenType::BRACE_OPEN>())
@@ -282,7 +277,7 @@ StatementNode* Parser::statement()
 
 ReturnNode* Parser::returnstat()
 {
-    if (!this->expect<Keyword::RETURN>())
+    if (!this->expect<TokenType::RETURN>())
         return nullptr;
 
     ExpressionNode* expr = this->expr();
@@ -306,7 +301,7 @@ StatementNode* Parser::exprstat()
 // <ifstat> = 'if' <expr> <block> ('else' (<ifstat> | <block>))?
 StatementNode* Parser::ifstat()
 {
-    if (!this->expect<Keyword::IF>())
+    if (!this->expect<TokenType::IF>())
         return nullptr;
 
     ExpressionNode *condition = expr();
@@ -320,10 +315,10 @@ StatementNode* Parser::ifstat()
         return consequent;
     }
 
-    if (this->eat<Keyword::ELSE>())
+    if (this->eat<TokenType::ELSE>())
     {
         StatementNode *alternative(nullptr);
-        if (this->check<Keyword::IF>())
+        if (this->check<TokenType::IF>())
             alternative = ifstat();
         else
             alternative = statement();
@@ -344,7 +339,7 @@ StatementNode* Parser::ifstat()
 // <whilestat> = 'while' <expr> <block>
 WhileNode* Parser::whilestat()
 {
-    if (!this->expect<Keyword::WHILE>())
+    if (!this->expect<TokenType::WHILE>())
         return nullptr;
 
     ExpressionNode *condition = expr();
@@ -459,11 +454,14 @@ ExpressionNode* Parser::unary()
     return atom();
 }
 
-// <atom> = <paren> | <id> (<funcargs> | <id>? '=' <expr>)?
+// <atom> = <paren> | <constant> | <id> (<funcargs> | <id>? '=' <expr>)?
 ExpressionNode* Parser::atom()
 {
     if (this->check<TokenType::PAREN_OPEN>())
         return paren();
+
+    if (this->check<TokenType::INTEGER>())
+        return constant();
 
     if (!this->check<TokenType::IDENT>())
         return nullptr;
@@ -474,15 +472,20 @@ ExpressionNode* Parser::atom()
     if (this->check<TokenType::PAREN_OPEN>())
     {
         delete name;
+        if (token.isReserved())
+            return nullptr;
+
         ArgumentListNode *args = funcargs();
             return nullptr;
-        return new FunctionCallNode(token.asText(), args);
+        return new FunctionCallNode(token.lexeme, args);
     }
 
     if (this->check<TokenType::IDENT>())
     {
         delete name;
-        std::string tname = this->token.asText();
+        if (this->token.isReserved())
+            return nullptr;
+        const std::string& tname = this->token.lexeme;
         consume();
         DataTypeBase *type = token.asDataType();
 
@@ -575,8 +578,17 @@ ArgumentListNode* Parser::arglist()
 
 VariableNode* Parser::variable()
 {
-    if (!this->check<TokenType::IDENT>() || this->token.isReserved())
+    if (!this->check<TokenType::IDENT>())
         return nullptr;
-    std::string name = this->token.asText();
-    return new VariableNode(name);
+    return new VariableNode(this->token.lexeme);
+}
+
+ExpressionNode* Parser::constant()
+{
+    if (this->check<TokenType::INTEGER>())
+        return nullptr;
+
+    
+    
+    return nullptr;
 }

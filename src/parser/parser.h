@@ -16,8 +16,7 @@ class Parser
         Token token;
 
         std::vector<Message> messages;
-        std::vector<TokenType> triedTokens;
-        std::vector<Keyword> triedKeywords;
+        std::vector<TokenType> tried;
 
     public:
         Parser(std::istream& input);
@@ -38,16 +37,7 @@ class Parser
         {
             if (this->token.isType<T>())
                 return true;
-            this->triedTokens.push_back(T);
-            return false;
-        }
-
-        template <Keyword T>
-        bool check()
-        {
-            if (this->token.isKeyword<T>())
-                return true;
-            this->triedKeywords.push_back(T);
+            this->tried.push_back(T);
             return false;
         }
 
@@ -61,29 +51,7 @@ class Parser
             return false;
         }
 
-        template <Keyword T>
-        bool expect()
-        {
-            if (this->check<T>())
-                return true;
-
-            unexpected();
-            return false;
-        }
-
         template <TokenType T>
-        bool eat()
-        {
-            if (this->check<T>())
-            {
-                consume();
-                return true;
-            }
-
-            return false;
-        }
-
-        template <Keyword T>
         bool eat()
         {
             if (this->check<T>())
@@ -124,6 +92,7 @@ class Parser
         ArgumentListNode* funcargs();
         ArgumentListNode* arglist();
         VariableNode* variable();
+        ExpressionNode* constant();
 };
 
 #endif /* SRC_FORMULA_PARSER_H_ */

@@ -10,7 +10,7 @@
 namespace fmt
 {
     template <typename T>
-    std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
+    constexpr std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
     {
         bool first(true);
         for (const T& item : vec)
@@ -26,7 +26,7 @@ namespace fmt
     }
 
     template <typename T, typename... Args>
-    void ssprintf(std::ostream& ss, T&& first, Args&&... args)
+    constexpr void ssprintf(std::ostream& ss, T&& first, Args&&... args)
     {
         if constexpr (sizeof...(Args) == 0)
             ss << first;

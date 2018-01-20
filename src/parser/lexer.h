@@ -10,10 +10,12 @@ class Lexer
     private:
         std::istream& input;
         std::size_t row, col;
+        std::string buffer;
 
     public:
         Lexer(std::istream& input);
         Token next();
+
     private:
         int peek()
         {
@@ -21,15 +23,13 @@ class Lexer
         }
 
         int consume();
+        bool eat(int c);
+        bool eatRange(int low, int high);
 
-        std::string readline();
+        void consumeline();
 
-        Token next0();
-        std::optional<Token> singleByteTok();
-        std::optional<Token> multiByteTok();
-        std::optional<Token> whitespace();
-        std::optional<Token> name();
-        std::optional<Token> literals();
+        TokenType nextType();
+        Token toToken(Span span, TokenType type);
 };
 
 #endif

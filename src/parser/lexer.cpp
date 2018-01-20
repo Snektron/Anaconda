@@ -3,9 +3,21 @@
 Lexer::Lexer(std::istream& input):
     input(input), row(0), col(0) {}
 
+Token Lexer::next()
+{
+    this->buffer.clear();
+
+    Span span{this->row, this->col};
+    TokenType type = this->nextType();
+
+    return toToken(span, type);
+}
+
 int Lexer::consume()
 {
     int c = this->input.get();
+    this->buffer.append(1, c);
+
     if (c != EOF)
     {
         if (c == '\n')
@@ -20,160 +32,104 @@ int Lexer::consume()
     return c;
 }
 
-Token Lexer::next()
+bool Lexer::eat(int c)
 {
-    Span span{this->row, this->col};
-    Token tok = this->next0();
-    tok.span = span;
-    return tok;
-}
-
-std::string Lexer::readline()
-{
-    std::string text;
-
-    int c;
-    while ((c = peek()) != '\n')
+    if (this->peek() == c)
     {
-        text.append(1, (char) this->consume());
-        c = this->peek();
+        this->consume();
+        return false;
     }
 
-    return text;
+    return true;
 }
 
-Token Lexer::next0()
+bool Lexer::eatRange(int low, int high)
 {
-    if (std::optional<Token> tok = singleByteTok())
-        return tok.value();
-
-    if (std::optional<Token> tok = multiByteTok())
-        return tok.value();
-
-    if (std::optional<Token> tok = whitespace())
-        return tok.value();
-
-    if (std::optional<Token> tok = literals())
-           return tok.value();
-
-    if (std::optional<Token> tok = name())
-           return tok.value();
-
-    return Token(TokenType::UNKNOWN, std::string(1, peek()));
-}
-
-std::optional<Token> Lexer::singleByteTok()
-{
-    switch (this->peek())
+    if (this->peek() >= low && this->peek() <= high)
     {
-        case EOF:
-            this->consume();
-            return std::make_optional<Token>(TokenType::EOI);
-        case '{':
-            this->consume();
-            return std::make_optional<Token>(TokenType::BRACE_OPEN);
-        case '}':
-            this->consume();
-            return std::make_optional<Token>(TokenType::BRACE_CLOSE);
-        case '(':
-            this->consume();
-            return std::make_optional<Token>(TokenType::PAREN_OPEN);
-        case ')':
-            this->consume();
-            return std::make_optional<Token>(TokenType::PAREN_CLOSE);
-        case ',':
-            this->consume();
-            return std::make_optional<Token>(TokenType::COMMA);
-        case '=':
-            this->consume();
-            return std::make_optional<Token>(TokenType::EQUALS);
-        case '+':
-            this->consume();
-            return std::make_optional<Token>(TokenType::PLUS);
-        case '*':
-            this->consume();
-            return std::make_optional<Token>(TokenType::STAR);
-        case '%':
-            this->consume();
-            return std::make_optional<Token>(TokenType::PERCENT);
-        case ';':
-            this->consume();
-            return std::make_optional<Token>(TokenType::SEMICOLON);
-        case '\n':
-            this->consume();
-            return std::make_optional<Token>(TokenType::NEWLINE);
-        default:
-            return std::nullopt;
+        this->consume();
+        return false;
     }
+
+    return true;
 }
 
-std::optional<Token> Lexer::multiByteTok()
+void Lexer::consumeline()
 {
-    switch (this->peek())
+    while (peek() != '\n')
+        this->consume();
+}
+
+TokenType Lexer::nextType()
+{
+    switch (this->consume())
     {
+        case EOF: return TokenType::EOI;
+        case '{': return TokenType::BRACE_OPEN;
+        case '}': return TokenType::BRACE_CLOSE;
+        case '(': return TokenType::PAREN_OPEN;
+        case ')': return TokenType::PAREN_CLOSE;
+        case ',': return TokenType::COMMA;
+        case '=': return TokenType::EQUALS;
+        case '+': return TokenType::PLUS;
+        case '*': return TokenType::STAR;
+        case '%': return TokenType::PERCENT;
+        case ';': return TokenType::SEMICOLON;
+        case '\n': return TokenType::NEWLINE;
         case '/':
-           if (this->peek() == '/')
-           {
-               this->consume();
-               return std::make_optional<Token>(TokenType::COMMENT, "/" + readline());
-           }
-           return std::make_optional<Token>(TokenType::SLASH);
-        case '-':
-            if (this->peek() == '>')
+            if (this->eat('/'))
             {
-                this->consume();
-                return std::make_optional<Token>(TokenType::ARROW);
+                this->consumeline();
+                return TokenType::COMMENT;
             }
-            return std::make_optional<Token>(TokenType::MINUS);
+            return TokenType::SLASH;
+        case '-': return this->eat('>') ? TokenType::ARROW : TokenType::MINUS;
+        case ' ':
+        case '\t':
+        case '\r':
+            while (this->eat(' ') || this->eat('\t') || this->eat('\r'))
+                continue;
+            return TokenType::WHITESPACE;
+        case 'a' ... 'z':
+        case 'A' ... 'Z':
+        case '_':
+            while(this->eatRange('a', 'z'), this->eatRange('A', 'Z'), this->eatRange('0', '9'), this->eat('_'))
+                continue;
+            return TokenType::IDENT;
+        case '0' ... '9':
+            while(this->eatRange('0', '9'))
+                continue;
+            return TokenType::INTEGER;
         default:
-            return std::nullopt;
-    }
+            return TokenType::UNKNOWN;
+    }    
 }
 
-std::optional<Token> Lexer::whitespace()
+Token Lexer::toToken(Span span, TokenType type)
 {
-    std::string text;
-
-    int c = this->peek();
-    while (c == ' ' || c == '\t' || c == '\r')
+    switch (type)
     {
-        text.append(1, (char) this->consume());
-        c = this->peek();
+        case TokenType::IDENT:
+            // Too lazy for perfect hash
+            if (this->buffer == "if")
+                return Token(span, TokenType::IF);
+            else if (this->buffer == "else")
+                return Token(span, TokenType::ELSE);
+            else if (this->buffer == "while")
+                return Token(span, TokenType::WHILE);
+            else if (this->buffer == "type")
+                return Token(span, TokenType::TYPE);
+            else if (this->buffer == "func")
+                return Token(span, TokenType::FUNC);
+            else if (this->buffer == "return")
+                return Token(span, TokenType::RETURN);
+            else
+                return Token(span, TokenType::IDENT, buffer);
+        case TokenType::WHITESPACE:
+        case TokenType::COMMENT:
+        case TokenType::UNKNOWN:
+            return Token(span, type, buffer);
+        default:
+            return Token(span, type);
     }
-
-    if (text.empty())
-        return std::nullopt;
-
-    return std::make_optional<Token>(TokenType::WHITESPACE, text);
-}
-
-std::optional<Token> Lexer::name()
-{
-    int c = this->peek();
-    if ((c < 'a' || c > 'z') &&
-        (c < 'A' || c > 'Z') &&
-        (c != '_'))
-    {
-        return std::nullopt;
-    }
-
-    std::string text;
-
-    do
-    {
-        text.append(1, (char) this->consume());
-        c = this->peek();
-    }
-    while (
-        (c > 'a' && c < 'z') ||
-        (c > 'A' && c < 'Z') ||
-        (c > '0' && c < '9') ||
-        (c == '_'));
-
-    return std::make_optional<Token>(TokenType::IDENT, text);
-}
-
-std::optional<Token> Lexer::literals()
-{
-    return std::nullopt;
 }
