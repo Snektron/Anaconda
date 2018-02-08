@@ -41,3 +41,9 @@ SyntaxException::SyntaxException(const std::string& msg):
 
 SyntaxException::SyntaxException(const char* msg):
     AnacondaException(msg) {}
+
+VariantException::VariantException(const std::string& msg):
+    AnacondaException(msg) {}
+
+VariantException::VariantException(const char* msg):
+    AnacondaException(msg) {}

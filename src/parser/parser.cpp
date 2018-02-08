@@ -588,6 +588,7 @@ ExpressionNode* Parser::constant()
     if (this->check<TokenType::INTEGER>())
         return nullptr;
 
+
     
     
     return nullptr;

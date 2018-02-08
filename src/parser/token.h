@@ -6,6 +6,7 @@
 #include <vector>
 #include <ostream>
 #include "types/datatype.h"
+#include "common/variant.h"
 
 enum class TokenType
 {

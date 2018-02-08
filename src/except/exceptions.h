@@ -54,9 +54,18 @@ class RecursiveTypeException : public TypeCheckException
 
 class SyntaxException : public AnacondaException
 {
-    SyntaxException(const std::string& msg);
-    SyntaxException(const char* msg);
-    virtual ~SyntaxException() = default;
+    public:
+        SyntaxException(const std::string& msg);
+        SyntaxException(const char* msg);
+        virtual ~SyntaxException() = default;
+};
+
+class VariantException : public AnacondaException
+{
+    public:
+        VariantException(const std::string& msg);
+        VariantException(const char* msg);
+        virtual ~VariantException() = default;
 };
 
 #endif
