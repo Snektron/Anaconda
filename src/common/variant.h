@@ -4,14 +4,16 @@
 #include <iostream>
 #include <type_traits>
 #include <utility>
+#include <ostream>
+#include "common/format.h"
 #include "except/exceptions.h"
 
 template <typename... Ts>
 class Variant
 {
 private:
-    std::aligned_union_t<0, Ts...> data;
     std::size_t id;
+    std::aligned_union_t<0, Ts...> data;
 
     template <typename K, typename H, typename... Us>
     struct Type
@@ -29,7 +31,14 @@ private:
     struct Helper
     {
         static void destroy(std::size_t, void*) {}
-        static void copy(std::size_t, void*, void*) {}
+
+        static void copy(std::size_t, const void*, void*) {}
+
+        static void move(std::size_t, const void*, void*) {}
+
+        static void print(std::size_t, const void*, std::ostream& os) {
+            os << "None";
+        }
     };
 
     template <typename H, typename... Us>
@@ -54,13 +63,29 @@ private:
         static void move(std::size_t id, const void* data, void* newdata)
         {
             if (id == Type<H, H, Us...>::id)
-                new (newdata) H(std::move(reinterpret_cast<H*>(data)));
+                new (newdata) H(std::move(*reinterpret_cast<const H*>(data)));
             else
                 Helper<Us...>::move(id, data, newdata);
+        }
+
+        static void print(std::size_t id, const void* data, std::ostream& os)
+        {
+            if (id == Type<H, H, Us...>::id)
+                os << *reinterpret_cast<const H*>(data);
+            else
+                Helper<Us...>::print(id, data, os);
         }
     };
     
 public:
+    template <typename T, typename... Args>
+    static Variant<Ts...> make(Args&&... args)
+    {
+        Variant<Ts...> var;
+        var.set<T>(std::forward<Args...>(args...));
+        return var;
+    }
+
     Variant():
         id(-1)
     {}
@@ -80,7 +105,7 @@ public:
         this->clear();
     }
 
-    bool hasValue()
+    bool hasValue() const
     {
         return this->id != -1;
     }
@@ -92,7 +117,7 @@ public:
     }
 
     template <typename T>
-    bool is()
+    bool is() const
     {
         return Type<T, Ts...>::id == this->id;
     }
@@ -101,7 +126,7 @@ public:
     T& get()
     {
         if (!this->is<T>())
-            throw VariantException();
+            throw VariantException(fmt::sprintf("Error Variant::get(): id = ", this->id, " get type = ", Type<T, Ts...>::id));
 
         return *reinterpret_cast<T*>(&this->data);
     }
@@ -128,6 +153,22 @@ public:
         Helper<Ts...>::move(other.id, &other.data, &data);
         return *this;
     }
+
+    void print(std::ostream& os) const {
+        os << this->id << "(";
+        Helper<Ts...>::print(this->id, &this->data, os);
+        os << ")";
+    }
+
+    template <typename... Us>
+    friend std::ostream& operator<<(std::ostream&, const Variant<Us...>&);
 };
+
+template <typename... Ts>
+std::ostream& operator<<(std::ostream& os, const Variant<Ts...>& variant)
+{
+    variant.print(os);
+    return os;
+}
 
 #endif

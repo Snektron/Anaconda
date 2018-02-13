@@ -54,16 +54,17 @@ struct Token
 {
     static const std::vector<const char*> types;
 
+    typedef Variant<std::string> Lexeme;
+
     Span span;
 
     TokenType type;
 
-    // Contains a string if the type is WHITESPACE, IDENT, COMMENT, INTEGER or UNKNOWN
-    // see hasText
-    std::string lexeme;
+    // Contains a string if the type is WHITESPACE, IDENT, COMMENT, INTEGER or UNKNOWN.
+    Lexeme lexeme;
 
     Token(const Span span, const TokenType type);
-    Token(const Span span, const TokenType type, const std::string& text);
+    Token(const Span span, const TokenType type, const Lexeme&& lexeme);
 
     bool isKeyword() const;
     bool isBuiltinDataType() const;
@@ -72,7 +73,7 @@ struct Token
 
     bool hasText() const;
 
-    DataTypeBase* asDataType() const;
+    DataTypeBase* asDataType();
 
     template <TokenType T>
     bool isType() const

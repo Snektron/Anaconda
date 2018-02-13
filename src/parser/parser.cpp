@@ -95,7 +95,7 @@ StructureDefinitionNode* Parser::structdecl()
         return nullptr;
     }
 
-    const std::string& name = this->token.lexeme;
+    const std::string& name = this->token.lexeme.get<std::string>();
     consume();
 
     if (!this->expect<TokenType::BRACE_OPEN>())
@@ -121,7 +121,7 @@ FunctionDeclaration* Parser::funcdecl()
     if (!this->check<TokenType::IDENT>() || this->token.isReserved())
         return nullptr;
 
-    const std::string& name = this->token.lexeme;
+    const std::string& name = this->token.lexeme.get<std::string>();
     consume();
 
     FieldListNode* parameters = funcpar();
@@ -194,12 +194,12 @@ FieldListNode* Parser::fieldlist()
             if (!lasttype || saved.isReserved())
                 break;
 
-            parname = saved.lexeme;
+            parname = saved.lexeme.get<std::string>();
             partype = lasttype->copy();
         }
         else if (this->expect<TokenType::IDENT>())
         {
-            parname = this->token.lexeme;
+            parname = this->token.lexeme.get<std::string>();
             partype = saved.asDataType();
 
             delete lasttype;
@@ -477,7 +477,7 @@ ExpressionNode* Parser::atom()
 
         ArgumentListNode *args = funcargs();
             return nullptr;
-        return new FunctionCallNode(token.lexeme, args);
+        return new FunctionCallNode(token.lexeme.get<std::string>(), args);
     }
 
     if (this->check<TokenType::IDENT>())
@@ -485,7 +485,7 @@ ExpressionNode* Parser::atom()
         delete name;
         if (this->token.isReserved())
             return nullptr;
-        const std::string& tname = this->token.lexeme;
+        const std::string& tname = this->token.lexeme.get<std::string>();
         consume();
         DataTypeBase *type = token.asDataType();
 
@@ -580,7 +580,7 @@ VariableNode* Parser::variable()
 {
     if (!this->check<TokenType::IDENT>())
         return nullptr;
-    return new VariableNode(this->token.lexeme);
+    return new VariableNode(this->token.lexeme.get<std::string>());
 }
 
 ExpressionNode* Parser::constant()

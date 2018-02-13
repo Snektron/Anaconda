@@ -1,4 +1,5 @@
 #include "parser/lexer.h"
+#include "common/variant.h"
 
 Lexer::Lexer(std::istream& input):
     input(input), row(0), col(0) {}
@@ -124,11 +125,11 @@ Token Lexer::toToken(Span span, TokenType type)
             else if (this->buffer == "return")
                 return Token(span, TokenType::RETURN);
             else
-                return Token(span, TokenType::IDENT, buffer);
+                return Token(span, TokenType::IDENT, Token::Lexeme::make<std::string>(std::move(buffer)));
         case TokenType::WHITESPACE:
         case TokenType::COMMENT:
         case TokenType::UNKNOWN:
-            return Token(span, type, buffer);
+            return Token(span, type, Token::Lexeme::make<std::string>(std::move(buffer)));
         default:
             return Token(span, type);
     }

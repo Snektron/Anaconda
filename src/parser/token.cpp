@@ -14,8 +14,8 @@ const std::vector<const char*> Token::types =
 Token::Token(const Span span, const TokenType type):
     span(span), type(type) {}
 
-Token::Token(const Span span, const TokenType type, const std::string& text):
-    span(span), type(type), lexeme(text) {}
+Token::Token(const Span span, const TokenType type, const Token::Lexeme&& lexeme):
+    span(span), type(type), lexeme(std::move(lexeme)) {}
 
 bool Token::isKeyword() const
 {
@@ -37,15 +37,18 @@ bool Token::isDataType() const
     return isBuiltinDataType() || isType<TokenType::IDENT>();
 }
 
-DataTypeBase* Token::asDataType() const
+DataTypeBase* Token::asDataType()
 {
+    if (!this->isDataType())
+        return nullptr;
+
     switch (this->type) {
         case TokenType::U8:
             return new DataType<DataTypeClass::U8>();
         case TokenType::VOID:
             return new DataType<DataTypeClass::VOID>();
         default:
-            return new DataType<DataTypeClass::STRUCT_FORWARD>(this->lexeme);
+            return new DataType<DataTypeClass::STRUCT_FORWARD>(this->lexeme.get<std::string>());
     }
 }
 
