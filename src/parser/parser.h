@@ -82,6 +82,10 @@ class Parser
         WhileNode* whilestat();
 
         ExpressionNode* expr();
+        ExpressionNode* bor();
+        ExpressionNode* bxor();
+        ExpressionNode* band();
+        ExpressionNode* shift();
         ExpressionNode* sum();
         ExpressionNode* product();
         ExpressionNode* unary();
@@ -93,6 +97,8 @@ class Parser
         ArgumentListNode* arglist();
         VariableNode* variable();
         ExpressionNode* constant();
+        AssemblyNode* assembly();
+        std::string* brainfuck();
 };
 
-#endif /* SRC_FORMULA_PARSER_H_ */
+#endif

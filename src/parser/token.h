@@ -23,9 +23,12 @@ enum class TokenType
     BRACE_CLOSE,
     PAREN_OPEN,
     PAREN_CLOSE,
+    BRACKET_OPEN,
+    BRACKET_CLOSE,
 
     ARROW,
     COMMA,
+    DOT,
     EQUALS,
     PLUS,
     MINUS,
@@ -33,6 +36,16 @@ enum class TokenType
     SLASH,
     PERCENT,
     SEMICOLON,
+    LEFT,
+    RIGHT,
+    LEFTEQ,
+    RIGHTEQ,
+
+    AMPERSAND,
+    PIPE,
+    LEFTLEFT,
+    RIGHTRIGHT,
+    HAT,
 
     IF,
     ELSE,
@@ -40,6 +53,7 @@ enum class TokenType
     TYPE,
     FUNC,
     RETURN,
+    ASM,
 
     U8,
     VOID
@@ -54,7 +68,7 @@ struct Token
 {
     static const std::vector<const char*> types;
 
-    typedef Variant<std::string> Lexeme;
+    typedef Variant<std::string, uint64_t> Lexeme;
 
     Span span;
 
@@ -62,6 +76,16 @@ struct Token
 
     // Contains a string if the type is WHITESPACE, IDENT, COMMENT, INTEGER or UNKNOWN.
     Lexeme lexeme;
+
+    template <typename T, typename... Args>
+    static Token make_mv(const Span span, const TokenType type, Args&&... args) {
+        return Token(span, type, Lexeme::make_mv<T>(std::forward<Args...>(args...)));
+    }
+
+    template <typename T, typename... Args>
+    static Token make(const Span span, const TokenType type, Args&... args) {
+        return Token(span, type, Lexeme::make<T>(args...));
+    }
 
     Token(const Span span, const TokenType type);
     Token(const Span span, const TokenType type, const Lexeme&& lexeme);

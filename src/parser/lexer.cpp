@@ -70,12 +70,20 @@ TokenType Lexer::nextType()
         case '}': return TokenType::BRACE_CLOSE;
         case '(': return TokenType::PAREN_OPEN;
         case ')': return TokenType::PAREN_CLOSE;
+        case '[': return TokenType::BRACKET_OPEN;
+        case ']': return TokenType::BRACKET_CLOSE;
         case ',': return TokenType::COMMA;
+        case '.': return TokenType::DOT;
         case '=': return TokenType::EQUALS;
         case '+': return TokenType::PLUS;
         case '*': return TokenType::STAR;
         case '%': return TokenType::PERCENT;
         case ';': return TokenType::SEMICOLON;
+        case '<': return this->eat('=') ? TokenType::LEFTEQ : this->eat('<') ? TokenType::LEFTLEFT : TokenType::LEFT;
+        case '>': return this->eat('=') ? TokenType::RIGHTEQ : this->eat('>') ? TokenType::RIGHTRIGHT : TokenType::RIGHT;
+        case '&': return TokenType::AMPERSAND;
+        case '|': return TokenType::PIPE;
+        case '^': return TokenType::HAT;
         case '\n': return TokenType::NEWLINE;
         case '/':
             if (this->eat('/'))
@@ -124,12 +132,18 @@ Token Lexer::toToken(Span span, TokenType type)
                 return Token(span, TokenType::FUNC);
             else if (this->buffer == "return")
                 return Token(span, TokenType::RETURN);
-            else
-                return Token(span, TokenType::IDENT, Token::Lexeme::make<std::string>(std::move(buffer)));
+            else if (this->buffer == "asm")
+                return Token(span, TokenType::ASM);
+            return Token::make<std::string>(span, TokenType::IDENT, buffer);
         case TokenType::WHITESPACE:
         case TokenType::COMMENT:
         case TokenType::UNKNOWN:
-            return Token(span, type, Token::Lexeme::make<std::string>(std::move(buffer)));
+            return Token::make<std::string>(span, type, buffer);
+        case TokenType::INTEGER:
+        {
+            uint64_t x = std::strtoull(buffer.c_str(), nullptr, 10);
+            return Token::make<uint64_t>(span, type, x);
+        }
         default:
             return Token(span, type);
     }

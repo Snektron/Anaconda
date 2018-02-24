@@ -79,10 +79,18 @@ private:
     
 public:
     template <typename T, typename... Args>
-    static Variant<Ts...> make(Args&&... args)
+    static Variant<Ts...> make_mv(Args&&... args)
     {
         Variant<Ts...> var;
         var.set<T>(std::forward<Args...>(args...));
+        return var;
+    }
+
+    template <typename T, typename... Args>
+    static Variant<Ts...> make(Args&... args)
+    {
+        Variant<Ts...> var;
+        var.set<T>(args...);
         return var;
     }
 

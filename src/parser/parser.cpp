@@ -26,13 +26,11 @@ void Parser::unexpected()
 GlobalNode* Parser::program()
 {
     GlobalNode* node = this->prog();
-    if (!this->expect<TokenType::EOI>())
-    {
-        delete node;
-        return nullptr;
-    }
+    if (this->expect<TokenType::EOI>())
+        return node;
 
-    return node;
+    delete node;
+    return nullptr;
 }
 
 const Token& Parser::consume()
@@ -89,11 +87,8 @@ StructureDefinitionNode* Parser::structdecl()
     if (!this->expect<TokenType::TYPE>())
         return nullptr;
 
-    if (!this->check<TokenType::IDENT>())
-    {
-        this->unexpected();
+    if (!this->expect<TokenType::IDENT>())
         return nullptr;
-    }
 
     const std::string& name = this->token.lexeme.get<std::string>();
     consume();
@@ -359,7 +354,105 @@ WhileNode* Parser::whilestat()
 // <expr> = <sum>
 ExpressionNode* Parser::expr()
 {
-    return sum();
+    return bor();
+}
+
+ExpressionNode* Parser::bor() {
+    ExpressionNode *lhs = bxor();
+    if (!lhs)
+        return nullptr;
+
+    while (true)
+    {
+        if (!this->eat<TokenType::PIPE>())
+            break;
+
+        ExpressionNode *rhs = bxor();
+        if (!rhs)
+        {
+            delete lhs;
+            return nullptr;
+        }
+
+        lhs = new BitwiseOrNode(lhs, rhs);
+    }
+
+    return lhs;
+}
+
+ExpressionNode* Parser::bxor() {
+    ExpressionNode *lhs = band();
+    if (!lhs)
+        return nullptr;
+
+    while (true)
+    {
+        if (!this->eat<TokenType::HAT>())
+            break;
+
+        ExpressionNode *rhs = band();
+        if (!rhs)
+        {
+            delete lhs;
+            return nullptr;
+        }
+
+        lhs = new BitwiseXorNode(lhs, rhs);
+    }
+
+    return lhs;
+}
+
+ExpressionNode* Parser::band() {
+    ExpressionNode *lhs = shift();
+    if (!lhs)
+        return nullptr;
+
+    while (true)
+    {
+        if (!this->eat<TokenType::AMPERSAND>())
+            break;
+
+        ExpressionNode *rhs = shift();
+        if (!rhs)
+        {
+            delete lhs;
+            return nullptr;
+        }
+
+        lhs = new BitwiseAndNode(lhs, rhs);
+    }
+
+    return lhs;
+}
+
+ExpressionNode* Parser::shift()
+{
+    ExpressionNode *lhs = sum();
+    if (!lhs)
+        return nullptr;
+
+    while (true)
+    {
+        TokenType optype = this->token.type;
+        if (!this->eat<TokenType::LEFTLEFT>() ||
+            !this->eat<TokenType::RIGHTRIGHT>())
+            break;
+
+        ExpressionNode *rhs = sum();
+        if (!rhs)
+        {
+            delete lhs;
+            return nullptr;
+        }
+
+        if (optype == TokenType::LEFTLEFT)
+            lhs = new BitwiseLeftShiftNode(lhs, rhs);
+        else
+            lhs = new BitwiseRightShiftNode(lhs, rhs);
+    }
+
+    return lhs;
 }
 
 // <sum> = <product> (('+' | '-') <product>)*
@@ -383,17 +476,10 @@ ExpressionNode* Parser::sum()
             return nullptr;
         }
 
-        switch (optype)
-        {
-            case TokenType::PLUS:
-                lhs = new AddNode(lhs, rhs);
-                break;
-            case TokenType::MINUS:
-                lhs = new SubNode(lhs, rhs);
-                break;
-            default:
-                unexpected();
-        }
+        if (optype == TokenType::PLUS)
+            lhs = new AddNode(lhs, rhs);
+        else
+            lhs = new SubNode(lhs, rhs);
     }
 
     return lhs;
@@ -422,20 +508,12 @@ ExpressionNode* Parser::product()
             return nullptr;
         }
 
-        switch (optype)
-        {
-            case TokenType::STAR:
-                lhs = new MulNode(lhs, rhs);
-                break;
-            case TokenType::SLASH:
-                lhs = new DivNode(lhs, rhs);
-                break;
-            case TokenType::PERCENT:
-                lhs = new ModNode(lhs, rhs);
-                break;
-            default:
-                unexpected();
-        }
+        if (optype == TokenType::STAR)
+            lhs = new MulNode(lhs, rhs);
+        else if (optype == TokenType::SLASH)
+            lhs = new DivNode(lhs, rhs);
+        else
+            lhs = new ModNode(lhs, rhs);
     }
 
     return lhs;
@@ -580,16 +658,107 @@ VariableNode* Parser::variable()
 {
     if (!this->check<TokenType::IDENT>())
         return nullptr;
-    return new VariableNode(this->token.lexeme.get<std::string>());
+    auto v = new VariableNode(this->token.lexeme.get<std::string>());
+    this->consume();
+    return v;
 }
 
 ExpressionNode* Parser::constant()
 {
-    if (this->check<TokenType::INTEGER>())
+    if (!this->check<TokenType::INTEGER>())
+        return nullptr;
+    uint64_t x = this->token.lexeme.get<uint64_t>();
+    this->consume();
+
+    if (x <= (1 << 8) -1)
+        return new U8ConstantNode((uint8_t) (x & 0xFF));
+
+    this->error(fmt::sprintf("Error: Value of ", x, " overflowed."));
+    return nullptr;
+}
+
+AssemblyNode* Parser::assembly()
+{
+    if (!this->expect<TokenType::ASM>())
         return nullptr;
 
+    ArgumentListNode* args = funcargs();
+    if (!args)
+        return nullptr;
 
-    
-    
-    return nullptr;
+    if (!this->expect<TokenType::ARROW>() || !this->token.isDataType())
+    {
+        delete args;
+        return nullptr;
+    }
+
+    DataTypeBase* rtype = this->token.asDataType();
+    this->consume();
+
+    if (!this->expect<TokenType::BRACE_OPEN>())
+    {
+        delete args;
+        delete rtype;
+        return nullptr;
+    }
+
+    std::string* code = brainfuck();
+    if (!code)
+    {
+        delete code;
+        delete args;
+        delete rtype;
+        return nullptr;
+    }
+
+    return new AssemblyNode(rtype, *code, args);
+}
+
+std::string* Parser::brainfuck()
+{
+    std::stringstream ss;
+
+    while (true)
+    {
+        switch(this->token.type)
+        {
+            case TokenType::PLUS:
+                ss << "+";
+                break;
+            case TokenType::MINUS:
+                ss << "-";
+                break;
+            case TokenType::DOT:
+                ss << ".";
+                break;
+            case TokenType::COMMA:
+                ss << ",";
+                break;
+            case TokenType::LEFT:
+                ss << "<";
+                break;
+            case TokenType::RIGHT:
+                ss << ">";
+                break;
+            case TokenType::LEFTLEFT:
+                ss << "<<";
+                break;
+            case TokenType::RIGHTRIGHT:
+                ss << ">>";
+                break;
+            case TokenType::BRACKET_OPEN:
+                this->consume();
+                ss << "[" << brainfuck();
+
+                if (!this->expect<TokenType::BRACKET_CLOSE>())
+                    return nullptr;
+
+                ss << "]";
+                break;
+            default:
+                return new std::string(ss.str());
+        }
+
+        this->consume();
+    }
 }
