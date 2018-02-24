@@ -1,5 +1,5 @@
-#ifndef UTILS_H_INCLUDED
-#define UTILS_H_INCLUDED
+#ifndef SRC_UTIL_UTILS_H_
+#define SRC_UTIL_UTILS_H_
 
 #define UNUSED(x) ((void)(x))
 

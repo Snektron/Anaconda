@@ -1,5 +1,5 @@
-#ifndef EXCEPTIONS_H_INCLUDED
-#define EXCEPTIONS_H_INCLUDED
+#ifndef SRC_EXCEPT_EXCEPTIONS_H_
+#define SRC_EXCEPT_EXCEPTIONS_H_
 
 #include <stdexcept>
 #include <string>

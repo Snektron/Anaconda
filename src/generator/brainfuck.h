@@ -1,5 +1,5 @@
-#ifndef BRAINFUCK_HPP_INCLUDED
-#define BRAINFUCK_HPP_INCLUDED
+#ifndef SRC_GENERATOR_BRAINFUCK_H_
+#define SRC_GENERATOR_BRAINFUCK_H_
 
 #include <iosfwd>
 #include <map>

@@ -1,5 +1,5 @@
-#ifndef NODE_HPP_INCLUDED
-#define NODE_HPP_INCLUDED
+#ifndef SRC_AST_NODE_H_
+#define SRC_AST_NODE_H_
 
 #include <iosfwd>
 #include <string>

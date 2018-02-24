@@ -1,5 +1,5 @@
-#ifndef DATATYPE_H_INCLUDED
-#define DATATYPE_H_INCLUDED
+#ifndef SRC_TYPES_DATATYPE_H_
+#define SRC_TYPES_DATATYPE_H_
 
 #include <string>
 #include <map>
