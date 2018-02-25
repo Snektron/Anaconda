@@ -89,6 +89,9 @@ struct Token
 
     Token(const Span span, const TokenType type);
     Token(const Span span, const TokenType type, const Lexeme&& lexeme);
+    Token(const Token& other);
+
+    Token& operator=(const Token& other);
 
     bool isKeyword() const;
     bool isBuiltinDataType() const;
@@ -117,5 +120,6 @@ struct Token
 
 std::ostream& operator<<(std::ostream& os, const TokenType type);
 std::ostream& operator<<(std::ostream& os, const Token& token);
+std::ostream& operator<<(std::ostream& os, const Span& span);
 
 #endif

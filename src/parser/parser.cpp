@@ -2,21 +2,47 @@
 #include "common/format.h"
 #include <sstream>
 
+#define TRACE_ENABLE
+
+#ifdef TRACE_ENABLE
+#include <iostream>
+
+struct Trace
+{
+    const char* func;
+
+    Trace(const char* func):
+        func(func)
+    {
+        std::cout << "Entering " << func << std::endl;
+    }
+
+    ~Trace()
+    {
+        std::cout << "Exiting " << func << std::endl;
+    }
+};
+
+#define TRACE Trace _trace_##__FUNCTION__(__FUNCTION__)
+#else
+#define TRACE
+#endif
+
 Parser::Parser(std::istream& input):
-    lexer(input), token(Span{0, 0}, TokenType::EOI)
+    lexer(input), token(Span{0, 0}, TokenType::EOI), message("")
 {
     consume();
 }
 
 void Parser::error(const std::string& msg)
 {
-    this->messages.push_back(Message(MessageType::ERROR, msg));
+    this->message = msg;
 }
 
 void Parser::unexpected()
 {
     std::stringstream ss;
-    fmt::ssprintf(ss, "Error: unexpected token '", this->token, "'");
+    fmt::ssprintf(ss, this->token.span, " unexpected token '", this->token, "'");
     if (this->tried.size() > 0)
         fmt::ssprintf(ss, " expected token(s) ", this->tried, '\n');
 
@@ -25,21 +51,20 @@ void Parser::unexpected()
 
 GlobalNode* Parser::program()
 {
-    GlobalNode* node = this->prog();
-    if (this->expect<TokenType::EOI>())
-        return node;
-
-    delete node;
-    return nullptr;
+    TRACE;
+    return this->prog();
 }
 
 const Token& Parser::consume()
 {
     this->tried.clear();
 
-    do
+    do {
        this->token = this->lexer.next();
+    }
     while (this->token.isOneOf<TokenType::WHITESPACE, TokenType::COMMENT, TokenType::NEWLINE>());
+    
+    std::cout << "consume: " << this->token.type << std::endl;
 
     return this->token;
 }
@@ -47,13 +72,14 @@ const Token& Parser::consume()
 // <unit> = <globalstat>*
 GlobalNode* Parser::prog()
 {
+    TRACE;
     std::vector<GlobalElementNode*> elements;
 
-    while (true)
+    while (!this->check<TokenType::EOI>())
     {
         GlobalElementNode *node = globalstat();
         if (!node)
-            break;
+            return nullptr;
 
         elements.push_back(node);
     }
@@ -64,6 +90,7 @@ GlobalNode* Parser::prog()
 // <globalstat> = <funcdecl> | <structdecl> | <globalexpr>
 GlobalElementNode* Parser::globalstat()
 {
+    TRACE;
     if (this->check<TokenType::FUNC>())
         return this->funcdecl();
 
@@ -75,22 +102,31 @@ GlobalElementNode* Parser::globalstat()
 
 GlobalExpressionNode* Parser::globalexpr()
 {
+    TRACE;
     ExpressionNode* expr = this->expr();
     if (!expr)
         return nullptr;
+
+    if (!this->expect<TokenType::SEMICOLON>())
+    {
+        delete expr;
+        return nullptr;
+    }
+
     return new GlobalExpressionNode(expr);
 }
 
 // <structdecl> = 'type' <id> '{' <fieldlist> '}'
 StructureDefinitionNode* Parser::structdecl()
 {
+    TRACE;
     if (!this->expect<TokenType::TYPE>())
         return nullptr;
 
-    if (!this->expect<TokenType::IDENT>())
+    if (!this->check<TokenType::IDENT>())
         return nullptr;
 
-    const std::string& name = this->token.lexeme.get<std::string>();
+    const std::string name = this->token.lexeme.get<std::string>();
     consume();
 
     if (!this->expect<TokenType::BRACE_OPEN>())
@@ -110,13 +146,14 @@ StructureDefinitionNode* Parser::structdecl()
 // <funcdecl> = 'func' <id> <funcpar> ('->' <id>)? <block>
 FunctionDeclaration* Parser::funcdecl()
 {
+    TRACE;
     if (!this->expect<TokenType::FUNC>())
         return nullptr;
 
-    if (!this->check<TokenType::IDENT>() || this->token.isReserved())
+    if (!this->check<TokenType::IDENT>())
         return nullptr;
 
-    const std::string& name = this->token.lexeme.get<std::string>();
+    const std::string name = this->token.lexeme.get<std::string>();
     consume();
 
     FieldListNode* parameters = funcpar();
@@ -134,6 +171,7 @@ FunctionDeclaration* Parser::funcdecl()
         }
 
         rtype = this->token.asDataType();
+        this->consume();
     }
     else
         rtype = new DataType<DataTypeClass::VOID>();
@@ -153,6 +191,7 @@ FunctionDeclaration* Parser::funcdecl()
 // <funcpar> = '(' <fieldlist> ')'
 FieldListNode* Parser::funcpar()
 {
+    TRACE;
     if (!this->expect<TokenType::PAREN_OPEN>())
         return nullptr;
 
@@ -172,59 +211,59 @@ FieldListNode* Parser::funcpar()
 // <fieldlist> = (<type> <id> (',' <type>? <id>)*)
 FieldListNode* Parser::fieldlist()
 {
+    TRACE;
     std::vector<Field> parameters;
     DataTypeBase *lasttype(nullptr);
 
     while (true)
     {
         Token saved = this->token;
-        if (!this->expect<TokenType::IDENT>())
+        if (!this->token.isDataType()) {
+            this->unexpected();
             break;
-
-        std::string parname;
-        DataTypeBase *partype(nullptr);
-
-        if (this->eat<TokenType::COMMA>())
-        {
-            if (!lasttype || saved.isReserved())
-                break;
-
-            parname = saved.lexeme.get<std::string>();
-            partype = lasttype->copy();
         }
-        else if (this->expect<TokenType::IDENT>())
+
+        this->consume();
+
+        DataTypeBase *partype(nullptr);
+        std::string parname;
+
+        if (this->check<TokenType::IDENT>())
         {
-            parname = this->token.lexeme.get<std::string>();
             partype = saved.asDataType();
+            parname = this->token.lexeme.get<std::string>();
+            this->consume();
 
             delete lasttype;
             lasttype = partype->copy();
         }
         else
-            return nullptr;
+        {
+            if (!lasttype)
+                return nullptr;
+
+            partype = lasttype->copy();
+            parname = saved.lexeme.get<std::string>();
+        }
 
         parameters.push_back(Field(partype, parname));
 
-
         if (!this->expect<TokenType::COMMA>())
-        {
-            delete lasttype;
-            return new FieldListNode(parameters);
-        }
+            break;
     }
 
-    unexpected();
     delete lasttype;
-    return nullptr;
+    return new FieldListNode(parameters);
 }
 
 // <block> = '{' <statlist> '}'
 BlockNode* Parser::block()
 {
+    TRACE;
     if (!this->expect<TokenType::BRACE_OPEN>())
         return nullptr;
 
-    StatementListNode* list = statlist();
+    StatementNode* list = statlist();
 
     if (!this->expect<TokenType::BRACE_CLOSE>())
     {
@@ -236,9 +275,10 @@ BlockNode* Parser::block()
 }
 
 // <statlist> = <statement>*
-StatementListNode* Parser::statlist()
+StatementNode* Parser::statlist()
 {
-    StatementListNode *list = nullptr;
+    TRACE;
+    StatementNode *list = new EmptyStatementNode();
 
     while (true)
     {
@@ -255,6 +295,7 @@ StatementListNode* Parser::statlist()
 // <statement> = <ifstat> | <whilestat>
 StatementNode* Parser::statement()
 {
+    TRACE;
     if (this->check<TokenType::IF>())
         return ifstat();
 
@@ -272,6 +313,7 @@ StatementNode* Parser::statement()
 
 ReturnNode* Parser::returnstat()
 {
+    TRACE;
     if (!this->expect<TokenType::RETURN>())
         return nullptr;
 
@@ -284,6 +326,7 @@ ReturnNode* Parser::returnstat()
 
 StatementNode* Parser::exprstat()
 {
+    TRACE;
     ExpressionNode* expr = this->expr();
     if (!expr)
         return nullptr;
@@ -296,6 +339,7 @@ StatementNode* Parser::exprstat()
 // <ifstat> = 'if' <expr> <block> ('else' (<ifstat> | <block>))?
 StatementNode* Parser::ifstat()
 {
+    TRACE;
     if (!this->expect<TokenType::IF>())
         return nullptr;
 
@@ -334,6 +378,7 @@ StatementNode* Parser::ifstat()
 // <whilestat> = 'while' <expr> <block>
 WhileNode* Parser::whilestat()
 {
+    TRACE;
     if (!this->expect<TokenType::WHILE>())
         return nullptr;
 
@@ -354,10 +399,13 @@ WhileNode* Parser::whilestat()
 // <expr> = <sum>
 ExpressionNode* Parser::expr()
 {
+    TRACE;
     return bor();
 }
 
-ExpressionNode* Parser::bor() {
+ExpressionNode* Parser::bor()
+{
+    TRACE;
     ExpressionNode *lhs = bxor();
     if (!lhs)
         return nullptr;
@@ -380,7 +428,9 @@ ExpressionNode* Parser::bor() {
     return lhs;
 }
 
-ExpressionNode* Parser::bxor() {
+ExpressionNode* Parser::bxor()
+{
+    TRACE;
     ExpressionNode *lhs = band();
     if (!lhs)
         return nullptr;
@@ -403,7 +453,9 @@ ExpressionNode* Parser::bxor() {
     return lhs;
 }
 
-ExpressionNode* Parser::band() {
+ExpressionNode* Parser::band()
+{
+    TRACE;
     ExpressionNode *lhs = shift();
     if (!lhs)
         return nullptr;
@@ -428,6 +480,7 @@ ExpressionNode* Parser::band() {
 
 ExpressionNode* Parser::shift()
 {
+    TRACE;
     ExpressionNode *lhs = sum();
     if (!lhs)
         return nullptr;
@@ -435,8 +488,7 @@ ExpressionNode* Parser::shift()
     while (true)
     {
         TokenType optype = this->token.type;
-        if (!this->eat<TokenType::LEFTLEFT>() ||
-            !this->eat<TokenType::RIGHTRIGHT>())
+        if (!this->eatOneOf<TokenType::LEFTLEFT, TokenType::RIGHTRIGHT>())
             break;
 
         ExpressionNode *rhs = sum();
@@ -458,6 +510,7 @@ ExpressionNode* Parser::shift()
 // <sum> = <product> (('+' | '-') <product>)*
 ExpressionNode* Parser::sum()
 {
+    TRACE;
     ExpressionNode *lhs = product();
     if (!lhs)
         return nullptr;
@@ -465,8 +518,7 @@ ExpressionNode* Parser::sum()
     while (true)
     {
         TokenType optype = this->token.type;
-        if (!this->eat<TokenType::PLUS>() ||
-            !this->eat<TokenType::MINUS>())
+        if (!this->eatOneOf<TokenType::PLUS, TokenType::MINUS>())
             break;
 
         ExpressionNode *rhs = product();
@@ -488,6 +540,7 @@ ExpressionNode* Parser::sum()
 // <product> = <unary> (('*' | '/' | '%') <unary>)*
 ExpressionNode* Parser::product()
 {
+    TRACE;
     ExpressionNode *lhs = unary();
     if (!lhs)
         return nullptr;
@@ -495,11 +548,8 @@ ExpressionNode* Parser::product()
     while (true)
     {
         TokenType optype = this->token.type;
-        if (!this->eat<TokenType::STAR>() ||
-            !this->eat<TokenType::SLASH>() ||
-            !this->eat<TokenType::PERCENT>())
+        if (!this->eatOneOf<TokenType::STAR, TokenType::SLASH, TokenType::PERCENT>())
             break;
-        consume();
 
         ExpressionNode *rhs = unary();
         if (!rhs)
@@ -522,7 +572,8 @@ ExpressionNode* Parser::product()
 // <unary> = '-' <unary> | <atom>
 ExpressionNode* Parser::unary()
 {
-    if (this->check<TokenType::MINUS>())
+    TRACE;
+    if (this->eat<TokenType::MINUS>())
     {
         ExpressionNode *node = unary();
         if (!node)
@@ -535,68 +586,24 @@ ExpressionNode* Parser::unary()
 // <atom> = <paren> | <constant> | <id> (<funcargs> | <id>? '=' <expr>)?
 ExpressionNode* Parser::atom()
 {
-    if (this->check<TokenType::PAREN_OPEN>())
-        return paren();
-
-    if (this->check<TokenType::INTEGER>())
-        return constant();
-
-    if (!this->check<TokenType::IDENT>())
-        return nullptr;
-
-    Token token = this->token;
-    VariableNode *name = variable();
-
-    if (this->check<TokenType::PAREN_OPEN>())
+    TRACE;
+    switch(this->token.type)
     {
-        delete name;
-        if (token.isReserved())
-            return nullptr;
-
-        ArgumentListNode *args = funcargs();
-            return nullptr;
-        return new FunctionCallNode(token.lexeme.get<std::string>(), args);
+        case TokenType::PAREN_OPEN:
+            return paren();
+        case TokenType::ASM:
+            return assembly();
+        case TokenType::INTEGER:
+            return constant();
+        default:
+            return variable();
     }
-
-    if (this->check<TokenType::IDENT>())
-    {
-        delete name;
-        if (this->token.isReserved())
-            return nullptr;
-        const std::string& tname = this->token.lexeme.get<std::string>();
-        consume();
-        DataTypeBase *type = token.asDataType();
-
-        if (this->eat<TokenType::EQUALS>())
-        {
-            ExpressionNode* rhs = expr();
-            if (!rhs)
-                return nullptr;
-
-            return new AssignmentNode(new DeclarationNode(type, tname), rhs);
-        }
-
-        return new DeclarationNode(type, tname);
-    }
-
-    if (this->eat<TokenType::EQUALS>())
-    {
-        ExpressionNode* rhs = expr();
-        if (!rhs)
-        {
-            delete name;
-            return nullptr;
-        }
-
-        return new AssignmentNode(name, rhs);
-    }
-
-    return name;
 }
 
 // <paren> = '(' <expr> ')'
 ExpressionNode* Parser::paren()
 {
+    TRACE;
     if (!this->expect<TokenType::PAREN_OPEN>())
         return nullptr;
 
@@ -616,8 +623,14 @@ ExpressionNode* Parser::paren()
 // <funcargs> = '(' (<expr> (',' <expr>)*) ')'
 ArgumentListNode* Parser::funcargs()
 {
+    TRACE;
     if (!this->expect<TokenType::PAREN_OPEN>())
         return nullptr;
+
+    if (this->eat<TokenType::PAREN_CLOSE>()) {
+        std::vector<ExpressionNode*> arguments;
+        return new ArgumentListNode(arguments);
+    }
 
     ArgumentListNode* args = arglist();
     if (!args)
@@ -632,9 +645,10 @@ ArgumentListNode* Parser::funcargs()
     return args;
 }
 
-// <arglist> = (<expr> (',' <expr>)*)?
+// <arglist> = <expr> (',' <expr>)*
 ArgumentListNode* Parser::arglist()
 {
+    TRACE;
     std::vector<ExpressionNode*> arguments;
 
     while (true)
@@ -645,7 +659,7 @@ ArgumentListNode* Parser::arglist()
 
         arguments.push_back(arg);
 
-        if (!this->check<TokenType::COMMA>())
+        if (!this->expect<TokenType::COMMA>())
             return new ArgumentListNode(arguments);
     }
 
@@ -654,17 +668,62 @@ ArgumentListNode* Parser::arglist()
     return nullptr;
 }
 
-VariableNode* Parser::variable()
+ExpressionNode* Parser::variable()
 {
-    if (!this->check<TokenType::IDENT>())
+    TRACE;
+    if (!this->token.isDataType())
         return nullptr;
-    auto v = new VariableNode(this->token.lexeme.get<std::string>());
+
+    Token saved = this->token;
     this->consume();
-    return v;
+
+    switch(this->token.type)
+    {
+        case TokenType::PAREN_OPEN:
+        {
+            ArgumentListNode *args = funcargs();
+            if (!args)
+                return nullptr;
+            return new FunctionCallNode(saved.lexeme.get<std::string>(), args);
+        }
+        case TokenType::IDENT:
+        {
+            DataTypeBase *type = saved.asDataType();
+            if (!type)
+                return nullptr;
+            std::string name = this->token.lexeme.get<std::string>();
+            this->consume();
+
+            if (this->eat<TokenType::EQUALS>())
+            {
+                ExpressionNode* rhs = expr();
+                if (!rhs) {
+                    delete type;
+                    return nullptr;
+                }
+
+                return new AssignmentNode(new DeclarationNode(type, name), rhs);
+            }
+
+            return new DeclarationNode(type, name);
+        }
+        case TokenType::EQUALS:
+        {
+            this->consume();
+            ExpressionNode* rhs = expr();
+            if (!rhs)
+                return nullptr;
+            VariableNode* name = new VariableNode(saved.lexeme.get<std::string>());
+            return new AssignmentNode(name, rhs);
+        }
+        default:
+            return new VariableNode(saved.lexeme.get<std::string>());
+    }
 }
 
 ExpressionNode* Parser::constant()
 {
+    TRACE;
     if (!this->check<TokenType::INTEGER>())
         return nullptr;
     uint64_t x = this->token.lexeme.get<uint64_t>();
@@ -679,6 +738,7 @@ ExpressionNode* Parser::constant()
 
 AssemblyNode* Parser::assembly()
 {
+    TRACE;
     if (!this->expect<TokenType::ASM>())
         return nullptr;
 
@@ -716,6 +776,7 @@ AssemblyNode* Parser::assembly()
 
 std::string* Parser::brainfuck()
 {
+    TRACE;
     std::stringstream ss;
 
     while (true)
@@ -746,9 +807,16 @@ std::string* Parser::brainfuck()
             case TokenType::RIGHTRIGHT:
                 ss << ">>";
                 break;
+            case TokenType::ARROW:
+                ss << "->";
+                break;
             case TokenType::BRACKET_OPEN:
                 this->consume();
-                ss << "[" << brainfuck();
+                {
+                    std::string* str = brainfuck();
+                    ss << "[" << *str;
+                    delete str;
+                }
 
                 if (!this->expect<TokenType::BRACKET_CLOSE>())
                     return nullptr;

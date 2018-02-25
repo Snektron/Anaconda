@@ -1,5 +1,5 @@
 #include <iostream>
-#include "util/utils.h"
+#include "common/util.h"
 
 template <DataTypeClass dtype>
 DataType<dtype>::DataType() : DataTypeBase(dtype) {}

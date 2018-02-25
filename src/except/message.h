@@ -2,6 +2,7 @@
 #define SRC_EXCEPT_MESSAGE_H_
 
 #include <string>
+#include <ostream>
 
 enum class MessageType
 {
@@ -20,15 +21,17 @@ class Message
             type(type), msg(msg)
         {}
 
-        MessageType getType()
+        MessageType getType() const
         {
             return type;
         }
 
-        const std::string& getMsg()
+        const std::string& getMsg() const
         {
             return msg;
         }
 };
+
+std::ostream& operator<<(std::ostream& os, const Message msg);
 
 #endif

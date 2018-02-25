@@ -1,6 +1,6 @@
 #include "ast/node.h"
 #include "generator/brainfuck.h"
-#include "util/utils.h"
+#include "common/util.h"
 
 #include <iostream>
 

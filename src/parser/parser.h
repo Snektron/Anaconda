@@ -4,10 +4,10 @@
 #include <istream>
 #include <vector>
 #include <string>
-
-#include "except/message.h"
 #include "parser/lexer.h"
 #include "ast/node.h"
+
+#include <iostream>
 
 class Parser
 {
@@ -15,16 +15,16 @@ class Parser
         Lexer lexer;
         Token token;
 
-        std::vector<Message> messages;
+        std::string message;
         std::vector<TokenType> tried;
 
     public:
         Parser(std::istream& input);
         GlobalNode* program();
 
-        const std::vector<Message>& getMessages() const
+        const std::string& getMessage() const
         {
-            return this->messages;
+            return this->message;
         }
 
     private:
@@ -44,8 +44,10 @@ class Parser
         template <TokenType T>
         bool expect()
         {
-            if (this->check<T>())
+            if (this->check<T>()) {
+                this->consume();
                 return true;
+            }
 
             unexpected();
             return false;
@@ -56,11 +58,20 @@ class Parser
         {
             if (this->check<T>())
             {
-                consume();
+                this->consume();
                 return true;
             }
 
             return false;
+        }
+
+        template <TokenType H, TokenType... T>
+        bool eatOneOf()
+        {
+            if constexpr (sizeof...(T) == 0)
+                return this->eat<H>();
+            else
+                return this->eat<H>() || this->eatOneOf<T...>();
         }
 
         GlobalNode* prog();
@@ -74,7 +85,7 @@ class Parser
 
         BlockNode* block();
 
-        StatementListNode* statlist();
+        StatementNode* statlist();
         StatementNode* statement();
         ReturnNode* returnstat();
         StatementNode* exprstat();
@@ -95,7 +106,7 @@ class Parser
         ExpressionNode* paren();
         ArgumentListNode* funcargs();
         ArgumentListNode* arglist();
-        VariableNode* variable();
+        ExpressionNode* variable();
         ExpressionNode* constant();
         AssemblyNode* assembly();
         std::string* brainfuck();

@@ -1,6 +1,6 @@
 #include "ast/node.h"
 #include "types/datatype.h"
-#include "util/utils.h"
+#include "common/util.h"
 #include "common/format.h"
 #include <iostream>
 

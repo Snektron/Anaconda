@@ -1,19 +1,15 @@
+func a() -> u8 {
+    u8 a = 10 * 2 + 5 << 4;
+}
+
+func b(u8 c, d) -> u16 {
+    // test
+    u8 e = asm(c, d) -> u8 {
+        +++[->+++<]
+    } * 2 + 10;
+}
+
 type test {
-	u8 a,
-	u8 b,
-	u16 c, d
-}
-
-func test(u8 a, b) -> u8 {
-	if a == 0 {
-		return 10
-	} else if b == 0 {
-		return 8
-	}
-	
-	return 15
-}
-
-func main() {
-	test(10, 20)
+    u8 a, b,
+    u16 c
 }

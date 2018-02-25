@@ -13,6 +13,7 @@ class Field
         friend std::ostream& operator<<(std::ostream&, const Field&);
     public:
         Field(DataTypeBase* type, const std::string& name);
+        Field(const Field& other);
         ~Field();
 
         const DataTypeBase* getType() const;

@@ -1,7 +1,7 @@
 #include "ast/node.h"
 #include "generator/brainfuck.h"
 #include "except/exceptions.h"
-#include "util/utils.h"
+#include "common/util.h"
 
 #include <iostream>
 #include <memory>

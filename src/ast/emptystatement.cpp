@@ -1,5 +1,5 @@
 #include "ast/node.h"
-#include "util/utils.h"
+#include "common/util.h"
 
 #include <iostream>
 

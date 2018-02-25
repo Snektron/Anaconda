@@ -1,8 +1,9 @@
 #include "parser/lexer.h"
 #include "common/variant.h"
+#include <iostream>
 
 Lexer::Lexer(std::istream& input):
-    input(input), row(0), col(0) {}
+    input(input), row(1), col(1) {}
 
 Token Lexer::next()
 {
@@ -23,7 +24,7 @@ int Lexer::consume()
     {
         if (c == '\n')
         {
-            this->col = 0;
+            this->col = 1;
             this->row++;
         }
         else
@@ -38,10 +39,10 @@ bool Lexer::eat(int c)
     if (this->peek() == c)
     {
         this->consume();
-        return false;
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 bool Lexer::eatRange(int low, int high)
@@ -49,10 +50,10 @@ bool Lexer::eatRange(int low, int high)
     if (this->peek() >= low && this->peek() <= high)
     {
         this->consume();
-        return false;
+        return true;
     }
 
-    return true;
+    return false;
 }
 
 void Lexer::consumeline()
@@ -102,7 +103,7 @@ TokenType Lexer::nextType()
         case 'a' ... 'z':
         case 'A' ... 'Z':
         case '_':
-            while(this->eatRange('a', 'z'), this->eatRange('A', 'Z'), this->eatRange('0', '9'), this->eat('_'))
+            while(this->eatRange('a', 'z') || this->eatRange('A', 'Z') || this->eatRange('0', '9') || this->eat('_'))
                 continue;
             return TokenType::IDENT;
         case '0' ... '9':
@@ -134,6 +135,10 @@ Token Lexer::toToken(Span span, TokenType type)
                 return Token(span, TokenType::RETURN);
             else if (this->buffer == "asm")
                 return Token(span, TokenType::ASM);
+            else if (this->buffer == "u8")
+                return Token(span, TokenType::U8);
+            else if (this->buffer == "void")
+                return Token(span, TokenType::VOID);
             return Token::make<std::string>(span, TokenType::IDENT, buffer);
         case TokenType::WHITESPACE:
         case TokenType::COMMENT:

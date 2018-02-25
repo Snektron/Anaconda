@@ -1,7 +1,7 @@
 #include "ast/node.h"
 #include "types/datatype.h"
 #include "generator/brainfuck.h"
-#include "util/utils.h"
+#include "common/util.h"
 
 #include <iostream>
 
@@ -19,9 +19,11 @@ void FunctionDeclaration::print(std::ostream& output, size_t level) const
 {
     this->printIndent(output, level);
     output << "function declaration (" << this->name << ")" << std::endl;
-    this->printIndent(output, level+1);
+    this->printIndent(output, level + 1);
     output << "return type: " << *this->return_type << std::endl;
-    this->parameters->print(output, level+1);
+    this->parameters->print(output, level + 1);
+    output << std::endl;
+    this->content->print(output, level + 1);
 }
 
 void FunctionDeclaration::declareGlobals(BrainfuckWriter& writer)

@@ -5,26 +5,9 @@
 #include <memory>
 #include <ostream>
 #include <sstream>
-#include <vector>
 
 namespace fmt
 {
-    template <typename T>
-    constexpr std::ostream& operator<<(std::ostream& os, const std::vector<T>& vec)
-    {
-        bool first(true);
-        for (const T& item : vec)
-        {
-            if (!first)
-                os << ", ";
-            else
-                first = false;
-
-            os << item;
-        }
-        return os;
-    }
-
     template <typename T, typename... Args>
     constexpr void ssprintf(std::ostream& ss, T&& first, Args&&... args)
     {

@@ -3,6 +3,9 @@
 Field::Field(DataTypeBase* type, const std::string& name):
     type(type), name(name) {}
 
+Field::Field(const Field& other):
+    type(other.type->copy()), name(other.name) {}
+
 Field::~Field()
 {
     delete this->type;

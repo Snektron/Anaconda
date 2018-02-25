@@ -1,5 +1,5 @@
 #include "datatype.h"
-#include "util/utils.h"
+#include "common/util.h"
 #include "generator/brainfuck.h"
 
 #include <iostream>

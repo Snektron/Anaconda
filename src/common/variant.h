@@ -55,7 +55,7 @@ private:
         static void copy(std::size_t id, const void* data, void* newdata)
         {
             if (id == Type<H, H, Us...>::id)
-                new (newdata) H(reinterpret_cast<H*>(data));
+                new (newdata) H(*reinterpret_cast<const H*>(data));
             else
                 Helper<Us...>::copy(id, data, newdata);
         }
@@ -95,12 +95,14 @@ public:
     }
 
     Variant():
-        id(-1)
+        id(0)
     {}
 
     Variant(const Variant& other):
-        id(other.id), data(other.data)
-    {}
+        id(other.id)
+    {
+        Helper<Ts...>::copy(this->id, &other.data, &data);
+    }
 
     Variant(const Variant&& other):
       id(std::move(other.id))
@@ -115,13 +117,13 @@ public:
 
     bool hasValue() const
     {
-        return this->id != -1;
+        return this->id != 0;
     }
 
     void clear()
     {
         Helper<Ts...>::destroy(this->id, &this->data);
-        this->id = -1;
+        this->id = 0;
     }
 
     template <typename T>
@@ -150,6 +152,7 @@ public:
     Variant& operator=(const Variant& other)
     {
         this->clear();
+        this->id = other.id;
         Helper<Ts...>::copy(other.id, &other.data, &this->data);
         return *this;
     }
@@ -163,17 +166,15 @@ public:
     }
 
     void print(std::ostream& os) const {
-        os << this->id << "(";
         Helper<Ts...>::print(this->id, &this->data, os);
-        os << ")";
     }
 
     template <typename... Us>
     friend std::ostream& operator<<(std::ostream&, const Variant<Us...>&);
 };
 
-template <typename... Ts>
-std::ostream& operator<<(std::ostream& os, const Variant<Ts...>& variant)
+template <typename H, typename... Ts>
+std::ostream& operator<<(std::ostream& os, const Variant<H, Ts...>& variant)
 {
     variant.print(os);
     return os;
