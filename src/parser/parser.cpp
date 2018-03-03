@@ -28,28 +28,23 @@ struct Trace
 #define TRACE
 #endif
 
+SyntaxError::SyntaxError(const Span& span, const std::string& msg):
+    std::runtime_error(fmt::sprintf("Error at ", span, ": ", msg, "."))
+{}
+
 Parser::Parser(std::istream& input):
-    lexer(input), token(Span{0, 0}, TokenType::EOI), message("")
+    lexer(input), token(Span{0, 0}, TokenType::EOI)
 {
     consume();
 }
 
+[[noreturn]]
 void Parser::error(const std::string& msg)
 {
-    this->message = msg;
+    throw SyntaxError(this->token.span, msg);
 }
 
-void Parser::unexpected()
-{
-    std::stringstream ss;
-    fmt::ssprintf(ss, this->token.span, " unexpected token '", this->token, "'");
-    if (this->tried.size() > 0)
-        fmt::ssprintf(ss, " expected token(s) ", this->tried, '\n');
-
-    this->error(ss.str());
-}
-
-GlobalNode* Parser::program()
+std::unique_ptr<GlobalNode> Parser::program()
 {
     TRACE;
     return this->prog();
@@ -57,38 +52,33 @@ GlobalNode* Parser::program()
 
 const Token& Parser::consume()
 {
-    this->tried.clear();
-
-    do {
+    do
        this->token = this->lexer.next();
-    }
     while (this->token.isOneOf<TokenType::WHITESPACE, TokenType::COMMENT, TokenType::NEWLINE>());
-    
-    std::cout << "consume: " << this->token.type << std::endl;
+
+    std::cout << "tok: " << this->token << std::endl;
 
     return this->token;
 }
 
 // <unit> = <globalstat>*
-GlobalNode* Parser::prog()
+std::unique_ptr<GlobalNode> Parser::prog()
 {
     TRACE;
-    std::vector<GlobalElementNode*> elements;
+    std::vector<std::unique_ptr<GlobalElementNode>> elements;
 
     while (!this->check<TokenType::EOI>())
-    {
-        GlobalElementNode *node = globalstat();
-        if (!node)
-            return nullptr;
+        elements.push_back(globalstat());
 
-        elements.push_back(node);
-    }
+    std::vector<GlobalElementNode*> tmp;
 
-    return new GlobalNode(elements);
+    for (auto& elem : elements)
+        tmp.push_back(elem.release());
+    return std::make_unique<GlobalNode>(tmp);
 }
 
 // <globalstat> = <funcdecl> | <structdecl> | <globalexpr>
-GlobalElementNode* Parser::globalstat()
+std::unique_ptr<GlobalElementNode> Parser::globalstat()
 {
     TRACE;
     if (this->check<TokenType::FUNC>())
@@ -100,200 +90,124 @@ GlobalElementNode* Parser::globalstat()
     return this->globalexpr();
 }
 
-GlobalExpressionNode* Parser::globalexpr()
+std::unique_ptr<GlobalExpressionNode> Parser::globalexpr()
 {
     TRACE;
-    ExpressionNode* expr = this->expr();
-    if (!expr)
-        return nullptr;
-
-    if (!this->expect<TokenType::SEMICOLON>())
-    {
-        delete expr;
-        return nullptr;
-    }
-
-    return new GlobalExpressionNode(expr);
+    auto expr = this->expr();
+    this->expect<TokenType::SEMICOLON>();
+    return std::make_unique<GlobalExpressionNode>(expr.release());
 }
 
 // <structdecl> = 'type' <id> '{' <fieldlist> '}'
-StructureDefinitionNode* Parser::structdecl()
+std::unique_ptr<StructureDefinitionNode> Parser::structdecl()
 {
     TRACE;
-    if (!this->expect<TokenType::TYPE>())
-        return nullptr;
+    this->expect<TokenType::TYPE>();
 
-    if (!this->check<TokenType::IDENT>())
-        return nullptr;
+    const std::string name = this->ident();
 
-    const std::string name = this->token.lexeme.get<std::string>();
-    consume();
+    this->expect<TokenType::BRACE_OPEN>();
 
-    if (!this->expect<TokenType::BRACE_OPEN>())
-        return nullptr;
+    if (this->eat<TokenType::BRACE_CLOSE>())
+        return std::make_unique<StructureDefinitionNode>(name, new FieldListNode(std::vector<Field>()));
 
-    FieldListNode* members = fieldlist();
+    auto members = fieldlist();
 
-    if (!this->expect<TokenType::BRACE_CLOSE>())
-    {
-        delete members;
-        return nullptr;
-    }
+    this->expect<TokenType::BRACE_CLOSE>();
 
-    return new StructureDefinitionNode(name, members);
+    return std::make_unique<StructureDefinitionNode>(name, members.release());
 }
 
 // <funcdecl> = 'func' <id> <funcpar> ('->' <id>)? <block>
-FunctionDeclaration* Parser::funcdecl()
+std::unique_ptr<FunctionDeclaration> Parser::funcdecl()
 {
     TRACE;
-    if (!this->expect<TokenType::FUNC>())
-        return nullptr;
+    this->expect<TokenType::FUNC>();
+    const std::string name = this->ident();
 
-    if (!this->check<TokenType::IDENT>())
-        return nullptr;
+    auto parameters = funcpar();
 
-    const std::string name = this->token.lexeme.get<std::string>();
-    consume();
-
-    FieldListNode* parameters = funcpar();
-    if (!parameters)
-        return nullptr;
-
-    DataTypeBase *rtype(nullptr);
+    std::unique_ptr<DataTypeBase> rtype(nullptr);
 
     if (this->eat<TokenType::ARROW>())
-    {
-        if (!this->token.isDataType())
-        {
-            delete parameters;
-            return nullptr;
-        }
-
-        rtype = this->token.asDataType();
-        this->consume();
-    }
+        rtype = this->datatype();
     else
-        rtype = new DataType<DataTypeClass::VOID>();
+        rtype = std::make_unique<DataType<DataTypeClass::VOID>>();
 
-    BlockNode *body = block();
+    auto body = block();
 
-    if (!body)
-    {
-        delete parameters;
-        delete rtype;
-        return nullptr;
-    }
-
-    return new FunctionDeclaration(name, parameters, rtype, body);
+    return std::make_unique<FunctionDeclaration>(name, parameters.release(), rtype.release(), body.release());
 }
 
-// <funcpar> = '(' <fieldlist> ')'
-FieldListNode* Parser::funcpar()
+// <funcpar> = '(' <fieldlist>? ')'
+std::unique_ptr<FieldListNode> Parser::funcpar()
 {
     TRACE;
-    if (!this->expect<TokenType::PAREN_OPEN>())
-        return nullptr;
+    this->expect<TokenType::PAREN_OPEN>();
 
-    FieldListNode* parameters = fieldlist();
-    if (!parameters)
-        return nullptr;
+    if (this->eat<TokenType::PAREN_CLOSE>())
+        return std::make_unique<FieldListNode>(std::vector<Field>());
 
-    if (!this->expect<TokenType::PAREN_CLOSE>())
-    {
-        delete parameters;
-        return nullptr;
-    }
-
+    auto parameters = fieldlist();
+    this->expect<TokenType::PAREN_CLOSE>();
     return parameters;
 }
 
-// <fieldlist> = (<type> <id> (',' <type>? <id>)*)
-FieldListNode* Parser::fieldlist()
+// <fieldlist> = <type> <id> (',' <type>? <id>)*
+std::unique_ptr<FieldListNode> Parser::fieldlist()
 {
     TRACE;
     std::vector<Field> parameters;
-    DataTypeBase *lasttype(nullptr);
+
+    auto lasttype = datatype();
+    const std::string name = this->ident();
+
+    parameters.push_back(Field(lasttype->copy(), name));
 
     while (true)
     {
-        Token saved = this->token;
-        if (!this->token.isDataType()) {
-            this->unexpected();
+        if (!this->eat<TokenType::COMMA>())
             break;
-        }
 
+        Token saved = this->token;
+        if (!this->token.isDataType()) // also includes isType<IDENT>
+            this->expected("datatype or identifier");
         this->consume();
-
-        DataTypeBase *partype(nullptr);
-        std::string parname;
 
         if (this->check<TokenType::IDENT>())
         {
-            partype = saved.asDataType();
-            parname = this->token.lexeme.get<std::string>();
-            this->consume();
-
-            delete lasttype;
-            lasttype = partype->copy();
+            std::string name = this->ident();
+            lasttype = std::unique_ptr<DataTypeBase>(saved.asDataType());
+            parameters.push_back(Field(lasttype->copy(), name));
         }
         else
         {
-            if (!lasttype)
-                return nullptr;
-
-            partype = lasttype->copy();
-            parname = saved.lexeme.get<std::string>();
+            std::string name = saved.lexeme.get<std::string>();
+            parameters.push_back(Field(lasttype->copy(), name));
         }
-
-        parameters.push_back(Field(partype, parname));
-
-        if (!this->expect<TokenType::COMMA>())
-            break;
     }
 
-    delete lasttype;
-    return new FieldListNode(parameters);
+    return std::make_unique<FieldListNode>(parameters);
 }
 
-// <block> = '{' <statlist> '}'
-BlockNode* Parser::block()
+// <block> = '{' <statement>* '}'
+std::unique_ptr<BlockNode> Parser::block()
 {
     TRACE;
-    if (!this->expect<TokenType::BRACE_OPEN>())
-        return nullptr;
+    std::unique_ptr<StatementNode> list = std::make_unique<EmptyStatementNode>();
+    this->expect<TokenType::BRACE_OPEN>();
 
-    StatementNode* list = statlist();
-
-    if (!this->expect<TokenType::BRACE_CLOSE>())
-    {
-        delete list;
-        return nullptr;
+    while (!this->eat<TokenType::BRACE_CLOSE>())
+    { 
+        auto node = statement();
+        list = std::make_unique<StatementListNode>(list.release(), node.release());
     }
 
-    return new BlockNode(list);
-}
-
-// <statlist> = <statement>*
-StatementNode* Parser::statlist()
-{
-    TRACE;
-    StatementNode *list = new EmptyStatementNode();
-
-    while (true)
-    {
-        StatementNode *node = statement();
-        if (!node)
-            break;
-
-        list = new StatementListNode(list, node);
-    }
-
-    return list;
+    return std::make_unique<BlockNode>(list.release());
 }
 
 // <statement> = <ifstat> | <whilestat>
-StatementNode* Parser::statement()
+std::unique_ptr<StatementNode> Parser::statement()
 {
     TRACE;
     if (this->check<TokenType::IF>())
@@ -311,179 +225,116 @@ StatementNode* Parser::statement()
     return this->exprstat();
 }
 
-ReturnNode* Parser::returnstat()
+std::unique_ptr<ReturnNode> Parser::returnstat()
 {
     TRACE;
-    if (!this->expect<TokenType::RETURN>())
-        return nullptr;
-
-    ExpressionNode* expr = this->expr();
-    if (!expr)
-        return nullptr;
-
-    return new ReturnNode(expr);
+    this->expect<TokenType::RETURN>();
+    auto expr = this->expr();
+    return std::make_unique<ReturnNode>(expr.release());
 }
 
-StatementNode* Parser::exprstat()
+std::unique_ptr<StatementNode> Parser::exprstat()
 {
     TRACE;
-    ExpressionNode* expr = this->expr();
-    if (!expr)
-        return nullptr;
+    auto expr = this->expr();
 
     if (this->eat<TokenType::SEMICOLON>())
-        return new ExpressionStatementNode(expr);
-    return new ReturnNode(expr);
+        return std::make_unique<ExpressionStatementNode>(expr.release());
+    return std::make_unique<ReturnNode>(expr.release());
 }
 
 // <ifstat> = 'if' <expr> <block> ('else' (<ifstat> | <block>))?
-StatementNode* Parser::ifstat()
+std::unique_ptr<StatementNode> Parser::ifstat()
 {
     TRACE;
-    if (!this->expect<TokenType::IF>())
-        return nullptr;
+    this->expect<TokenType::IF>();
 
-    ExpressionNode *condition = expr();
-    if (!condition)
-        return nullptr;
-
-    StatementNode *consequent = statement();
-    if (!consequent)
-    {
-        delete condition;
-        return consequent;
-    }
+    auto condition = expr();
+    auto consequent = statement();
 
     if (this->eat<TokenType::ELSE>())
     {
-        StatementNode *alternative(nullptr);
-        if (this->check<TokenType::IF>())
-            alternative = ifstat();
-        else
-            alternative = statement();
-
-        if (!alternative)
-        {
-            delete condition;
-            delete consequent;
-            return nullptr;
-        }
-
-        return new IfElseNode(condition, consequent, alternative);
+        auto alternative = statement();
+        return std::make_unique<IfElseNode>(condition.release(), consequent.release(), alternative.release());
     }
 
-    return new IfNode(condition, consequent);
+    return std::make_unique<IfNode>(condition.release(), consequent.release());
 }
 
 // <whilestat> = 'while' <expr> <block>
-WhileNode* Parser::whilestat()
+std::unique_ptr<WhileNode> Parser::whilestat()
 {
     TRACE;
-    if (!this->expect<TokenType::WHILE>())
-        return nullptr;
+    this->expect<TokenType::WHILE>();
 
-    ExpressionNode *condition = expr();
-    if (!condition)
-        return nullptr;
+    auto condition = expr();
+    auto consequent = statement();
 
-    StatementNode *consequent = statement();
-    if (!consequent)
-    {
-        delete condition;
-        return nullptr;
-    }
-
-    return new WhileNode(condition, consequent);
+    return std::make_unique<WhileNode>(condition.release(), consequent.release());
 }
 
 // <expr> = <sum>
-ExpressionNode* Parser::expr()
+std::unique_ptr<ExpressionNode> Parser::expr()
 {
     TRACE;
-    return bor();
+    return this->bor();
 }
 
-ExpressionNode* Parser::bor()
+std::unique_ptr<ExpressionNode> Parser::bor()
 {
     TRACE;
-    ExpressionNode *lhs = bxor();
-    if (!lhs)
-        return nullptr;
+    auto lhs = this->bxor();
 
     while (true)
     {
         if (!this->eat<TokenType::PIPE>())
             break;
 
-        ExpressionNode *rhs = bxor();
-        if (!rhs)
-        {
-            delete lhs;
-            return nullptr;
-        }
-
-        lhs = new BitwiseOrNode(lhs, rhs);
+        auto rhs = this->bxor();
+        lhs = std::make_unique<BitwiseOrNode>(lhs.release(), rhs.release());
     }
 
     return lhs;
 }
 
-ExpressionNode* Parser::bxor()
+std::unique_ptr<ExpressionNode> Parser::bxor()
 {
     TRACE;
-    ExpressionNode *lhs = band();
-    if (!lhs)
-        return nullptr;
+    auto lhs = this->band();
 
     while (true)
     {
         if (!this->eat<TokenType::HAT>())
             break;
 
-        ExpressionNode *rhs = band();
-        if (!rhs)
-        {
-            delete lhs;
-            return nullptr;
-        }
-
-        lhs = new BitwiseXorNode(lhs, rhs);
+        auto rhs = this->band();
+        lhs = std::make_unique<BitwiseXorNode>(lhs.release(), rhs.release());
     }
 
     return lhs;
 }
 
-ExpressionNode* Parser::band()
+std::unique_ptr<ExpressionNode> Parser::band()
 {
     TRACE;
-    ExpressionNode *lhs = shift();
-    if (!lhs)
-        return nullptr;
+    auto lhs = this->shift();
 
     while (true)
     {
         if (!this->eat<TokenType::AMPERSAND>())
             break;
 
-        ExpressionNode *rhs = shift();
-        if (!rhs)
-        {
-            delete lhs;
-            return nullptr;
-        }
-
-        lhs = new BitwiseAndNode(lhs, rhs);
+        auto rhs = this->shift();
+        lhs = std::make_unique<BitwiseAndNode>(lhs.release(), rhs.release());
     }
 
     return lhs;
 }
 
-ExpressionNode* Parser::shift()
+std::unique_ptr<ExpressionNode> Parser::shift()
 {
     TRACE;
-    ExpressionNode *lhs = sum();
-    if (!lhs)
-        return nullptr;
+    auto lhs = this->sum();
 
     while (true)
     {
@@ -491,29 +342,18 @@ ExpressionNode* Parser::shift()
         if (!this->eatOneOf<TokenType::LEFTLEFT, TokenType::RIGHTRIGHT>())
             break;
 
-        ExpressionNode *rhs = sum();
-        if (!rhs)
-        {
-            delete lhs;
-            return nullptr;
-        }
-
-        if (optype == TokenType::LEFTLEFT)
-            lhs = new BitwiseLeftShiftNode(lhs, rhs);
-        else
-            lhs = new BitwiseRightShiftNode(lhs, rhs);
+        auto rhs = this->sum();
+        lhs = this->toBinOp(optype, std::move(lhs), std::move(rhs));
     }
 
     return lhs;
 }
 
 // <sum> = <product> (('+' | '-') <product>)*
-ExpressionNode* Parser::sum()
+std::unique_ptr<ExpressionNode> Parser::sum()
 {
     TRACE;
-    ExpressionNode *lhs = product();
-    if (!lhs)
-        return nullptr;
+    auto lhs = this->product();
 
     while (true)
     {
@@ -521,29 +361,18 @@ ExpressionNode* Parser::sum()
         if (!this->eatOneOf<TokenType::PLUS, TokenType::MINUS>())
             break;
 
-        ExpressionNode *rhs = product();
-        if (!rhs)
-        {
-            delete lhs;
-            return nullptr;
-        }
-
-        if (optype == TokenType::PLUS)
-            lhs = new AddNode(lhs, rhs);
-        else
-            lhs = new SubNode(lhs, rhs);
+        auto rhs = this->product();
+        lhs = this->toBinOp(optype, std::move(lhs), std::move(rhs));
     }
 
     return lhs;
 }
 
 // <product> = <unary> (('*' | '/' | '%') <unary>)*
-ExpressionNode* Parser::product()
+std::unique_ptr<ExpressionNode> Parser::product()
 {
     TRACE;
-    ExpressionNode *lhs = unary();
-    if (!lhs)
-        return nullptr;
+    auto lhs = this->unary();
 
     while (true)
     {
@@ -551,128 +380,88 @@ ExpressionNode* Parser::product()
         if (!this->eatOneOf<TokenType::STAR, TokenType::SLASH, TokenType::PERCENT>())
             break;
 
-        ExpressionNode *rhs = unary();
-        if (!rhs)
-        {
-            delete lhs;
-            return nullptr;
-        }
-
-        if (optype == TokenType::STAR)
-            lhs = new MulNode(lhs, rhs);
-        else if (optype == TokenType::SLASH)
-            lhs = new DivNode(lhs, rhs);
-        else
-            lhs = new ModNode(lhs, rhs);
+        auto rhs = this->unary();
+        lhs = this->toBinOp(optype, std::move(lhs), std::move(rhs));
     }
 
     return lhs;
 }
 
 // <unary> = '-' <unary> | <atom>
-ExpressionNode* Parser::unary()
+std::unique_ptr<ExpressionNode> Parser::unary()
 {
     TRACE;
     if (this->eat<TokenType::MINUS>())
-    {
-        ExpressionNode *node = unary();
-        if (!node)
-            return new NegateNode(node);
-    }
-
-    return atom();
+        return std::make_unique<NegateNode>(this->unary().release());
+    return this->atom();
 }
 
 // <atom> = <paren> | <constant> | <id> (<funcargs> | <id>? '=' <expr>)?
-ExpressionNode* Parser::atom()
+std::unique_ptr<ExpressionNode> Parser::atom()
 {
     TRACE;
     switch(this->token.type)
     {
         case TokenType::PAREN_OPEN:
-            return paren();
+            return this->paren();
         case TokenType::ASM:
-            return assembly();
+            return this->assembly();
         case TokenType::INTEGER:
-            return constant();
+            return this->constant();
         default:
-            return variable();
+            return this->variable();
     }
 }
 
 // <paren> = '(' <expr> ')'
-ExpressionNode* Parser::paren()
+std::unique_ptr<ExpressionNode> Parser::paren()
 {
     TRACE;
-    if (!this->expect<TokenType::PAREN_OPEN>())
-        return nullptr;
-
-    ExpressionNode *node = expr();
-    if (!node)
-        return nullptr;
-
-    if (!this->expect<TokenType::PAREN_CLOSE>())
-    {
-        delete node;
-        return nullptr;
-    }
-
+    this->expect<TokenType::PAREN_OPEN>();
+    auto node = std::unique_ptr<ExpressionNode>(expr());
+    this->expect<TokenType::PAREN_CLOSE>();
     return node;
 }
 
 // <funcargs> = '(' (<expr> (',' <expr>)*) ')'
-ArgumentListNode* Parser::funcargs()
+std::unique_ptr<ArgumentListNode> Parser::funcargs()
 {
     TRACE;
-    if (!this->expect<TokenType::PAREN_OPEN>())
-        return nullptr;
+    this->expect<TokenType::PAREN_OPEN>();
 
-    if (this->eat<TokenType::PAREN_CLOSE>()) {
-        std::vector<ExpressionNode*> arguments;
-        return new ArgumentListNode(arguments);
-    }
+    if (this->eat<TokenType::PAREN_CLOSE>())
+        return std::make_unique<ArgumentListNode>(std::vector<ExpressionNode*>());
 
-    ArgumentListNode* args = arglist();
-    if (!args)
-        return nullptr;
-
-    if (!this->expect<TokenType::PAREN_CLOSE>())
-    {
-        delete args;
-        return nullptr;
-    }
-
+    auto args = arglist();
+    this->expect<TokenType::PAREN_CLOSE>();
     return args;
 }
 
 // <arglist> = <expr> (',' <expr>)*
-ArgumentListNode* Parser::arglist()
+std::unique_ptr<ArgumentListNode> Parser::arglist()
 {
     TRACE;
-    std::vector<ExpressionNode*> arguments;
+    std::vector<std::unique_ptr<ExpressionNode>> arguments;
 
     while (true)
     {
-        ExpressionNode *arg = expr();
-        if (!arg)
-            break;
+        arguments.push_back(this->expr());
 
-        arguments.push_back(arg);
-
-        if (!this->expect<TokenType::COMMA>())
-            return new ArgumentListNode(arguments);
+        if (!this->eat<TokenType::COMMA>())
+        {
+            std::vector<ExpressionNode*> tmp;
+            for (auto& arg : arguments)
+                tmp.push_back(arg.release());
+            return std::make_unique<ArgumentListNode>(tmp);
+        }
     }
-
-    for (auto expr : arguments)
-        delete expr;
-    return nullptr;
 }
 
-ExpressionNode* Parser::variable()
+std::unique_ptr<ExpressionNode> Parser::variable()
 {
     TRACE;
-    if (!this->token.isDataType())
-        return nullptr;
+    if (!this->token.isDataType()) // also includes isType<IDENT>
+        this->expected("datatype or identifier");
 
     Token saved = this->token;
     this->consume();
@@ -681,100 +470,66 @@ ExpressionNode* Parser::variable()
     {
         case TokenType::PAREN_OPEN:
         {
-            ArgumentListNode *args = funcargs();
-            if (!args)
-                return nullptr;
-            return new FunctionCallNode(saved.lexeme.get<std::string>(), args);
+            auto args = this->funcargs();
+            return std::make_unique<FunctionCallNode>(saved.lexeme.get<std::string>(), args.release());
         }
         case TokenType::IDENT:
         {
-            DataTypeBase *type = saved.asDataType();
-            if (!type)
-                return nullptr;
             std::string name = this->token.lexeme.get<std::string>();
             this->consume();
 
+            auto decl = std::make_unique<DeclarationNode>(saved.asDataType(), name);
+
             if (this->eat<TokenType::EQUALS>())
             {
-                ExpressionNode* rhs = expr();
-                if (!rhs) {
-                    delete type;
-                    return nullptr;
-                }
-
-                return new AssignmentNode(new DeclarationNode(type, name), rhs);
+                auto rhs = this->expr();
+                return std::make_unique<AssignmentNode>(decl.release(), rhs.release());
             }
 
-            return new DeclarationNode(type, name);
+            return decl;
         }
         case TokenType::EQUALS:
         {
             this->consume();
-            ExpressionNode* rhs = expr();
-            if (!rhs)
-                return nullptr;
+            auto rhs = this->expr();
             VariableNode* name = new VariableNode(saved.lexeme.get<std::string>());
-            return new AssignmentNode(name, rhs);
+            return std::make_unique<AssignmentNode>(name, rhs.release());
         }
         default:
-            return new VariableNode(saved.lexeme.get<std::string>());
+            return std::make_unique<VariableNode>(saved.lexeme.get<std::string>());
     }
 }
 
-ExpressionNode* Parser::constant()
+std::unique_ptr<ExpressionNode> Parser::constant()
 {
     TRACE;
     if (!this->check<TokenType::INTEGER>())
-        return nullptr;
+        this->expected(TokenType::INTEGER);
+
     uint64_t x = this->token.lexeme.get<uint64_t>();
     this->consume();
 
     if (x <= (1 << 8) -1)
-        return new U8ConstantNode((uint8_t) (x & 0xFF));
+        return std::make_unique<U8ConstantNode>((uint8_t) (x & 0xFF));
 
-    this->error(fmt::sprintf("Error: Value of ", x, " overflowed."));
-    return nullptr;
+    this->error(fmt::sprintf("value of ", x, "overflowed"));
 }
 
-AssemblyNode* Parser::assembly()
+std::unique_ptr<AssemblyNode> Parser::assembly()
 {
     TRACE;
-    if (!this->expect<TokenType::ASM>())
-        return nullptr;
+    this->expect<TokenType::ASM>();
+    auto args = this->funcargs();
+    this->expect<TokenType::ARROW>();
+    auto returntype = this->datatype();
+    this->expect<TokenType::BRACE_OPEN>();
+    std::string code = this->brainfuck();
+    this->expect<TokenType::BRACE_CLOSE>();
 
-    ArgumentListNode* args = funcargs();
-    if (!args)
-        return nullptr;
-
-    if (!this->expect<TokenType::ARROW>() || !this->token.isDataType())
-    {
-        delete args;
-        return nullptr;
-    }
-
-    DataTypeBase* rtype = this->token.asDataType();
-    this->consume();
-
-    if (!this->expect<TokenType::BRACE_OPEN>())
-    {
-        delete args;
-        delete rtype;
-        return nullptr;
-    }
-
-    std::string* code = brainfuck();
-    if (!code)
-    {
-        delete code;
-        delete args;
-        delete rtype;
-        return nullptr;
-    }
-
-    return new AssemblyNode(rtype, *code, args);
+    return std::make_unique<AssemblyNode>(returntype.release(), code, args.release());
 }
 
-std::string* Parser::brainfuck()
+std::string Parser::brainfuck()
 {
     TRACE;
     std::stringstream ss;
@@ -812,21 +567,63 @@ std::string* Parser::brainfuck()
                 break;
             case TokenType::BRACKET_OPEN:
                 this->consume();
-                {
-                    std::string* str = brainfuck();
-                    ss << "[" << *str;
-                    delete str;
-                }
-
-                if (!this->expect<TokenType::BRACKET_CLOSE>())
-                    return nullptr;
-
+                ss << "[" << this->brainfuck();
+                if (!this->check<TokenType::BRACKET_CLOSE>())
+                    this->expected(TokenType::BRACE_CLOSE);
                 ss << "]";
                 break;
             default:
-                return new std::string(ss.str());
+                return ss.str();
         }
 
         this->consume();
+    }
+}
+
+std::unique_ptr<DataTypeBase> Parser::datatype()
+{
+    if (!this->token.isDataType())
+        this->expected("datatype");
+    auto dt = std::unique_ptr<DataTypeBase>(this->token.asDataType());
+    this->consume();
+    return dt;
+}
+
+std::string Parser::ident()
+{
+    if (!this->check<TokenType::IDENT>())
+        this->expected(TokenType::IDENT);
+
+    std::string ident = this->token.lexeme.get<std::string>();
+    this->consume();
+    return ident;
+}
+
+std::unique_ptr<ExpressionNode> Parser::toBinOp(TokenType type, std::unique_ptr<ExpressionNode> lhs, std::unique_ptr<ExpressionNode> rhs)
+{
+    switch (type)
+    {
+        case TokenType::PLUS:
+            return std::make_unique<AddNode>(lhs.release(), rhs.release());
+        case TokenType::MINUS:
+            return std::make_unique<SubNode>(lhs.release(), rhs.release());
+        case TokenType::STAR:
+            return std::make_unique<MulNode>(lhs.release(), rhs.release());
+        case TokenType::SLASH:
+            return std::make_unique<DivNode>(lhs.release(), rhs.release());
+        case TokenType::PERCENT:
+            return std::make_unique<ModNode>(lhs.release(), rhs.release());
+        case TokenType::AMPERSAND:
+            return std::make_unique<BitwiseAndNode>(lhs.release(), rhs.release());
+        case TokenType::PIPE:
+            return std::make_unique<BitwiseOrNode>(lhs.release(), rhs.release());
+        case TokenType::LEFTLEFT:
+            return std::make_unique<BitwiseLeftShiftNode>(lhs.release(), rhs.release());
+        case TokenType::RIGHTRIGHT:
+            return std::make_unique<BitwiseRightShiftNode>(lhs.release(), rhs.release());
+        case TokenType::HAT:
+            return std::make_unique<BitwiseXorNode>(lhs.release(), rhs.release());
+        default:
+            throw std::runtime_error("internal error");
     }
 }

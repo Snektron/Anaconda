@@ -4,10 +4,19 @@
 #include <istream>
 #include <vector>
 #include <string>
+#include <memory>
+#include <stdexcept>
+#include <stdnoreturn.h>
 #include "parser/lexer.h"
 #include "ast/node.h"
 
 #include <iostream>
+
+class SyntaxError: public std::runtime_error
+{
+    public:
+        SyntaxError(const Span& span, const std::string& msg);
+};
 
 class Parser
 {
@@ -15,42 +24,35 @@ class Parser
         Lexer lexer;
         Token token;
 
-        std::string message;
-        std::vector<TokenType> tried;
-
     public:
         Parser(std::istream& input);
-        GlobalNode* program();
-
-        const std::string& getMessage() const
-        {
-            return this->message;
-        }
+        std::unique_ptr<GlobalNode> program();
 
     private:
+        [[noreturn]]
         void error(const std::string& msg);
-        void unexpected();
+
+        template <typename T>
+        [[noreturn]]
+        void expected(const T& expected)
+        {
+            this->error(fmt::sprintf("unexpected token '", this->token, "', expected '", expected, "'"));
+        }
+
         const Token& consume();
 
         template <TokenType T>
         bool check()
         {
-            if (this->token.isType<T>())
-                return true;
-            this->tried.push_back(T);
-            return false;
+            return this->token.isType<T>();
         }
 
         template <TokenType T>
-        bool expect()
+        void expect()
         {
-            if (this->check<T>()) {
-                this->consume();
-                return true;
-            }
-
-            unexpected();
-            return false;
+            if (!this->check<T>())
+                this->expected(T);
+            this->consume();
         }
 
         template <TokenType T>
@@ -74,42 +76,42 @@ class Parser
                 return this->eat<H>() || this->eatOneOf<T...>();
         }
 
-        GlobalNode* prog();
-        GlobalElementNode* globalstat();
-        GlobalExpressionNode* globalexpr();
+        std::unique_ptr<GlobalNode> prog();
+        std::unique_ptr<GlobalElementNode> globalstat();
+        std::unique_ptr<GlobalExpressionNode> globalexpr();
 
-        StructureDefinitionNode* structdecl();
-        FunctionDeclaration* funcdecl();
-        FieldListNode* funcpar();
-        FieldListNode* fieldlist();
+        std::unique_ptr<StructureDefinitionNode> structdecl();
+        std::unique_ptr<FunctionDeclaration> funcdecl();
+        std::unique_ptr<FieldListNode> funcpar();
+        std::unique_ptr<FieldListNode> fieldlist();
 
-        BlockNode* block();
+        std::unique_ptr<BlockNode> block();
 
-        StatementNode* statlist();
-        StatementNode* statement();
-        ReturnNode* returnstat();
-        StatementNode* exprstat();
-        StatementNode* ifstat();
-        WhileNode* whilestat();
+        std::unique_ptr<StatementNode> statement();
+        std::unique_ptr<ReturnNode> returnstat();
+        std::unique_ptr<StatementNode> exprstat();
+        std::unique_ptr<StatementNode> ifstat();
+        std::unique_ptr<WhileNode> whilestat();
 
-        ExpressionNode* expr();
-        ExpressionNode* bor();
-        ExpressionNode* bxor();
-        ExpressionNode* band();
-        ExpressionNode* shift();
-        ExpressionNode* sum();
-        ExpressionNode* product();
-        ExpressionNode* unary();
-        ExpressionNode* assignment();
-        ExpressionNode* lvalue();
-        ExpressionNode* atom();
-        ExpressionNode* paren();
-        ArgumentListNode* funcargs();
-        ArgumentListNode* arglist();
-        ExpressionNode* variable();
-        ExpressionNode* constant();
-        AssemblyNode* assembly();
-        std::string* brainfuck();
+        std::unique_ptr<ExpressionNode> expr();
+        std::unique_ptr<ExpressionNode> bor();
+        std::unique_ptr<ExpressionNode> bxor();
+        std::unique_ptr<ExpressionNode> band();
+        std::unique_ptr<ExpressionNode> shift();
+        std::unique_ptr<ExpressionNode> sum();
+        std::unique_ptr<ExpressionNode> product();
+        std::unique_ptr<ExpressionNode> unary();
+        std::unique_ptr<ExpressionNode> atom();
+        std::unique_ptr<ExpressionNode> paren();
+        std::unique_ptr<ArgumentListNode> funcargs();
+        std::unique_ptr<ArgumentListNode> arglist();
+        std::unique_ptr<ExpressionNode> variable();
+        std::unique_ptr<ExpressionNode> constant();
+        std::unique_ptr<AssemblyNode> assembly();
+        std::string brainfuck();
+        std::unique_ptr<DataTypeBase> datatype();
+        std::string ident();
+        std::unique_ptr<ExpressionNode> toBinOp(TokenType type, std::unique_ptr<ExpressionNode> lhs, std::unique_ptr<ExpressionNode> rhs);
 };
 
 #endif
