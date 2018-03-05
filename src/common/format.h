@@ -5,27 +5,29 @@
 #include <memory>
 #include <ostream>
 #include <sstream>
+#include <iostream>
+#include <utility>
 
 namespace fmt
 {
-    template <typename T, typename... Args>
-    constexpr void ssprintf(std::ostream& ss, T&& first, Args&&... args)
+    template <typename... Args>
+    constexpr void fprintf(std::ostream& os, Args&&... args)
     {
-        if constexpr (sizeof...(Args) == 0)
-            ss << first;
-        else
-        {
-            ss << first;
-            ssprintf(ss, args...);
-        }
+        (os << ... << args);
     }
 
-    template <typename T, typename... Args>
-    std::string sprintf(T first, Args&&... args)
+    template <typename... Args>
+    constexpr std::string sprintf(Args&&... args)
     {
         std::stringstream ss;
-        ssprintf(ss, first, args...);
+        fprintf(ss, args...);
         return ss.str();
+    }
+
+    template <typename... Args>
+    constexpr void printf(Args&&... args)
+    {
+        fprintf(std::cout, std::forward<Args>(args)...);
     }
 }
 

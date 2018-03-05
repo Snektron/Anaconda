@@ -4,6 +4,7 @@
 #include "parser/parser.h"
 #include "ast/node.h"
 #include "common/util.h"
+#include "common/format.h"
 
 void parse(const char* name)
 {
@@ -11,11 +12,11 @@ void parse(const char* name)
 
     if (!file)
     {
-        std::cerr << "Error: failed to open '" << name << std::endl;
+        fmt::fprintf(std::cerr, "Error: failed to open '", name, "'\n");
         return;
     }
 
-    std::cout << "Parsing " << name << std::endl;
+    fmt::printf("Parsing ", name);
 
     Parser p(file);
 
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 2)
     {
-        std::cerr << "Usage: " << argv[0] << " <input>" << std::endl;
+        fmt::fprintf(std::cerr, "Usage: ", argv[0], " <input>\n");
         return 0;
     }
 
