@@ -2,7 +2,7 @@
 #include "common/format.h"
 #include <sstream>
 
-#define TRACE_ENABLE
+//#define TRACE_ENABLE
 
 #ifdef TRACE_ENABLE
 #include <iostream>
@@ -55,8 +55,6 @@ const Token& Parser::consume()
     do
        this->token = this->lexer.next();
     while (this->token.isOneOf<TokenType::WHITESPACE, TokenType::COMMENT, TokenType::NEWLINE>());
-
-    std::cout << "tok: " << this->token << std::endl;
 
     return this->token;
 }

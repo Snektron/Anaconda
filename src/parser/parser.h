@@ -8,9 +8,39 @@
 #include <stdexcept>
 #include <stdnoreturn.h>
 #include "parser/lexer.h"
-#include "ast/node.h"
-
-#include <iostream>
+#include "ast/argumentlistnode.h"
+#include "ast/fieldlistnode.h"
+#include "ast/global/globalnode.h"
+#include "ast/global/globalelementnode.h"
+#include "ast/global/globalexpressionnode.h"
+#include "ast/global/structuredefinitionnode.h"
+#include "ast/global/functiondeclaration.h"
+#include "ast/stat/statementnode.h"
+#include "ast/stat/returnnode.h"
+#include "ast/stat/whilenode.h"
+#include "ast/stat/ifnode.h"
+#include "ast/stat/ifelsenode.h"
+#include "ast/stat/expressionstatementnode.h"
+#include "ast/stat/emptystatement.h"
+#include "ast/stat/statementlistnode.h"
+#include "ast/expr/expressionnode.h"
+#include "ast/expr/assemblynode.h"
+#include "ast/expr/declarationnode.h"
+#include "ast/expr/functioncallnode.h"
+#include "ast/expr/u8constantnode.h"
+#include "ast/expr/variablenode.h"
+#include "ast/expr/assignmentnode.h"
+#include "ast/expr/op/addnode.h"
+#include "ast/expr/op/bitwiseandnode.h"
+#include "ast/expr/op/bitwiseleftshiftnode.h"
+#include "ast/expr/op/bitwiseornode.h"
+#include "ast/expr/op/bitwiserightshiftnode.h"
+#include "ast/expr/op/bitwisexornode.h"
+#include "ast/expr/op/divnode.h"
+#include "ast/expr/op/modnode.h"
+#include "ast/expr/op/mulnode.h"
+#include "ast/expr/op/subnode.h"
+#include "ast/expr/op/negatenode.h"
 
 class SyntaxError: public std::runtime_error
 {

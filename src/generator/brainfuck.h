@@ -8,6 +8,7 @@
 #include "types/datatype.h"
 #include "ast/node.h"
 #include "common/field.h"
+#include "ast/stat/blocknode.h"
 
 const size_t GLOBAL_SCOPE = 0;
 
