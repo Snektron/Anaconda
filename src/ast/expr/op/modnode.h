@@ -1,9 +1,9 @@
 #ifndef SRC_AST_EXPR_OP_MODNODE_H_
 #define SRC_AST_EXPR_OP_MODNODE_H_
 
-#include "ast/expr/op/binaryexpressionnode.h"
+#include "ast/expr/op/binaryoperatornode.h"
 
-class ModNode : public BinaryExpressionNode
+class ModNode : public BinaryOperatorNode
 {
     public:
         ModNode(ExpressionNode*, ExpressionNode*);

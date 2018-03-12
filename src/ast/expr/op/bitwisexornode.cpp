@@ -4,7 +4,7 @@
 #include <iostream>
 
 BitwiseXorNode::BitwiseXorNode(ExpressionNode* lop, ExpressionNode* rop):
-    BinaryExpressionNode(lop, rop) {}
+    BinaryOperatorNode(lop, rop) {}
 
 void BitwiseXorNode::print(std::ostream& os, size_t level) const
 {

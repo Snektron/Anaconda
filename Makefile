@@ -9,7 +9,7 @@ rwildcard = $(foreach d, $(wildcard $1*), $(call rwildcard, $d/, $2) $(filter $(
 SRCS := $(patsubst $(SRC)/%, %, $(call rwildcard, $(SRC)/, *.cpp))
 OBJECTS := $(SRCS:%.cpp=%.o)
 
-ESC := $(shell echo -e "\033")
+ESC := 
 RED := $(ESC)[1;31m
 WHITE := $(ESC)[1;37m
 BLUE := $(ESC)[1;34m

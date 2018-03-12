@@ -1,20 +1,20 @@
-#include "ast/expr/op/binaryexpressionnode.h"
+#include "ast/expr/op/binaryoperatornode.h"
 #include "except/exceptions.h"
 
 #include <sstream>
 #include <memory>
 
-BinaryExpressionNode::BinaryExpressionNode(ExpressionNode* lop, ExpressionNode* rop)
+BinaryOperatorNode::BinaryOperatorNode(ExpressionNode* lop, ExpressionNode* rop)
     : lop(lop), rop(rop), type(nullptr) {}
 
-BinaryExpressionNode::~BinaryExpressionNode()
+BinaryOperatorNode::~BinaryOperatorNode()
 {
     delete this->lop;
     delete this->rop;
     delete this->type;
 }
 
-void BinaryExpressionNode::checkTypes(BrainfuckWriter& writer)
+void BinaryOperatorNode::checkTypes(BrainfuckWriter& writer)
 {
     this->lop->checkTypes(writer);
     this->rop->checkTypes(writer);
@@ -38,12 +38,12 @@ void BinaryExpressionNode::checkTypes(BrainfuckWriter& writer)
     this->type = lop_type.release();
 }
 
-DataTypeBase* BinaryExpressionNode::getType()
+DataTypeBase* BinaryOperatorNode::getType()
 {
     return this->type->copy();
 }
 
-void BinaryExpressionNode::declareLocals(BrainfuckWriter& writer)
+void BinaryOperatorNode::declareLocals(BrainfuckWriter& writer)
 {
     this->lop->declareLocals(writer);
     this->rop->declareLocals(writer);

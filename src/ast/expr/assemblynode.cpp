@@ -9,6 +9,7 @@ AssemblyNode::AssemblyNode(DataTypeBase* datatype, const std::string& assembly, 
 
 AssemblyNode::~AssemblyNode()
 {
+    delete this->arguments;
     delete this->datatype;
 }
 

@@ -1,9 +1,9 @@
 #ifndef SRC_AST_EXPR_OP_COMPLEMENTNODE_H_
 #define SRC_AST_EXPR_OP_COMPLEMENTNODE_H_
 
-#include "ast/expr/op/unaryexpressionnode.h"
+#include "ast/expr/op/unaryoperatornode.h"
 
-class ComplementNode : public UnaryExpressionNode
+class ComplementNode : public UnaryOperatorNode
 {
     public:
         ComplementNode(ExpressionNode*);

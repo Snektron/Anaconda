@@ -1,19 +1,19 @@
-#include "ast/expr/op/unaryexpressionnode.h"
+#include "ast/expr/op/unaryoperatornode.h"
 #include "except/exceptions.h"
 
 #include <sstream>
 #include <memory>
 
-UnaryExpressionNode::UnaryExpressionNode(ExpressionNode* op)
+UnaryOperatorNode::UnaryOperatorNode(ExpressionNode* op)
     : op(op) {}
 
-UnaryExpressionNode::~UnaryExpressionNode()
+UnaryOperatorNode::~UnaryOperatorNode()
 {
     delete this->op;
     delete this->type;
 }
 
-void UnaryExpressionNode::checkTypes(BrainfuckWriter& writer)
+void UnaryOperatorNode::checkTypes(BrainfuckWriter& writer)
 {
     this->op->checkTypes(writer);
 
@@ -28,12 +28,12 @@ void UnaryExpressionNode::checkTypes(BrainfuckWriter& writer)
     this->type = op_type.release();
 }
 
-DataTypeBase* UnaryExpressionNode::getType()
+DataTypeBase* UnaryOperatorNode::getType()
 {
     return this->type->copy();
 }
 
-void UnaryExpressionNode::declareLocals(BrainfuckWriter& writer)
+void UnaryOperatorNode::declareLocals(BrainfuckWriter& writer)
 {
     this->op->declareLocals(writer);
 }

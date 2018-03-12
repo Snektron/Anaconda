@@ -4,7 +4,7 @@
 #include <iostream>
 
 ComplementNode::ComplementNode(ExpressionNode* op):
-    UnaryExpressionNode(op) {}
+    UnaryOperatorNode(op) {}
 
 void ComplementNode::print(std::ostream& os, size_t level) const
 {

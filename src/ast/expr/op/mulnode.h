@@ -1,9 +1,9 @@
 #ifndef SRC_AST_EXPR_OP_MULNODE_H_
 #define SRC_AST_EXPR_OP_MULNODE_H_
 
-#include "ast/expr/op/binaryexpressionnode.h"
+#include "ast/expr/op/binaryoperatornode.h"
 
-class MulNode : public BinaryExpressionNode
+class MulNode : public BinaryOperatorNode
 {
     public:
         MulNode(ExpressionNode*, ExpressionNode*);

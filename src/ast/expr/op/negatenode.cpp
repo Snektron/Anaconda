@@ -4,7 +4,7 @@
 #include <iostream>
 
 NegateNode::NegateNode(ExpressionNode* op):
-    UnaryExpressionNode(op) {}
+    UnaryOperatorNode(op) {}
 
 void NegateNode::print(std::ostream& os, size_t level) const
 {

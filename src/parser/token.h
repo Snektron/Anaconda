@@ -5,6 +5,7 @@
 #include <optional>
 #include <vector>
 #include <ostream>
+#include <memory>
 #include "types/datatype.h"
 #include "common/variant.h"
 
@@ -54,6 +55,7 @@ enum class TokenType
     FUNC,
     RETURN,
     ASM,
+    AS,
 
     U8,
     VOID
@@ -100,7 +102,7 @@ struct Token
 
     bool hasText() const;
 
-    DataTypeBase* asDataType();
+    std::unique_ptr<DataTypeBase> asDataType();
 
     template <TokenType T>
     bool isType() const

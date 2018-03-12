@@ -3,16 +3,16 @@
 
 #include "ast/expr/expressionnode.h"
 
-class BinaryExpressionNode : public ExpressionNode
+class BinaryOperatorNode : public ExpressionNode
 {
     protected:
         ExpressionNode* lop;
         ExpressionNode* rop;
         DataTypeBase* type;
 
-        BinaryExpressionNode(ExpressionNode*, ExpressionNode*);
+        BinaryOperatorNode(ExpressionNode*, ExpressionNode*);
     public:
-        virtual ~BinaryExpressionNode();
+        virtual ~BinaryOperatorNode();
 
         virtual void checkTypes(BrainfuckWriter&);
         virtual DataTypeBase* getType();

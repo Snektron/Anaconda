@@ -1,9 +1,9 @@
 #ifndef SRC_AST_EXPR_OP_SUBNODE_H_
 #define SRC_AST_EXPR_OP_SUBNODE_H_
 
-#include "ast/expr/op/binaryexpressionnode.h"
+#include "ast/expr/op/binaryoperatornode.h"
 
-class SubNode : public BinaryExpressionNode
+class SubNode : public BinaryOperatorNode
 {
     public:
         SubNode(ExpressionNode*, ExpressionNode*);

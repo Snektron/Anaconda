@@ -11,13 +11,13 @@
 namespace fmt
 {
     template <typename... Args>
-    constexpr void fprintf(std::ostream& os, Args&&... args)
+    void fprintf(std::ostream& os, const Args&... args)
     {
         (os << ... << args);
     }
 
     template <typename... Args>
-    constexpr std::string sprintf(Args&&... args)
+    std::string sprintf(const Args&... args)
     {
         std::stringstream ss;
         fprintf(ss, args...);
@@ -25,9 +25,9 @@ namespace fmt
     }
 
     template <typename... Args>
-    constexpr void printf(Args&&... args)
+    void printf(const Args&... args)
     {
-        fprintf(std::cout, std::forward<Args>(args)...);
+        fprintf(std::cout, args...);
     }
 }
 

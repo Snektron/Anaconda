@@ -3,15 +3,15 @@
 
 #include "ast/expr/expressionnode.h"
 
-class UnaryExpressionNode : public ExpressionNode
+class UnaryOperatorNode : public ExpressionNode
 {
     protected:
         ExpressionNode* op;
         DataTypeBase* type;
 
-        UnaryExpressionNode(ExpressionNode*);
+        UnaryOperatorNode(ExpressionNode*);
     public:
-        virtual ~UnaryExpressionNode();
+        virtual ~UnaryOperatorNode();
 
         virtual void checkTypes(BrainfuckWriter&);
         virtual DataTypeBase* getType();

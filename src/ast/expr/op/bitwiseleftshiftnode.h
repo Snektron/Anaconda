@@ -1,9 +1,9 @@
 #ifndef SRC_AST_EXPR_OP_BITWISELEFTSHIFTNODE_H_
 #define SRC_AST_EXPR_OP_BITWISELEFTSHIFTNODE_H_
 
-#include "ast/expr/op/binaryexpressionnode.h"
+#include "ast/expr/op/binaryoperatornode.h"
 
-class BitwiseLeftShiftNode : public BinaryExpressionNode
+class BitwiseLeftShiftNode : public BinaryOperatorNode
 {
     public:
         BitwiseLeftShiftNode(ExpressionNode*, ExpressionNode*);

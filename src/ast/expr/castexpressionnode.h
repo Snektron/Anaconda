@@ -3,14 +3,14 @@
 
 #include "ast/expr/expressionnode.h"
 
-class CastExpression : public ExpressionNode
+class CastExpressionNode : public ExpressionNode
 {
     private:
         ExpressionNode* expression;
         DataTypeBase* desired_type;
     public:
-        CastExpression(ExpressionNode*, DataTypeBase*);
-        virtual ~CastExpression();
+        CastExpressionNode(ExpressionNode*, DataTypeBase*);
+        virtual ~CastExpressionNode();
 
         virtual void print(std::ostream&, size_t) const;
         virtual void generate(BrainfuckWriter&);

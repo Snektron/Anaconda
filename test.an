@@ -1,5 +1,9 @@
 func a() -> u8 {
     u8 a = 10 * 2 + 5 << 4;
+
+    while a + 1 {
+        a = a - 1;
+    }
 }
 
 func b(u8 c, d) -> u16 {
@@ -7,6 +11,15 @@ func b(u8 c, d) -> u16 {
     u8 e = asm(c, d) -> u8 {
         +++[->+++<]
     } * 2 + 10;
+    u8 test = 10 * 5 as u8;
+
+    if a * 2 + b {
+        if a + 20 {
+            b = 10;
+        } else {
+            c = b * 30;
+        }
+    }
 }
 
 type test {

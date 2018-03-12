@@ -6,7 +6,6 @@
 #include <string>
 #include <memory>
 #include <stdexcept>
-#include <stdnoreturn.h>
 #include "parser/lexer.h"
 #include "ast/argumentlistnode.h"
 #include "ast/fieldlistnode.h"
@@ -18,29 +17,8 @@
 #include "ast/stat/statementnode.h"
 #include "ast/stat/returnnode.h"
 #include "ast/stat/whilenode.h"
-#include "ast/stat/ifnode.h"
-#include "ast/stat/ifelsenode.h"
-#include "ast/stat/expressionstatementnode.h"
-#include "ast/stat/emptystatement.h"
-#include "ast/stat/statementlistnode.h"
 #include "ast/expr/expressionnode.h"
 #include "ast/expr/assemblynode.h"
-#include "ast/expr/declarationnode.h"
-#include "ast/expr/functioncallnode.h"
-#include "ast/expr/u8constantnode.h"
-#include "ast/expr/variablenode.h"
-#include "ast/expr/assignmentnode.h"
-#include "ast/expr/op/addnode.h"
-#include "ast/expr/op/bitwiseandnode.h"
-#include "ast/expr/op/bitwiseleftshiftnode.h"
-#include "ast/expr/op/bitwiseornode.h"
-#include "ast/expr/op/bitwiserightshiftnode.h"
-#include "ast/expr/op/bitwisexornode.h"
-#include "ast/expr/op/divnode.h"
-#include "ast/expr/op/modnode.h"
-#include "ast/expr/op/mulnode.h"
-#include "ast/expr/op/subnode.h"
-#include "ast/expr/op/negatenode.h"
 
 class SyntaxError: public std::runtime_error
 {
@@ -59,11 +37,9 @@ class Parser
         std::unique_ptr<GlobalNode> program();
 
     private:
-        [[noreturn]]
         void error(const std::string& msg);
 
         template <typename T>
-        [[noreturn]]
         void expected(const T& expected)
         {
             this->error(fmt::sprintf("unexpected token '", this->token, "', expected '", expected, "'"));
@@ -124,6 +100,7 @@ class Parser
         std::unique_ptr<WhileNode> whilestat();
 
         std::unique_ptr<ExpressionNode> expr();
+        std::unique_ptr<ExpressionNode> cast();
         std::unique_ptr<ExpressionNode> bor();
         std::unique_ptr<ExpressionNode> bxor();
         std::unique_ptr<ExpressionNode> band();
@@ -136,12 +113,17 @@ class Parser
         std::unique_ptr<ArgumentListNode> funcargs();
         std::unique_ptr<ArgumentListNode> arglist();
         std::unique_ptr<ExpressionNode> variable();
+        std::unique_ptr<ExpressionNode> rvalue();
+        std::unique_ptr<ExpressionNode> lvalue();
         std::unique_ptr<ExpressionNode> constant();
         std::unique_ptr<AssemblyNode> assembly();
         std::string brainfuck();
         std::unique_ptr<DataTypeBase> datatype();
         std::string ident();
-        std::unique_ptr<ExpressionNode> toBinOp(TokenType type, std::unique_ptr<ExpressionNode> lhs, std::unique_ptr<ExpressionNode> rhs);
+        std::unique_ptr<ExpressionNode> toBinOp(
+            TokenType type,
+            std::unique_ptr<ExpressionNode> lhs,
+            std::unique_ptr<ExpressionNode> rhs);
 };
 
 #endif

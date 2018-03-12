@@ -16,12 +16,19 @@ void parse(const char* name)
         return;
     }
 
-    fmt::printf("Parsing ", name);
+    fmt::printf("Parsing ", name, '\n');
 
     Parser p(file);
 
-    std::unique_ptr<GlobalNode> root = p.program();
-    root->print(std::cout, 0);
+    try
+    {
+        std::unique_ptr<GlobalNode> root = p.program();
+        root->print(std::cout, 0);
+    }
+    catch (const SyntaxError& err)
+    {
+        fmt::fprintf(std::cerr, err.what());
+    }
     std::cout << std::endl;
 }
 

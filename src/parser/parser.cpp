@@ -1,6 +1,27 @@
 #include "parser/parser.h"
 #include "common/format.h"
-#include <sstream>
+#include "ast/stat/ifnode.h"
+#include "ast/stat/ifelsenode.h"
+#include "ast/stat/expressionstatementnode.h"
+#include "ast/stat/emptystatement.h"
+#include "ast/stat/statementlistnode.h"
+#include "ast/expr/declarationnode.h"
+#include "ast/expr/functioncallnode.h"
+#include "ast/expr/castexpressionnode.h"
+#include "ast/expr/variablenode.h"
+#include "ast/expr/assignmentnode.h"
+#include "ast/expr/u8constantnode.h"
+#include "ast/expr/op/addnode.h"
+#include "ast/expr/op/bitwiseandnode.h"
+#include "ast/expr/op/bitwiseleftshiftnode.h"
+#include "ast/expr/op/bitwiseornode.h"
+#include "ast/expr/op/bitwiserightshiftnode.h"
+#include "ast/expr/op/bitwisexornode.h"
+#include "ast/expr/op/divnode.h"
+#include "ast/expr/op/modnode.h"
+#include "ast/expr/op/mulnode.h"
+#include "ast/expr/op/subnode.h"
+#include "ast/expr/op/negatenode.h"
 
 //#define TRACE_ENABLE
 
@@ -38,7 +59,6 @@ Parser::Parser(std::istream& input):
     consume();
 }
 
-[[noreturn]]
 void Parser::error(const std::string& msg)
 {
     throw SyntaxError(this->token.span, msg);
@@ -175,7 +195,7 @@ std::unique_ptr<FieldListNode> Parser::fieldlist()
         if (this->check<TokenType::IDENT>())
         {
             std::string name = this->ident();
-            lasttype = std::unique_ptr<DataTypeBase>(saved.asDataType());
+            lasttype = saved.asDataType();
             parameters.push_back(Field(lasttype->copy(), name));
         }
         else
@@ -248,11 +268,11 @@ std::unique_ptr<StatementNode> Parser::ifstat()
     this->expect<TokenType::IF>();
 
     auto condition = expr();
-    auto consequent = statement();
+    auto consequent = block();
 
     if (this->eat<TokenType::ELSE>())
     {
-        auto alternative = statement();
+        auto alternative = block();
         return std::make_unique<IfElseNode>(condition.release(), consequent.release(), alternative.release());
     }
 
@@ -266,7 +286,7 @@ std::unique_ptr<WhileNode> Parser::whilestat()
     this->expect<TokenType::WHILE>();
 
     auto condition = expr();
-    auto consequent = statement();
+    auto consequent = block();
 
     return std::make_unique<WhileNode>(condition.release(), consequent.release());
 }
@@ -275,7 +295,18 @@ std::unique_ptr<WhileNode> Parser::whilestat()
 std::unique_ptr<ExpressionNode> Parser::expr()
 {
     TRACE;
-    return this->bor();
+    return this->cast();
+}
+
+std::unique_ptr<ExpressionNode> Parser::cast() 
+{
+    auto expr = this->bor();
+    if (!this->eat<TokenType::AS>())
+        return expr;
+
+    auto type = this->datatype();
+
+    return std::make_unique<CastExpressionNode>(expr.release(), type.release());
 }
 
 std::unique_ptr<ExpressionNode> Parser::bor()
@@ -476,7 +507,7 @@ std::unique_ptr<ExpressionNode> Parser::variable()
             std::string name = this->token.lexeme.get<std::string>();
             this->consume();
 
-            auto decl = std::make_unique<DeclarationNode>(saved.asDataType(), name);
+            auto decl = std::make_unique<DeclarationNode>(saved.asDataType().release(), name);
 
             if (this->eat<TokenType::EQUALS>())
             {
@@ -498,6 +529,16 @@ std::unique_ptr<ExpressionNode> Parser::variable()
     }
 }
 
+std::unique_ptr<ExpressionNode> Parser::rvalue()
+{
+    TRACE;
+}
+
+std::unique_ptr<ExpressionNode> Parser::lvalue()
+{
+    TRACE;
+}
+
 std::unique_ptr<ExpressionNode> Parser::constant()
 {
     TRACE;
@@ -511,6 +552,7 @@ std::unique_ptr<ExpressionNode> Parser::constant()
         return std::make_unique<U8ConstantNode>((uint8_t) (x & 0xFF));
 
     this->error(fmt::sprintf("value of ", x, "overflowed"));
+    return nullptr;
 }
 
 std::unique_ptr<AssemblyNode> Parser::assembly()
@@ -582,7 +624,7 @@ std::unique_ptr<DataTypeBase> Parser::datatype()
 {
     if (!this->token.isDataType())
         this->expected("datatype");
-    auto dt = std::unique_ptr<DataTypeBase>(this->token.asDataType());
+    auto dt = this->token.asDataType();
     this->consume();
     return dt;
 }
@@ -597,7 +639,10 @@ std::string Parser::ident()
     return ident;
 }
 
-std::unique_ptr<ExpressionNode> Parser::toBinOp(TokenType type, std::unique_ptr<ExpressionNode> lhs, std::unique_ptr<ExpressionNode> rhs)
+std::unique_ptr<ExpressionNode> Parser::toBinOp(
+    TokenType type,
+    std::unique_ptr<ExpressionNode> lhs,
+    std::unique_ptr<ExpressionNode> rhs)
 {
     switch (type)
     {

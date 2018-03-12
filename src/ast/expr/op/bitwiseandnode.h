@@ -1,9 +1,9 @@
 #ifndef SRC_AST_EXPR_OP_BITWISEANDNODE_H_
 #define SRC_AST_EXPR_OP_BITWISEANDNODE_H_
 
-#include "ast/expr/op/binaryexpressionnode.h"
+#include "ast/expr/op/binaryoperatornode.h"
 
-class BitwiseAndNode : public BinaryExpressionNode
+class BitwiseAndNode : public BinaryOperatorNode
 {
     public:
         BitwiseAndNode(ExpressionNode*, ExpressionNode*);

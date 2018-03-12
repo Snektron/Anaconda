@@ -11,6 +11,7 @@ StructureDefinitionNode::StructureDefinitionNode(const std::string& name, FieldL
 
 StructureDefinitionNode::~StructureDefinitionNode()
 {
+    delete this->type;
     delete this->members;
 }
 

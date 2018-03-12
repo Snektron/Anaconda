@@ -1,9 +1,9 @@
 #ifndef SRC_AST_EXPR_OP_NEGATENODE_H_
 #define SRC_AST_EXPR_OP_NEGATENODE_H_
 
-#include "ast/expr/op/unaryexpressionnode.h"
+#include "ast/expr/op/unaryoperatornode.h"
 
-class NegateNode : public UnaryExpressionNode
+class NegateNode : public UnaryOperatorNode
 {
     public:
         NegateNode(ExpressionNode*);

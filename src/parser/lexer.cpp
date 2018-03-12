@@ -139,6 +139,8 @@ Token Lexer::toToken(Span span, TokenType type)
                 return Token(span, TokenType::U8);
             else if (this->buffer == "void")
                 return Token(span, TokenType::VOID);
+            else if (this->buffer == "as")
+                return Token(span, TokenType::AS);
             return Token::make<std::string>(span, TokenType::IDENT, buffer);
         case TokenType::WHITESPACE:
         case TokenType::COMMENT:

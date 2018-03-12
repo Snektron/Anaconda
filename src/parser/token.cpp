@@ -49,18 +49,18 @@ bool Token::isDataType() const
     return this->isBuiltinDataType() || this->isType<TokenType::IDENT>();
 }
 
-DataTypeBase* Token::asDataType()
+std::unique_ptr<DataTypeBase> Token::asDataType()
 {
     if (!this->isDataType())
         return nullptr;
 
     switch (this->type) {
         case TokenType::U8:
-            return new DataType<DataTypeClass::U8>();
+            return std::make_unique<DataType<DataTypeClass::U8>>();
         case TokenType::VOID:
-            return new DataType<DataTypeClass::VOID>();
+            return std::make_unique<DataType<DataTypeClass::VOID>>();
         default:
-            return new DataType<DataTypeClass::STRUCT_FORWARD>(this->lexeme.get<std::string>());
+            return std::make_unique<DataType<DataTypeClass::STRUCT_FORWARD>>(this->lexeme.get<std::string>());
     }
 }
 

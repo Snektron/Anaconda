@@ -1,9 +1,9 @@
 #ifndef SRC_AST_EXPR_OP_DIVNODE_H_
 #define SRC_AST_EXPR_OP_DIVNODE_H_
 
-#include "ast/expr/op/binaryexpressionnode.h"
+#include "ast/expr/op/binaryoperatornode.h"
 
-class DivNode : public BinaryExpressionNode
+class DivNode : public BinaryOperatorNode
 {
     public:
         DivNode(ExpressionNode*, ExpressionNode*);

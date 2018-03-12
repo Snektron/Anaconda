@@ -4,7 +4,7 @@
 #include <iostream>
 
 MulNode::MulNode(ExpressionNode* lop, ExpressionNode* rop):
-    BinaryExpressionNode(lop, rop) {}
+    BinaryOperatorNode(lop, rop) {}
 
 void MulNode::print(std::ostream& os, size_t level) const
 {

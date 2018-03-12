@@ -1,4 +1,4 @@
-#include "ast/expr/castexpression.h"
+#include "ast/expr/castexpressionnode.h"
 #include "types/datatype.h"
 #include "generator/brainfuck.h"
 #include "except/exceptions.h"
@@ -8,29 +8,29 @@
 #include <memory>
 #include <sstream>
 
-CastExpression::CastExpression(ExpressionNode* expression, DataTypeBase* desired_type):
+CastExpressionNode::CastExpressionNode(ExpressionNode* expression, DataTypeBase* desired_type):
     expression(expression), desired_type(desired_type) {}
 
-CastExpression::~CastExpression()
+CastExpressionNode::~CastExpressionNode()
 {
     delete this->expression;
     delete this->desired_type;
 }
 
-void CastExpression::print(std::ostream& os, size_t level) const
+void CastExpressionNode::print(std::ostream& os, size_t level) const
 {
     this->printIndent(os, level);
     os << "cast expression (" << *this->desired_type << ")" << std::endl;
     this->expression->print(os, level+1);
 }
 
-void CastExpression::generate(BrainfuckWriter& writer)
+void CastExpressionNode::generate(BrainfuckWriter& writer)
 {
     ///TODO
     writer.unimplemented();
 }
 
-void CastExpression::checkTypes(BrainfuckWriter& writer)
+void CastExpressionNode::checkTypes(BrainfuckWriter& writer)
 {
     this->expression->checkTypes(writer);
 
@@ -44,12 +44,12 @@ void CastExpression::checkTypes(BrainfuckWriter& writer)
     }
 }
 
-DataTypeBase* CastExpression::getType()
+DataTypeBase* CastExpressionNode::getType()
 {
     return this->desired_type->copy();
 }
 
-void CastExpression::declareLocals(BrainfuckWriter& writer)
+void CastExpressionNode::declareLocals(BrainfuckWriter& writer)
 {
     UNUSED(writer);
 }
