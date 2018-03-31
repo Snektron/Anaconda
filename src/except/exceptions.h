@@ -4,15 +4,15 @@
 #include <stdexcept>
 #include <string>
 
-class AnacondaException : public std::runtime_error
+class AlipheeseException : public std::runtime_error
 {
     public:
-        AnacondaException(const std::string& msg);
-        AnacondaException(const char* msg);
-        virtual ~AnacondaException() = default;
+        AlipheeseException(const std::string& msg);
+        AlipheeseException(const char* msg);
+        virtual ~AlipheeseException() = default;
 };
 
-class ASTException : public AnacondaException
+class ASTException : public AlipheeseException
 {
     public:
         ASTException(const std::string& msg);
@@ -52,7 +52,7 @@ class RecursiveTypeException : public TypeCheckException
         virtual ~RecursiveTypeException() = default;
 };
 
-class SyntaxException : public AnacondaException
+class SyntaxException : public AlipheeseException
 {
     public:
         SyntaxException(const std::string& msg);
@@ -60,7 +60,7 @@ class SyntaxException : public AnacondaException
         virtual ~SyntaxException() = default;
 };
 
-class VariantException : public AnacondaException
+class VariantException : public AlipheeseException
 {
     public:
         VariantException(const std::string& msg);

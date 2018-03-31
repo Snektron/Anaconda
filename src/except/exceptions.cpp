@@ -1,16 +1,16 @@
 #include "except/exceptions.h"
 
-AnacondaException::AnacondaException(const std::string& msg):
+AlipheeseException::AlipheeseException(const std::string& msg):
     std::runtime_error(msg) {}
 
-AnacondaException::AnacondaException(const char* msg):
+AlipheeseException::AlipheeseException(const char* msg):
     std::runtime_error(msg) {}
 
 ASTException::ASTException(const std::string& msg):
-    AnacondaException(msg) {}
+    AlipheeseException(msg) {}
 
 ASTException::ASTException(const char* msg):
-    AnacondaException(msg) {}
+    AlipheeseException(msg) {}
 
 TypeCheckException::TypeCheckException(const std::string& msg):
     ASTException(msg) {}
@@ -37,13 +37,13 @@ RecursiveTypeException::RecursiveTypeException(const char* msg):
     TypeCheckException(msg) {}
 
 SyntaxException::SyntaxException(const std::string& msg):
-    AnacondaException(msg) {}
+    AlipheeseException(msg) {}
 
 SyntaxException::SyntaxException(const char* msg):
-    AnacondaException(msg) {}
+    AlipheeseException(msg) {}
 
 VariantException::VariantException(const std::string& msg):
-    AnacondaException(msg) {}
+    AlipheeseException(msg) {}
 
 VariantException::VariantException(const char* msg):
-    AnacondaException(msg) {}
+    AlipheeseException(msg) {}
