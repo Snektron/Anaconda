@@ -1,4 +1,4 @@
-TARGET := build/target/Anaconda
+TARGET := build/target/Alipheese
 SRC := src
 BUILD := build
 LIBS := 
